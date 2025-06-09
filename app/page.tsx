@@ -75,93 +75,94 @@ const ResumeGenerator = () => {
         </div>
       </div>
 
-      {/* Resume content */}
-      <div className="max-w-4xl mx-auto bg-white shadow-lg print:shadow-none print:max-w-none resume-content">
-        {/* Header */}
-        <div className="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-slate-50 to-white">
-          <h1 className="text-2xl font-bold text-gray-900 mb-1 tracking-tight">
+      {/* Resume Content */}
+      <div className="max-w-4xl mx-auto bg-white resume-content">
+        {/* Header - Simple and Compact */}
+        <div className="text-center py-2">
+          <h1 className="text-2xl font-bold text-gray-900 mb-1">
             {resumeData.basics.name}
           </h1>
-          <p className="text-base text-gray-700 mb-3 font-medium leading-tight">
+          <p className="text-base text-gray-600 mb-2">
             {resumeData.basics.headline}
           </p>
           
-          {/* Contact Info - Single Line */}
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-1 text-xs text-gray-600">
+          {/* Contact Info */}
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-1 text-xs text-gray-600 mb-2">
             <div className="flex items-center gap-1">
-              <Mail size={12} className="text-blue-600 flex-shrink-0" />
-              <a href={`mailto:${resumeData.basics.email}`} className="hover:text-blue-600 transition-colors">
+              <Mail size={12} className="text-blue-600" />
+              <a href={`mailto:${resumeData.basics.email}`} className="hover:text-blue-600">
                 {resumeData.basics.email}
               </a>
             </div>
             <div className="flex items-center gap-1">
-              <Phone size={12} className="text-blue-600 flex-shrink-0" />
+              <Phone size={12} className="text-blue-600" />
               <span>{resumeData.basics.phone}</span>
             </div>
             <div className="flex items-center gap-1">
-              <MapPin size={12} className="text-blue-600 flex-shrink-0" />
+              <MapPin size={12} className="text-blue-600" />
               <span>{resumeData.basics.location}</span>
             </div>
             <div className="flex items-center gap-1">
-              <Globe size={12} className="text-blue-600 flex-shrink-0" />
-              <a href={resumeData.basics.url.href} className="hover:text-blue-600 transition-colors">
+              <Globe size={12} className="text-blue-600" />
+              <a href={resumeData.basics.url.href} className="hover:text-blue-600">
                 {resumeData.basics.url.label.trim()}
               </a>
             </div>
             {resumeData.basics.customFields && resumeData.basics.customFields.length > 0 && (
               <div className="flex items-center gap-1">
-                <Linkedin size={12} className="text-blue-600 flex-shrink-0" />
-                <a href={resumeData.basics.customFields[0].value} className="hover:text-blue-600 transition-colors">
+                <Linkedin size={12} className="text-blue-600" />
+                <a href={resumeData.basics.customFields[0].value} className="hover:text-blue-600">
                   {resumeData.basics.customFields[0].name}
                 </a>
               </div>
             )}
           </div>
+          
+          <hr className="border-gray-300" />
         </div>
 
-        <div className="px-6 py-4 space-y-4">
+        {/* Content */}
+        <div className="px-4 py-3 space-y-4">
           {/* Professional Summary */}
-          {resumeData.sections.summary && resumeData.sections.summary.visible && (
-            <section>
+          {resumeData.sections.summary && resumeData.sections.summary.visible && resumeData.sections.summary.content && (
+            <div>
               <h2 className="text-base font-bold text-gray-900 mb-2 pb-1 border-b border-blue-600 uppercase tracking-wide">
                 {resumeData.sections.summary.name}
               </h2>
-              <div className="bg-gray-50 p-3 rounded-lg">
-                <div className="text-gray-700 leading-tight text-sm">
-                  {renderSummary(resumeData.sections.summary.content)}
-                </div>
+              <div className="text-gray-700 text-sm leading-tight">
+                {renderSummary(resumeData.sections.summary.content)}
               </div>
-            </section>
+            </div>
           )}
 
           {/* Professional Experience */}
           {resumeData.sections.experience && resumeData.sections.experience.visible && resumeData.sections.experience.items && (
-            <section>
+            <div>
               <h2 className="text-base font-bold text-gray-900 mb-2 pb-1 border-b border-blue-600 uppercase tracking-wide">
                 {resumeData.sections.experience.name}
               </h2>
               <div className="space-y-3">
                 {resumeData.sections.experience.items.map((exp: any, index: number) => (
-                  <div key={index} className="bg-white border border-gray-200 rounded-lg p-3">
-                    <div className="flex justify-between items-start mb-2">
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-base font-bold text-gray-900 mb-0.5 leading-tight">
+                  <div key={index}>
+                    <div className="flex justify-between items-start mb-1">
+                      <div className="flex-1">
+                        <h3 className="text-base font-bold text-gray-900 mb-0.5">
                           {exp.position}
                         </h3>
                         <div className="text-blue-600 font-semibold text-sm">
-                          <span>{exp.company}</span>
+                          {exp.company}
                         </div>
                       </div>
-                      <div className="text-right text-xs text-gray-500 ml-3 flex-shrink-0">
-                        <p className="font-medium whitespace-nowrap">{exp.date}</p>
-                        {exp.location && <p className="text-xs">{exp.location}</p>}
+                      <div className="text-right text-xs text-gray-500 ml-3">
+                        <p className="font-medium">{exp.date}</p>
+                        {exp.location && <p>{exp.location}</p>}
                       </div>
                     </div>
-                    <div className="text-gray-700 text-sm leading-tight mb-2">
+                    <div className="text-gray-700 text-sm leading-tight mb-1">
                       {renderSummary(exp.summary)}
                     </div>
                     {exp.url && exp.url.href && exp.url.label && (
-                      <div className="mt-1">
+                      <div className="mb-2">
                         <a href={exp.url.href} className="text-blue-600 hover:underline text-xs">
                           {exp.url.label.toLowerCase()}
                         </a>
@@ -170,67 +171,69 @@ const ResumeGenerator = () => {
                   </div>
                 ))}
               </div>
-            </section>
+            </div>
           )}
 
           {/* Projects */}
           {resumeData.sections.projects && resumeData.sections.projects.visible && resumeData.sections.projects.items && resumeData.sections.projects.items.length > 0 && (
-            <section>
+            <div>
               <h2 className="text-base font-bold text-gray-900 mb-2 pb-1 border-b border-blue-600 uppercase tracking-wide">
                 {resumeData.sections.projects.name}
               </h2>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {resumeData.sections.projects.items.map((project: any, index: number) => (
-                  <div key={index} className="bg-white border border-gray-200 rounded-lg p-3">
+                  <div key={index}>
                     <div className="flex justify-between items-start mb-1">
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-sm font-bold text-gray-900 mb-0.5 leading-tight">
+                      <div className="flex-1">
+                        <h3 className="text-sm font-bold text-gray-900">
                           {project.name}
                         </h3>
                         {project.description && (
-                          <p className="text-gray-600 text-xs mb-1">{project.description}</p>
+                          <p className="text-gray-700 font-medium text-sm mt-0.5">
+                            {project.description}
+                          </p>
                         )}
                       </div>
-                      <div className="text-right text-xs text-gray-500 ml-3 flex-shrink-0">
-                        {project.date && <p className="font-medium whitespace-nowrap">{project.date}</p>}
+                      <div className="text-right text-xs text-gray-500 ml-3">
+                        <p className="font-medium">{project.date}</p>
                       </div>
                     </div>
                     {project.summary && (
-                      <div className="text-gray-700 text-sm leading-tight mb-2">
+                      <div className="text-gray-700 text-sm leading-tight mb-1">
                         {renderSummary(project.summary)}
                       </div>
                     )}
                     {project.keywords && project.keywords.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mb-2">
+                      <div className="flex flex-wrap gap-1 mb-1">
                         {project.keywords.map((keyword: string, kidx: number) => (
-                          <span key={kidx} className="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full">
+                          <span key={kidx} className="bg-blue-100 text-blue-800 text-xs px-1.5 py-0.5 rounded">
                             {keyword}
                           </span>
                         ))}
                       </div>
                     )}
-                    {project.url && (
-                      <div className="mt-1">
+                    {project.url && project.url.href && project.url.label && (
+                      <div className="mb-2">
                         <a href={project.url.href} className="text-blue-600 hover:underline text-xs">
-                          {project.url.label}
+                          {project.url.label.toLowerCase()}
                         </a>
                       </div>
                     )}
                   </div>
                 ))}
               </div>
-            </section>
+            </div>
           )}
 
           {/* Skills */}
           {resumeData.sections.skills && resumeData.sections.skills.visible && resumeData.sections.skills.items && resumeData.sections.skills.items.length > 0 && (
-            <section>
+            <div>
               <h2 className="text-base font-bold text-gray-900 mb-2 pb-1 border-b border-blue-600 uppercase tracking-wide">
                 {resumeData.sections.skills.name}
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {resumeData.sections.skills.items.map((skill: any, index: number) => (
-                  <div key={index} className="bg-gray-50 p-2 rounded-lg">
+                  <div key={index}>
                     <h3 className="font-semibold text-gray-900 mb-1 text-sm">{skill.name}</h3>
                     <div className="flex flex-wrap gap-1">
                       {skill.keywords && skill.keywords.map((keyword: string, kidx: number) => (
@@ -242,44 +245,44 @@ const ResumeGenerator = () => {
                   </div>
                 ))}
               </div>
-            </section>
+            </div>
           )}
 
           {/* Education */}
           {resumeData.sections.education && resumeData.sections.education.visible && resumeData.sections.education.items && resumeData.sections.education.items.length > 0 && (
-            <section>
+            <div>
               <h2 className="text-base font-bold text-gray-900 mb-2 pb-1 border-b border-blue-600 uppercase tracking-wide">
                 {resumeData.sections.education.name}
               </h2>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {resumeData.sections.education.items.map((edu: any, index: number) => (
-                  <div key={index} className="bg-white border border-gray-200 rounded-lg p-3">
+                  <div key={index}>
                     <div className="flex justify-between items-start mb-1">
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-sm font-bold text-gray-900 leading-tight">
+                      <div className="flex-1">
+                        <h3 className="text-sm font-bold text-gray-900">
                           {edu.institution}
                         </h3>
                         <p className="text-blue-600 font-semibold text-sm">
                           {edu.studyType}
                         </p>
                       </div>
-                      <div className="text-right text-xs text-gray-500 ml-3 flex-shrink-0">
-                        <p className="font-medium whitespace-nowrap">{edu.date}</p>
-                        {edu.location && <p className="text-xs">{edu.location}</p>}
+                      <div className="text-right text-xs text-gray-500 ml-3">
+                        <p className="font-medium">{edu.date}</p>
+                        {edu.location && <p>{edu.location}</p>}
                       </div>
                     </div>
                     {edu.score && (
-                      <p className="text-xs text-gray-600">GPA: {edu.score}</p>
+                      <p className="text-xs text-gray-600 mb-1">GPA: {edu.score}</p>
                     )}
                     {edu.summary && (
-                      <div className="mt-2 text-gray-700 text-sm leading-tight">
+                      <div className="text-gray-700 text-sm leading-tight">
                         {renderSummary(edu.summary)}
                       </div>
                     )}
                   </div>
                 ))}
               </div>
-            </section>
+            </div>
           )}
         </div>
       </div>

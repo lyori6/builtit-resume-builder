@@ -46,14 +46,6 @@
     display: none !important;
   }
   
-  .print\\:shadow-none {
-    box-shadow: none !important;
-  }
-  
-  .print\\:max-w-none {
-    max-width: none !important;
-  }
-  
   body {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
@@ -67,15 +59,7 @@
   }
   
   @page {
-    margin: 0.4in;
+    margin: 0.5in;
     size: letter;
   }
-  
-  /* Additional print optimizations */
-  h1 { font-size: 1.5rem !important; }
-  h2 { font-size: 1rem !important; }
-  h3 { font-size: 0.875rem !important; }
-  .text-base { font-size: 0.875rem !important; }
-  .text-sm { font-size: 0.75rem !important; }
-  .text-xs { font-size: 0.625rem !important; }
 }
