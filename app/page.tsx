@@ -48,13 +48,30 @@ const ResumeGenerator = () => {
       <div className="print:hidden p-4 bg-white shadow-sm border-b">
         <div className="max-w-4xl mx-auto flex justify-between items-center">
           <h1 className="text-xl font-bold text-gray-900">Resume Generator</h1>
-          <button
-            onClick={generatePDF}
-            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            <Download size={16} />
-            Download PDF
-          </button>
+          {/* Download PDF & Export JSON Buttons */}
+          <div className="print:hidden flex gap-2 mb-2">
+            <button
+              onClick={() => window.print()}
+              className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors shadow-sm"
+            >
+              <Download size={14} className="mr-1" /> Download PDF
+            </button>
+            <button
+              onClick={() => {
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(resumeData, null, 2));
+                const dlAnchor = document.createElement('a');
+                dlAnchor.setAttribute("href", dataStr);
+                dlAnchor.setAttribute("download", "CV.json");
+                document.body.appendChild(dlAnchor);
+                dlAnchor.click();
+                dlAnchor.remove();
+              }}
+              className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors shadow-sm"
+              title="Export CV.json"
+            >
+              <Download size={14} className="mr-1" /> Export JSON
+            </button>
+          </div>
         </div>
       </div>
 
