@@ -140,10 +140,10 @@
             "id": "exp4",
             "visible": true,
             "company": "Early-stage Startups (Consultant)",
-            "position": "Product Manager",
+            "position": "Founding Product Manager",
             "location": "Palo Alto, CA",
             "date": "Aug 2019 – Sep 2020",
-            "summary": "<p>Founding PM partnering directly with founders on 0->1 products. Led discovery, scoping, and delivery from concept to launch.<br><br><strong>ProgForce:</strong> Designed and rapidly prototyped an internal gamified platform for quarterly travel forecasting; UX-tested mechanics that drove participation 40% → 70% in prototype testing.</p><p><strong>AssemblyDrop:</strong> Scoped and defined the MVP for an on-demand contractor marketplace, then piloted the platform, enrolling 5 pilot crews and onboarding 1,000+ SKUs.</p>",
+            "summary": "<p>Founding PM partnering directly with founders on 0->1 products. Led discovery, scoping, and delivery from concept to launch.</p><ul><li><p><strong>ProgForce:</strong> Designed and rapidly prototyped an internal gamified platform for quarterly travel forecasting; UX-tested mechanics that drove participation 40% → 70% in prototype testing.</p></li><li><p><strong>AssemblyDrop:</strong> Scoped and defined the MVP for an on-demand contractor marketplace, then piloted the platform, enrolling 5 pilot crews and onboarding 1,000+ SKUs.</p></li></ul>",
             "url": {
               "label": "",
               "href": ""
@@ -271,10 +271,10 @@
               "Next.js",
               "React",
               "JavaScript",
-              "Serverless (Cloudflare Workers, Vercel Functions)",
+              "Serverless",
               "Firebase",
               "Supabase",
-              "API Integration (Stripe, OpenAI, Petfinder)"
+              "API Integration"
             ]
           },
           {
