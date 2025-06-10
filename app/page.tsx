@@ -1,16 +1,78 @@
 'use client'
 
-import React from 'react'
-import { Download, Mail, Phone, MapPin, Globe, Linkedin } from 'lucide-react'
-import resumeData from '../CV.json'
+import React, { useState, useEffect } from 'react'
+import { Download, Mail, Phone, MapPin, Globe, Linkedin, ChevronDown } from 'lucide-react'
+
+interface ResumeOption {
+  id: string
+  name: string
+  filename: string
+}
 
 const ResumeGenerator = () => {
+  const [resumeData, setResumeData] = useState<any>(null)
+  const [availableResumes, setAvailableResumes] = useState<ResumeOption[]>([])
+  const [selectedResume, setSelectedResume] = useState<string>('')
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    // Load available resumes on component mount
+    fetchAvailableResumes()
+  }, [])
+
+  useEffect(() => {
+    // Load selected resume data when selection changes
+    if (selectedResume) {
+      fetchResumeData(selectedResume)
+    }
+  }, [selectedResume])
+
+  const fetchAvailableResumes = async () => {
+    try {
+      const response = await fetch('/api/resume')
+      const resumes = await response.json()
+      setAvailableResumes(resumes)
+      
+      // Auto-select the first resume (current.json if available)
+      const defaultResume = resumes.find((r: ResumeOption) => r.id === 'current') || resumes[0]
+      if (defaultResume) {
+        setSelectedResume(defaultResume.filename)
+      }
+    } catch (error) {
+      console.error('Error fetching available resumes:', error)
+    }
+  }
+
+  const fetchResumeData = async (filename: string) => {
+    try {
+      setLoading(true)
+      const response = await fetch(`/api/resume?filename=${filename}`)
+      const data = await response.json()
+      setResumeData(data)
+    } catch (error) {
+      console.error('Error fetching resume data:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const generatePDF = () => {
     window.print()
   }
 
+  const exportJSON = () => {
+    if (!resumeData) return
+    
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(resumeData, null, 2))
+    const dlAnchor = document.createElement('a')
+    dlAnchor.setAttribute("href", dataStr)
+    dlAnchor.setAttribute("download", selectedResume || "CV.json")
+    document.body.appendChild(dlAnchor)
+    dlAnchor.click()
+    dlAnchor.remove()
+  }
+
   const renderHTMLContent = (htmlContent: string) => {
-    // Parse HTML content and render it properly
     return (
       <div 
         className="text-gray-700 leading-tight text-xs"
@@ -20,12 +82,10 @@ const ResumeGenerator = () => {
   }
 
   const renderSummary = (summary: string) => {
-    // Check if content contains HTML tags
     if (summary.includes('<') && summary.includes('>')) {
       return renderHTMLContent(summary)
     }
     
-    // Handle plain text with bullet points
     const points = summary.split('•').filter(point => point.trim())
     if (points.length > 1) {
       return (
@@ -42,34 +102,56 @@ const ResumeGenerator = () => {
     return <p className="text-gray-700 leading-tight text-xs">{summary}</p>
   }
 
+  if (loading || !resumeData) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading resume...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Print button - hidden when printing */}
+      {/* Control Panel - hidden when printing */}
       <div className="print:hidden p-4 bg-white shadow-sm border-b">
         <div className="max-w-4xl mx-auto flex justify-between items-center">
-          <h1 className="text-xl font-bold text-gray-900">Resume Generator</h1>
-          {/* Download PDF & Export JSON Buttons */}
-          <div className="print:hidden flex gap-2 mb-2">
+          <div className="flex items-center gap-4">
+            <h1 className="text-xl font-bold text-gray-900">Resume Generator</h1>
+            
+            {/* Resume Version Selector */}
+            <div className="relative">
+              <select
+                value={selectedResume}
+                onChange={(e) => setSelectedResume(e.target.value)}
+                className="appearance-none bg-white border border-gray-300 rounded px-3 py-1.5 pr-8 text-sm font-medium text-gray-700 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                {availableResumes.map((resume) => (
+                  <option key={resume.id} value={resume.filename}>
+                    {resume.name}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown size={16} className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
+            </div>
+          </div>
+          
+          {/* Action Buttons */}
+          <div className="flex gap-2">
             <button
-              onClick={() => window.print()}
+              onClick={generatePDF}
               className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors shadow-sm"
             >
-              <Download size={14} className="mr-1" /> Download PDF
+              <Download size={14} /> Download PDF
             </button>
             <button
-              onClick={() => {
-                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(resumeData, null, 2));
-                const dlAnchor = document.createElement('a');
-                dlAnchor.setAttribute("href", dataStr);
-                dlAnchor.setAttribute("download", "CV.json");
-                document.body.appendChild(dlAnchor);
-                dlAnchor.click();
-                dlAnchor.remove();
-              }}
+              onClick={exportJSON}
               className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors shadow-sm"
-              title="Export CV.json"
+              title="Export JSON"
             >
-              <Download size={14} className="mr-1" /> Export JSON
+              <Download size={14} /> Export JSON
             </button>
           </div>
         </div>
@@ -79,7 +161,7 @@ const ResumeGenerator = () => {
       <div className="max-w-4xl mx-auto bg-white text-gray-900 leading-tight text-xs resume-content">
         {/* Header */}
         <div className="text-center py-1.5 border-b border-gray-300">
-          <h1 className="text-lg font-bold text-gray-900 mb-0.5">
+          <h1 className="text-xl font-bold text-gray-900 mb-0.5 tracking-wide">
             {resumeData.basics.name}
           </h1>
           <p className="text-blue-600 font-semibold text-sm mb-1">
@@ -105,67 +187,98 @@ const ResumeGenerator = () => {
             {resumeData.basics.url && resumeData.basics.url.href && (
               <div className="flex items-center gap-1">
                 <Globe size={8} />
-                <a href={resumeData.basics.url.href} className="text-blue-600 hover:underline">
-                  {resumeData.basics.url.label}
+                <a href={resumeData.basics.url.href} className="hover:text-blue-600">
+                  {resumeData.basics.url.label || resumeData.basics.url.href}
                 </a>
               </div>
             )}
-            {resumeData.basics.customFields && resumeData.basics.customFields.map((field: any, index: number) => (
-              <div key={index} className="flex items-center gap-1">
-                <Linkedin size={8} />
-                <a href={field.value} className="text-blue-600 hover:underline">
-                  {field.name.toLowerCase()}
-                </a>
-              </div>
-            ))}
+            {resumeData.basics.customFields && resumeData.basics.customFields.length > 0 && (
+              <>
+                {resumeData.basics.customFields.map((field: any, index: number) => (
+                  <div key={index} className="flex items-center gap-1">
+                    <Linkedin size={8} />
+                    <a href={field.value} className="hover:text-blue-600">
+                      {field.name}
+                    </a>
+                  </div>
+                ))}
+              </>
+            )}
+            {resumeData.basics.profiles && resumeData.basics.profiles.length > 0 && (
+              <>
+                {resumeData.basics.profiles.map((profile: any, index: number) => (
+                  <div key={index} className="flex items-center gap-1">
+                    {profile.network === 'LinkedIn' && <Linkedin size={8} />}
+                    <a href={profile.url} className="hover:text-blue-600">
+                      {profile.username || profile.url}
+                    </a>
+                  </div>
+                ))}
+              </>
+            )}
           </div>
         </div>
 
-        <hr className="border-gray-300 my-1" />
-
-        {/* Professional Summary */}
+        {/* Summary */}
         {resumeData.sections.summary && resumeData.sections.summary.visible && resumeData.sections.summary.content && (
-          <div className="py-1.5">
-            <h2 className="text-sm font-bold text-gray-900 mb-1 pb-0.5 border-b border-blue-600 uppercase tracking-wide">
+          <div className="py-1">
+            <h2 className="text-base font-bold text-gray-900 mb-1 pb-0.5 border-b border-blue-600 uppercase tracking-wide">
               {resumeData.sections.summary.name}
             </h2>
-            <div className="text-gray-700 text-xs leading-tight">
+            <div className="text-gray-700 leading-tight text-xs mt-0.5">
               {renderSummary(resumeData.sections.summary.content)}
             </div>
           </div>
         )}
 
-        {/* Professional Experience */}
-        {resumeData.sections.experience && resumeData.sections.experience.visible && resumeData.sections.experience.items && (
-          <div className="py-1.5">
-            <h2 className="text-sm font-bold text-gray-900 mb-1 pb-0.5 border-b border-blue-600 uppercase tracking-wide">
+        {/* Experience */}
+        {resumeData.sections.experience && resumeData.sections.experience.visible && resumeData.sections.experience.items && resumeData.sections.experience.items.length > 0 && (
+          <div className="py-1">
+            <h2 className="text-base font-bold text-gray-900 mb-1 pb-0.5 border-b border-blue-600 uppercase tracking-wide">
               {resumeData.sections.experience.name}
             </h2>
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               {resumeData.sections.experience.items.map((exp: any, index: number) => (
                 <div key={index}>
                   <div className="flex justify-between items-start mb-0.5">
                     <div className="flex-1">
-                      <h3 className="text-sm font-bold text-gray-900 mb-0.5">
-                        {exp.position}
+                      <h3 className="text-sm text-gray-900">
+                        {exp.position.includes('|') ? (
+                          <>
+                            {exp.position.split('|').reverse().map((part: string, idx: number) => (
+                              <span key={idx}>
+                                {idx === 0 ? (
+                                  <span className="font-bold">{part.trim()}</span>
+                                ) : (
+                                  <>
+                                    <span className="text-gray-400 mx-1.5">|</span>
+                                    <span className="font-medium">{part.trim()}</span>
+                                  </>
+                                )}
+                              </span>
+                            ))}
+                          </>
+                        ) : (
+                          <>
+                            {exp.company && (
+                              <>
+                                <span className="font-bold">{exp.company}</span>
+                                <span className="text-gray-400 mx-1.5">|</span>
+                              </>
+                            )}
+                            <span className="font-medium">{exp.position}</span>
+                          </>
+                        )}
                       </h3>
-                      <div className="text-blue-600 font-semibold text-sm mb-0.5">
-                        {exp.company}
-                      </div>
                     </div>
                     <div className="text-right text-xs text-gray-500 ml-3">
                       <p className="font-medium">{exp.date}</p>
                       {exp.location && <p className="text-xs">{exp.location}</p>}
                     </div>
                   </div>
-                  <div className="text-gray-700 text-xs leading-tight mb-0.5">
-                    {renderSummary(exp.summary)}
-                  </div>
-                  {exp.url && exp.url.href && exp.url.label && (
-                    <div className="mb-0.5">
-                      <a href={exp.url.href} className="text-blue-600 hover:underline text-xs">
-                        {exp.url.label.toLowerCase()}
-                      </a>
+                  {exp.summary && (
+                    <div className="text-gray-700 text-xs leading-tight mt-0.5">
+                      {renderSummary(exp.summary)}
                     </div>
                   )}
                 </div>
@@ -176,8 +289,8 @@ const ResumeGenerator = () => {
 
         {/* Projects */}
         {resumeData.sections.projects && resumeData.sections.projects.visible && resumeData.sections.projects.items && resumeData.sections.projects.items.length > 0 && (
-          <div className="py-1.5">
-            <h2 className="text-sm font-bold text-gray-900 mb-1 pb-0.5 border-b border-blue-600 uppercase tracking-wide">
+          <div className="py-1">
+            <h2 className="text-base font-bold text-gray-900 mb-1 pb-0.5 border-b border-blue-600 uppercase tracking-wide">
               {resumeData.sections.projects.name}
             </h2>
             <div className="space-y-1.5">
@@ -189,13 +302,13 @@ const ResumeGenerator = () => {
                         {project.name}
                       </h3>
                       {project.description && (
-                        <p className="text-gray-700 font-medium text-xs mt-0.5">
+                        <p className="text-gray-700 font-medium text-xs">
                           {project.description}
                         </p>
                       )}
                     </div>
                     <div className="text-right text-xs text-gray-500 ml-3">
-                      <p className="font-medium">{project.date}</p>
+                      {project.date && <p className="font-medium">{project.date}</p>}
                     </div>
                   </div>
                   {project.summary && (
@@ -227,8 +340,8 @@ const ResumeGenerator = () => {
 
         {/* Skills */}
         {resumeData.sections.skills && resumeData.sections.skills.visible && resumeData.sections.skills.items && resumeData.sections.skills.items.length > 0 && (
-          <div className="py-1.5">
-            <h2 className="text-sm font-bold text-gray-900 mb-1 pb-0.5 border-b border-blue-600 uppercase tracking-wide">
+          <div className="py-1">
+            <h2 className="text-base font-bold text-gray-900 mb-1 pb-0.5 border-b border-blue-600 uppercase tracking-wide">
               {resumeData.sections.skills.name}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-1.5 skills-grid">
@@ -250,8 +363,8 @@ const ResumeGenerator = () => {
 
         {/* Education */}
         {resumeData.sections.education && resumeData.sections.education.visible && resumeData.sections.education.items && resumeData.sections.education.items.length > 0 && (
-          <div className="py-1.5">
-            <h2 className="text-sm font-bold text-gray-900 mb-1 pb-0.5 border-b border-blue-600 uppercase tracking-wide">
+          <div className="py-1">
+            <h2 className="text-base font-bold text-gray-900 mb-1 pb-0.5 border-b border-blue-600 uppercase tracking-wide">
               {resumeData.sections.education.name}
             </h2>
             <div className="space-y-1.5">
