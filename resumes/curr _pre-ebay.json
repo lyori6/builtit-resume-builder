@@ -36,7 +36,7 @@
       "separateLinks": true,
       "visible": true,
       "id": "summary",
-      "content": "<p>Product leader with more than 5 years leading fintech and ecommerce products for 30 M+ users and over 3 years shipping generative-AI solutions. At TrueML I delivered $3–5 M annualized uplift (33 % CVR, 19 % payment lift), led EcoCart’s post-purchase pivot to 24 % adoption and a 30-pt NPS jump, and now accelerate AI-powered MVPs through Builtit.dev.</p>"
+      "content": "<p>Product leader with more than 5 years leading fintech and ecommerce products for over 30 million users and more than 3 years shipping generative AI solutions. At TrueML I delivered 3 to 5 million dollars in annualized revenue uplift by boosting checkout conversion by 33% and payment completions by 19%, led EcoCart’s post purchase line to 24% adoption and a 30 point NPS gain, and now drives rapid gen AI powered MVP development from concept to production in days through Builtit.dev</p>"
     },
     "awards": {
       "name": "Awards",
@@ -85,26 +85,13 @@
       "id": "experience",
       "items": [
         {
-          "id": "exp_ebay",
-          "visible": true,
-          "company": "",
-          "position": "Product Lead, Trust & Safety | eBay Live (Contract via Avenue Code)",
-          "location": "San Jose, CA",
-          "date": "Jul 2025 – Present",
-          "summary": "<p>Lead Trust & Safety for eBay’s live-commerce platform, owning policy enforcement and seller safeguards.</p><ul><li><p>Own end-to-end delivery of four initiatives (chat moderation, unpaid-item fraud, DSAR compliance, buyer/seller protections); removed ~30 % of critical blockers in month one.</p></li><li><p>Led seller-moderation controls that let hosts gate chat and buyer access; fast-tracked for upcoming eBay Live Tour events.</p></li><li><p>Set launch KPIs and partnered with Data Science to build dashboards for harmful-content rate, moderation latency, and unpaid-item rate, protecting eBay Live’s $19.5 B quarterly GMV.</p></li><li><p>Drove product decisions and approval cycles for Live Seller Console and checkout upgrades, cutting approval time from 3 weeks to 10 days.</p></li></ul>",
-          "url": {
-            "label": "",
-            "href": ""
-          }
-        },
-        {
           "id": "exp0",
           "visible": true,
           "company": "",
           "position": "Product Lead & Founder | Builtit.dev",
           "location": "Redwood City, CA",
           "date": "Dec 2024 – Present",
-          "summary": "<p>Founded a micro-agency that ships AI-powered MVPs end to end for non-technical founders.</p><ul><li><p>Validated demand via 25 founder interviews and launched two pilot builds using a reusable component + automation playbook, cutting build time from weeks to days.</p></li></ul>",
+          "summary": "<p>Founded an early-stage micro-agency, delivering generative AI powered, production-ready MVPs with integrated automation for non-technical founders.</p><ul><li><p>Spearheaded market validation via 25+ founder discovery calls, defining core service offerings focused on AI-driven solutions for regulated niches.</p></li><li><p>Developed a rapid delivery playbook leveraging reusable components and AI automation patterns to accelerate functional MVP builds from weeks to days.</p></li></ul>",
           "url": {
             "label": "builtit.dev",
             "href": "https://builtit.dev"
@@ -117,7 +104,7 @@
           "position": "Product Manager | EcoCart",
           "location": "San Francisco, CA",
           "date": "Feb 2024 – Dec 2024",
-          "summary": "<p>Drove new product direction and prototyped package protection at a post-purchase e-commerce startup. Launched a revenue-share GTM to increase merchant adoption.</p><ul><li><p>Established package protection as the next revenue pillar through 10+ merchant interviews, partner evaluations, and data analysis; defined MVP and led engineering & design for prototype.</p></li><li><p>Launched Shopify revenue-share pilot, securing 24 % adoption in month one and lifting NPS from 35 to 65.</p></li><li><p>Prototyped LLM-driven claims triage, demonstrating a 40 % reduction in manual review for early CS workflow testing.</p></li></ul>",
+          "summary": "<p>Drove new product direction and prototyped package protection at a post purchase eCom startup. Launched a revenue share GTM to increase merchant adoption.</p><ul><li><p>Established package protection as the next company revenue pillar by leading comprehensive discovery (market, partner, 10+ merchant interviews, data analysis) and MVP definition, including blueprinting and prototype development with engineering & design.</p></li><li><p>Launched a Shopify revenue share pilot to improve merchant retention and alignment, securing 24% adoption from targeted merchants in the first month and lifting average NPS from 35 to 65.</p></li><li><p>Prototyped an LLM driven claims triage system, demonstrating a potential 40% reduction in manual review and enabling early CS workflow testing.</p></li></ul>",
           "url": {
             "label": "",
             "href": ""
@@ -130,7 +117,7 @@
           "position": "Product Manager | TrueML",
           "location": "San Francisco, CA",
           "date": "Jan 2022 – Nov 2023",
-          "summary": "<p>Owned core payment product for a consumer-debt platform. Ran 30+ A/B tests and led MFA rollout to boost conversion and compliance.</p><ul><li><p>Partnered with Eng, Data Science & Design to scale A/B testing to 30+ tests/quarter, driving $3–5 M annualized uplift (33 % CVR, 19 % payment lift).</p></li><li><p>Integrated richer behavioral data for ML segmentation, lifting plan selection by 12 % and engagement by 34 %.</p></li><li><p>Led mobile-first redesign, reducing average checkout time by 15 s and contributing to a 19 % payment lift.</p></li></ul>",
+          "summary": "<p>Owned the core payment product for a consumer debt platform. Conducted A/B tests, optimized user flows, and led MFA implementation to increase conversion and payment completion while ensuring compliance.</p><ul><li><p>Led cross functional optimization of the repayment platform (Eng, Data Science, Design, CS), delivering 3 to 5 million dollars in annualized revenue uplift by scaling A/B testing to 30+ tests per quarter, lifting checkout CVR by 33% and payment completions by 19%.</p></li><li><p>Partnered with Data Science to refine ML driven user segmentation by integrating richer behavioral data, boosting plan selection rates by 12% and overall user engagement by 34%.</p></li><li><p>Led a mobile first redesign of the core repayment flow, simplifying UX and reducing average checkout time by 15 seconds, contributing to a 19% lift in completed payments.</p></li></ul>",
           "url": {
             "label": "",
             "href": ""
@@ -143,7 +130,7 @@
           "position": "Product Operations Manager, D2C | TrueML",
           "location": "San Francisco, CA",
           "date": "Jun 2020 – Jan 2022",
-          "summary": "<p>Built product ops & support org from scratch at a pre-PM fintech startup.</p><ul><li><p>Established support SLAs and Looker dashboards, cutting first response time from 24 h to <4 h and maintaining 4.6/5 CSAT.</p></li><li><p>Launched targeted HubSpot email & Twilio SMS campaigns, driving +25 % MAU.</p></li><li><p>Designed BI dashboards for real-time support KPIs, reducing agent handle time by 12 %.</p></li></ul>",
+          "summary": "<p>Set up product ops & support org from scratch at a pre PM fintech startup. Built SLAs, Looker performance dashboards, and aligned roadmaps across cross functional teams.</p><ul><li><p>Established the D2C customer support function, implementing foundational processes, SLAs, and dashboards that reduced average first response time from over 24 hours to under 4 hours while maintaining a 4.6/5 CSAT.</p></li><li><p>Developed and executed targeted HubSpot email and Twilio SMS campaigns based on user segmentation, driving a 25% increase in Monthly Active Users.</p></li><li><p>Spearheaded the specification and launch of BI dashboards (Looker) providing real time visibility into support KPIs, leading to a 12% reduction in agent handle time and informing executive decision making.</p></li></ul>",
           "url": {
             "label": "",
             "href": ""
@@ -156,7 +143,7 @@
           "position": "Founding Product Manager | Early-stage Startups (Consultant)",
           "location": "Palo Alto, CA",
           "date": "Aug 2019 – Sep 2020",
-          "summary": "<p>Partnered with founders on 0→1 products: discovery, scoping, and delivery.</p><ul><li><p><strong>ProgForce:</strong> Rapid-prototyped gamified forecasting UX, boosting participation from 40 % to 70 % in tests.</p></li><li><p><strong>AssemblyDrop:</strong> Defined marketplace MVP, piloting with 5 crews and 1,000+ SKUs onboarded.</p></li></ul>",
+          "summary": "<p>Founding PM partnering directly with founders on 0 to 1 products. Led discovery, scoping, and delivery from concept to launch.</p><ul><li><p><strong>ProgForce:</strong> Designed and rapidly prototyped an internal gamified platform for quarterly travel forecasting; UX tested mechanics that drove participation from 40% to 70% in prototype testing.</p></li><li><p><strong>AssemblyDrop:</strong> Scoped and defined the MVP for an on demand contractor marketplace, then piloted the platform, enrolling 5 pilot crews and onboarding over 1,000 SKUs.</p></li></ul>",
           "url": {
             "label": "",
             "href": ""
