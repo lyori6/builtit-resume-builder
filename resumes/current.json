@@ -206,6 +206,19 @@
         {
           "id": "prj1",
           "visible": true,
+          "name": "TS Policy Watcher (Founder/Builder)",
+          "description": "Built an AI-powered competitive intelligence system that continuously monitors Trust & Safety policy changes across 25+ platforms. Features automated change detection, AI summaries, and executive alerts with 99.9% uptime and 6-hour detection cycles.",
+          "date": "2025 – Present",
+          "summary": "",
+          "keywords": [],
+          "url": {
+            "label": "ts-policy-watcher.vercel.app",
+            "href": "https://ts-policy-watcher.vercel.app/"
+          }
+        },
+        {
+          "id": "prj3",
+          "visible": true,
           "name": "DebtCat (Founder/Builder)",
           "description": "Independently developed and launched an AI powered consumer debt rights platform (Next.js, OpenAI API, Stripe, PostGrid) featuring an educational chatbot and automated dispute letter generation. Demonstrates end to end product creation for a real user need.",
           "date": "2023 – Present",
@@ -214,19 +227,6 @@
           "url": {
             "label": "debtcat.com",
             "href": "https://debtcat.com"
-          }
-        },
-        {
-          "id": "prj2",
-          "visible": true,
-          "name": "FindMe.pet (Founder/Builder)",
-          "description": "Launched an AI pet adoption matching platform (Next.js, Petfinder API, OpenAI API) designed to reduce shelter return rates by analyzing lifestyle compatibility. Showcases AI application to solve a passion driven problem.",
-          "date": "2024 – Present",
-          "summary": "",
-          "keywords": [],
-          "url": {
-            "label": "findme.pet",
-            "href": "https://FindMe.pet"
           }
         }
       ]
