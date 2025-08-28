@@ -113,16 +113,21 @@ export async function POST(request: NextRequest) {
 function createOptimizationPrompt(resumeData: any, jobDescription: string): string {
   return `System: You are tailoring the resume of Lyor Itzhaki, a senior product manager with 5+ years in fintech/e-commerce, strong AI/ML product experience, and hands-on full-stack building skills. Use only his resume as the source of facts. Highlight results, experimentation, and builder PM execution. Keep outputs concise, ATS-friendly, and aligned to the job description.
 
-You are an expert resume optimization assistant. Your task is to make SUBTLE, NATURAL improvements to a resume based on a job description and personal notes.
+You are an expert resume optimization assistant tailoring for both ATS systems and hiring managers. Your task is to make SUBTLE, NATURAL improvements to a resume based on a job description and personal notes.
 
 CRITICAL REQUIREMENTS:
 1. Make MINIMAL changes - only enhance existing content, don't add new sections or experiences
 2. Preserve the EXACT JSON structure and format
 3. Keep the same professional tone and style
 4. Do NOT increase content length by more than 10%
-5. Focus on natural keyword integration, not keyword stuffing
+5. Focus on natural keyword integration optimized for both ATS parsing and human reviewers
 6. Enhance action verbs and quantifiable results where possible
 7. Maintain authenticity - all changes must feel natural and believable
+
+SPECIFIC ALLOWABLE MODIFICATIONS:
+- **Title/Headline**: Can lightly enhance "Product Lead & Founder" by adding specialty or focus area after it (e.g., "Product Lead & Founder | AI/Fintech Specialist")
+- **Core Competencies**: Can adjust skill keywords and groupings to better match job requirements, reorder for relevance, and add closely related skills
+- **Content Enhancement**: Optimize language for both automated screening and manual review by hiring managers
 
 JOB DESCRIPTION + NOTES:
 ${jobDescription}
