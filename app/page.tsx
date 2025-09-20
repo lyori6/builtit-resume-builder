@@ -1,6 +1,7 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
+import DOMPurify from 'dompurify'
 import { Download, Mail, Phone, MapPin, Globe, Linkedin, ChevronDown, ChevronUp, Upload, Check, AlertCircle, Sparkles, Loader2 } from 'lucide-react'
 import { validateResumeJSON, ResumeData } from '@/lib/resume-types'
 
@@ -9,6 +10,174 @@ interface ResumeOption {
   name: string
   filename: string
 }
+
+interface DiffItem {
+  path: string[]
+  before: string
+  after: string
+}
+
+const segmentLabelMap: Record<string, string> = {
+  basics: 'Basics',
+  customFields: 'Custom Field',
+  profiles: 'Profile',
+  url: 'Link',
+  headline: 'Headline',
+  email: 'Email',
+  phone: 'Phone',
+  location: 'Location',
+  summary: 'Summary',
+  experience: 'Experience',
+  projects: 'Projects',
+  skills: 'Skills',
+  education: 'Education',
+  awards: 'Awards',
+  certifications: 'Certifications',
+  volunteer: 'Volunteer',
+  interests: 'Interests',
+  languages: 'Languages',
+  items: 'Entry',
+  keywords: 'Keywords',
+  company: 'Company',
+  position: 'Role',
+  description: 'Description',
+  content: 'Content',
+  name: 'Name',
+  value: 'Value',
+  date: 'Date',
+  summaryText: 'Summary',
+  studyType: 'Study Type',
+  institution: 'Institution',
+  locationText: 'Location',
+  score: 'Score',
+  headlineText: 'Headline'
+}
+
+const startCase = (value: string) =>
+  value
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+    .replace(/[-_]/g, ' ')
+    .replace(/\b\w/g, (char) => char.toUpperCase())
+
+const formatSegment = (segment: string) => {
+  const arrayMatch = segment.match(/^(.*)\[(\d+)\]$/)
+  if (arrayMatch) {
+    const base = arrayMatch[1]
+    const index = Number(arrayMatch[2])
+    const baseLabel = segmentLabelMap[base] || startCase(base)
+    return `${baseLabel} ${index + 1}`
+  }
+
+  return segmentLabelMap[segment] || startCase(segment)
+}
+
+const createPathLabel = (path: string[]) => {
+  const filteredPath = path.filter((segment) => segment !== 'sections')
+  return filteredPath.map(formatSegment).join(' › ')
+}
+
+const isPrimitiveValue = (value: unknown) =>
+  value === null || ['string', 'number', 'boolean'].includes(typeof value)
+
+const primitiveArraysEqual = (a: unknown[], b: unknown[]) => {
+  if (a.length !== b.length) return false
+  for (let i = 0; i < a.length; i += 1) {
+    if (a[i] !== b[i]) {
+      return false
+    }
+  }
+  return true
+}
+
+const toDisplayString = (value: unknown) => {
+  if (value === null || value === undefined) return '—'
+  if (Array.isArray(value)) return value.map((entry) => `${entry}`).join(', ')
+  if (typeof value === 'string') return value
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value)
+  return JSON.stringify(value)
+}
+
+const isPlainObject = (value: unknown): value is Record<string, unknown> =>
+  !!value && typeof value === 'object' && !Array.isArray(value)
+
+const collectDiffs = (before: any, after: any, path: string[] = [], diffs: DiffItem[] = []) => {
+  if (before === undefined && after === undefined) {
+    return diffs
+  }
+
+  if (before === undefined || after === undefined) {
+    diffs.push({
+      path,
+      before: toDisplayString(before),
+      after: toDisplayString(after)
+    })
+    return diffs
+  }
+
+  if (typeof before === 'string' && typeof after === 'string') {
+    if (before !== after) {
+      diffs.push({ path, before, after })
+    }
+    return diffs
+  }
+
+  if (Array.isArray(before) && Array.isArray(after)) {
+    const primitives = before.every(isPrimitiveValue) && after.every(isPrimitiveValue)
+    if (primitives) {
+      if (!primitiveArraysEqual(before, after)) {
+        diffs.push({ path, before: toDisplayString(before), after: toDisplayString(after) })
+      }
+      return diffs
+    }
+
+    const arrayKey = path[path.length - 1] || 'items'
+    const parentPath = path.slice(0, -1)
+    const maxLength = Math.max(before.length, after.length)
+
+    for (let i = 0; i < maxLength; i += 1) {
+      const beforeItem = before[i]
+      const afterItem = after[i]
+      const elementPath = [...parentPath, `${arrayKey}[${i}]`]
+
+      if (beforeItem === undefined || afterItem === undefined) {
+        diffs.push({
+          path: elementPath,
+          before: toDisplayString(beforeItem),
+          after: toDisplayString(afterItem)
+        })
+        continue
+      }
+
+      collectDiffs(beforeItem, afterItem, elementPath, diffs)
+    }
+
+    return diffs
+  }
+
+  if (isPlainObject(before) && isPlainObject(after)) {
+    const keys = new Set([...Object.keys(before), ...Object.keys(after)])
+    keys.forEach((key) => {
+      collectDiffs((before as any)[key], (after as any)[key], [...path, key], diffs)
+    })
+    return diffs
+  }
+
+  if (before !== after) {
+    diffs.push({ path, before: toDisplayString(before), after: toDisplayString(after) })
+  }
+
+  return diffs
+}
+
+const buildResumeDiff = (before: ResumeData | null, after: ResumeData | null): DiffItem[] => {
+  if (!before || !after) return []
+  return collectDiffs(before, after)
+}
+
+const cloneResumeData = (data: ResumeData): ResumeData =>
+  JSON.parse(JSON.stringify(data))
+
+const MAX_DIFF_ITEMS = 50
 
 const ResumeGenerator = () => {
   const [resumeData, setResumeData] = useState<any>(null)
@@ -26,7 +195,7 @@ const ResumeGenerator = () => {
   const [jobDescription, setJobDescription] = useState<string>('')
   const [isOptimizing, setIsOptimizing] = useState(false)
   const [optimizationError, setOptimizationError] = useState<string | null>(null)
-  const [originalResume, setOriginalResume] = useState<any>(null)
+  const [originalResume, setOriginalResume] = useState<ResumeData | null>(null)
   const [optimizationSuccess, setOptimizationSuccess] = useState(false)
 
   // JSON paste section collapsible state
@@ -37,6 +206,22 @@ const ResumeGenerator = () => {
   const [isAdjusting, setIsAdjusting] = useState(false)
   const [adjustmentError, setAdjustmentError] = useState<string | null>(null)
   const [adjustmentSuccess, setAdjustmentSuccess] = useState(false)
+  const [showDiff, setShowDiff] = useState(false)
+
+  const diffItems = useMemo(
+    () => buildResumeDiff(originalResume, (resumeData as ResumeData | null) ?? null),
+    [originalResume, resumeData]
+  )
+
+  const displayedDiffs = useMemo(() => diffItems.slice(0, MAX_DIFF_ITEMS), [diffItems])
+
+  const hasMoreDiffs = diffItems.length > MAX_DIFF_ITEMS
+
+  useEffect(() => {
+    if (diffItems.length === 0) {
+      setShowDiff(false)
+    }
+  }, [diffItems.length])
 
   useEffect(() => {
     // Load available resumes on component mount
@@ -76,6 +261,10 @@ const ResumeGenerator = () => {
   const fetchResumeData = async (filename: string) => {
     try {
       setLoading(true)
+      setOriginalResume(null)
+      setShowDiff(false)
+      setOptimizationSuccess(false)
+      setAdjustmentSuccess(false)
       const response = await fetch(`/api/resume?filename=${filename}`)
       const data = await response.json()
       setResumeData(data)
@@ -140,6 +329,10 @@ const ResumeGenerator = () => {
       setSelectedResume('custom')
       setCustomResumeLoaded(true)
       setLoading(false)
+      setOriginalResume(null)
+      setShowDiff(false)
+      setOptimizationSuccess(false)
+      setAdjustmentSuccess(false)
     } catch (error) {
       console.error('Error loading custom resume:', error)
     }
@@ -155,6 +348,7 @@ const ResumeGenerator = () => {
     setAdjustmentSuccess(false)
     setFinalAdjustments('')
     setOriginalResume(null)
+    setShowDiff(false)
     sessionStorage.removeItem('customResumeJSON')
 
     // Revert to first available resume
@@ -177,8 +371,8 @@ const ResumeGenerator = () => {
       setOptimizationSuccess(false)
       
       // Store original resume for comparison
-      if (!originalResume) {
-        setOriginalResume(resumeData)
+      if (!originalResume && resumeData) {
+        setOriginalResume(cloneResumeData(resumeData as ResumeData))
       }
       
       const response = await fetch('/api/optimize-resume', {
@@ -201,14 +395,15 @@ const ResumeGenerator = () => {
       if (result.success && result.optimizedResume) {
         // Update resume data with optimized version
         setResumeData(result.optimizedResume)
-        
+
         // Update session storage if this was a custom resume
         if (customResumeLoaded) {
           sessionStorage.setItem('customResumeJSON', JSON.stringify(result.optimizedResume, null, 2))
         }
-        
+
         // Set success state
         setOptimizationSuccess(true)
+        setShowDiff(true)
       }
       
     } catch (error) {
@@ -233,6 +428,7 @@ const ResumeGenerator = () => {
       setOriginalResume(null)
       setOptimizationSuccess(false)
       setAdjustmentSuccess(false)
+      setShowDiff(false)
     }
   }
 
@@ -246,8 +442,8 @@ const ResumeGenerator = () => {
       setAdjustmentSuccess(false)
 
       // Store original resume if not already stored
-      if (!originalResume) {
-        setOriginalResume(resumeData)
+      if (!originalResume && resumeData) {
+        setOriginalResume(cloneResumeData(resumeData as ResumeData))
       }
 
       const response = await fetch('/api/adjust-resume', {
@@ -278,6 +474,7 @@ const ResumeGenerator = () => {
 
         // Set success state
         setAdjustmentSuccess(true)
+        setShowDiff(true)
       }
 
     } catch (error) {
@@ -290,10 +487,14 @@ const ResumeGenerator = () => {
   }
 
   const renderHTMLContent = (htmlContent: string) => {
+    const sanitizedHtml = typeof window !== 'undefined'
+      ? DOMPurify.sanitize(htmlContent)
+      : htmlContent
+
     return (
-      <div 
+      <div
         className="text-gray-700 leading-tight text-xs"
-        dangerouslySetInnerHTML={{ __html: htmlContent }}
+        dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
       />
     )
   }
@@ -317,6 +518,35 @@ const ResumeGenerator = () => {
       )
     }
     return <p className="text-gray-700 leading-tight text-xs">{summary}</p>
+  }
+
+  const renderDiffValue = (value: string) => {
+    const trimmedValue = value?.trim()
+
+    if (!trimmedValue || trimmedValue === '—') {
+      return <p className="text-xs text-gray-500">—</p>
+    }
+
+    const containsHTML = /<[a-z][\s\S]*>/i.test(trimmedValue)
+
+    if (containsHTML) {
+      const sanitizedValue = typeof window !== 'undefined'
+        ? DOMPurify.sanitize(trimmedValue)
+        : trimmedValue
+
+      return (
+        <div
+          className="diff-html text-xs text-gray-700 leading-tight"
+          dangerouslySetInnerHTML={{ __html: sanitizedValue }}
+        />
+      )
+    }
+
+    return (
+      <p className="text-xs text-gray-700 leading-tight whitespace-pre-line">
+        {trimmedValue}
+      </p>
+    )
   }
 
   if ((loading && !customResumeLoaded) || (!resumeData && !customResumeLoaded)) {
@@ -652,6 +882,64 @@ const ResumeGenerator = () => {
                   </button>
                 </div>
               </div>
+            </div>
+          )}
+
+          {diffItems.length > 0 && (
+            <div className="bg-white rounded-lg p-4 border border-blue-200 mt-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h2 className="text-sm font-semibold text-blue-700">AI Changes Preview</h2>
+                  <p className="text-xs text-gray-600 mt-1">
+                    Comparing the current resume to your saved original.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowDiff((prev) => !prev)}
+                  className="self-start px-3 py-1.5 text-xs font-medium text-blue-700 border border-blue-200 rounded hover:bg-blue-50 transition-colors"
+                >
+                  {showDiff ? 'Hide Changes' : `View Changes (${diffItems.length})`}
+                </button>
+              </div>
+
+              {showDiff ? (
+                <div className="mt-3 space-y-3 max-h-64 overflow-y-auto pr-1">
+                  {displayedDiffs.map((item, index) => (
+                    <div
+                      key={`${item.path.join('.')}-${index}`}
+                      className="border border-blue-100 bg-blue-50 rounded-lg p-3 shadow-sm"
+                    >
+                      <div className="text-xs font-semibold uppercase tracking-wide text-blue-800">
+                        {createPathLabel(item.path)}
+                      </div>
+                      <div className="mt-2 grid gap-3 sm:grid-cols-2">
+                        <div>
+                          <p className="text-[11px] font-semibold uppercase text-gray-500">Before</p>
+                          <div className="mt-1 rounded border border-white/70 bg-white/80 p-2">
+                            {renderDiffValue(item.before)}
+                          </div>
+                        </div>
+                        <div>
+                          <p className="text-[11px] font-semibold uppercase text-gray-500">After</p>
+                          <div className="mt-1 rounded border border-white/70 bg-white/80 p-2">
+                            {renderDiffValue(item.after)}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+
+                  {hasMoreDiffs && (
+                    <p className="text-xs text-gray-500">
+                      Showing first {MAX_DIFF_ITEMS} changes. Use JSON export for the full diff.
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <p className="mt-3 text-xs text-gray-600">
+                  Click “View Changes” to review what Gemini updated before you download or export.
+                </p>
+              )}
             </div>
           )}
         </div>
