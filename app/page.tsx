@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Download, Mail, Phone, MapPin, Globe, Linkedin, ChevronDown, Upload, Check, AlertCircle, Sparkles, Loader2 } from 'lucide-react'
+import { Download, Mail, Phone, MapPin, Globe, Linkedin, ChevronDown, ChevronUp, Upload, Check, AlertCircle, Sparkles, Loader2 } from 'lucide-react'
 import { validateResumeJSON, ResumeData } from '@/lib/resume-types'
 
 interface ResumeOption {
@@ -28,6 +28,15 @@ const ResumeGenerator = () => {
   const [optimizationError, setOptimizationError] = useState<string | null>(null)
   const [originalResume, setOriginalResume] = useState<any>(null)
   const [optimizationSuccess, setOptimizationSuccess] = useState(false)
+
+  // JSON paste section collapsible state
+  const [jsonPasteCollapsed, setJsonPasteCollapsed] = useState<boolean>(true)
+
+  // Final adjustments functionality
+  const [finalAdjustments, setFinalAdjustments] = useState<string>('')
+  const [isAdjusting, setIsAdjusting] = useState(false)
+  const [adjustmentError, setAdjustmentError] = useState<string | null>(null)
+  const [adjustmentSuccess, setAdjustmentSuccess] = useState(false)
 
   useEffect(() => {
     // Load available resumes on component mount
@@ -143,13 +152,17 @@ const ResumeGenerator = () => {
     setJsonErrors([])
     setCustomResumeLoaded(false)
     setOptimizationSuccess(false)
+    setAdjustmentSuccess(false)
+    setFinalAdjustments('')
+    setOriginalResume(null)
     sessionStorage.removeItem('customResumeJSON')
-    
+
     // Revert to first available resume
     if (availableResumes.length > 0) {
       const defaultResume = availableResumes.find((r: ResumeOption) => r.id === 'current') || availableResumes[0]
       if (defaultResume) {
         setSelectedResume(defaultResume.filename)
+        // This will trigger fetchResumeData via useEffect
       }
     }
   }
@@ -211,14 +224,68 @@ const ResumeGenerator = () => {
   const revertToOriginal = () => {
     if (originalResume) {
       setResumeData(originalResume)
-      
+
       // Update session storage if this was a custom resume
       if (customResumeLoaded) {
         sessionStorage.setItem('customResumeJSON', JSON.stringify(originalResume, null, 2))
       }
-      
+
       setOriginalResume(null)
       setOptimizationSuccess(false)
+      setAdjustmentSuccess(false)
+    }
+  }
+
+  // Apply final adjustments with Gemini Flash
+  const applyFinalAdjustments = async () => {
+    if (!resumeData || !finalAdjustments.trim()) return
+
+    try {
+      setIsAdjusting(true)
+      setAdjustmentError(null)
+      setAdjustmentSuccess(false)
+
+      // Store original resume if not already stored
+      if (!originalResume) {
+        setOriginalResume(resumeData)
+      }
+
+      const response = await fetch('/api/adjust-resume', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          resumeData,
+          adjustmentInstructions: finalAdjustments
+        })
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Adjustment failed')
+      }
+
+      if (result.success && result.adjustedResume) {
+        // Update resume data with adjusted version
+        setResumeData(result.adjustedResume)
+
+        // Update session storage if this was a custom resume
+        if (customResumeLoaded) {
+          sessionStorage.setItem('customResumeJSON', JSON.stringify(result.adjustedResume, null, 2))
+        }
+
+        // Set success state
+        setAdjustmentSuccess(true)
+      }
+
+    } catch (error) {
+      console.error('Adjustment error:', error)
+      setAdjustmentError(error instanceof Error ? error.message : 'Adjustment failed')
+      setAdjustmentSuccess(false)
+    } finally {
+      setIsAdjusting(false)
     }
   }
 
@@ -376,10 +443,14 @@ const ResumeGenerator = () => {
           {/* Paste JSON Section */}
           <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+              <button
+                onClick={() => setJsonPasteCollapsed(!jsonPasteCollapsed)}
+                className="flex items-center gap-2 text-sm font-semibold text-gray-700 hover:text-gray-900 transition-colors"
+              >
                 <Upload size={16} />
                 Paste Resume JSON
-              </h2>
+                {jsonPasteCollapsed ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
+              </button>
               {customResumeLoaded && (
                 <button
                   onClick={clearCustomResume}
@@ -389,8 +460,9 @@ const ResumeGenerator = () => {
                 </button>
               )}
             </div>
-            
-            <div className="space-y-3">
+
+            {!jsonPasteCollapsed && (
+              <div className="space-y-3">
               <textarea
                 value={pastedJSON}
                 onChange={(e) => handleJSONPaste(e.target.value)}
@@ -434,7 +506,8 @@ const ResumeGenerator = () => {
                   )}
                 </div>
               )}
-            </div>
+              </div>
+            )}
           </div>
           
           {/* AI Optimization Section */}
@@ -458,12 +531,12 @@ const ResumeGenerator = () => {
               <div className="space-y-3">
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">
-                    Job Description + Personal Notes
+                    Job Description
                   </label>
                   <textarea
                     value={jobDescription}
                     onChange={(e) => setJobDescription(e.target.value)}
-                    placeholder="Paste job description here...\n\nPersonal Notes:\n- Emphasize specific experience\n- Highlight particular skills\n- Focus on relevant projects"
+                    placeholder="Paste job description here..."
                     className="w-full h-32 px-3 py-2 text-xs border border-blue-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                     spellCheck={false}
                   />
@@ -504,6 +577,76 @@ const ResumeGenerator = () => {
                       <>
                         <Sparkles size={14} />
                         Optimize Resume
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Final Adjustments Section */}
+          {(resumeData || customResumeLoaded) && (
+            <div className="bg-green-50 rounded-lg p-4 border border-green-200 mt-4">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-sm font-semibold text-green-700 flex items-center gap-2">
+                  <Sparkles size={16} />
+                  Final Adjustments
+                </h2>
+                <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded">
+                  Powered by Gemini 2.5 Flash
+                </span>
+              </div>
+
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                    Quick Adjustments
+                  </label>
+                  <textarea
+                    value={finalAdjustments}
+                    onChange={(e) => setFinalAdjustments(e.target.value)}
+                    placeholder="Make it shorter, remove certain sections, emphasize specific skills, etc..."
+                    className="w-full h-24 px-3 py-2 text-xs border border-green-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+                    spellCheck={false}
+                  />
+                </div>
+
+                {/* Adjustment Status and Button */}
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    {adjustmentError && (
+                      <div className="flex items-start gap-2 text-red-600 text-xs mb-2">
+                        <AlertCircle size={14} className="mt-0.5 flex-shrink-0" />
+                        <div>
+                          <div className="font-medium">Adjustment failed:</div>
+                          <div>{adjustmentError}</div>
+                        </div>
+                      </div>
+                    )}
+
+                    {adjustmentSuccess && !isAdjusting && (
+                      <div className="flex items-center gap-1 text-green-600 text-xs">
+                        <Check size={14} />
+                        <span>Adjustments applied! Generate PDF to see changes.</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <button
+                    onClick={applyFinalAdjustments}
+                    disabled={isAdjusting || !finalAdjustments.trim() || !resumeData}
+                    className="px-4 py-2 text-xs font-medium bg-green-600 text-white rounded hover:bg-green-700 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  >
+                    {isAdjusting ? (
+                      <>
+                        <Loader2 size={14} className="animate-spin" />
+                        Adjusting...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles size={14} />
+                        Apply Adjustments
                       </>
                     )}
                   </button>

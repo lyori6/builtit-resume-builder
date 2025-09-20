@@ -34,8 +34,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Initialize Gemini 2.0 Flash model
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' })
+    // Initialize Gemini 2.5 Pro model
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-pro' })
 
     // Create sophisticated optimization prompt
     const prompt = createOptimizationPrompt(resumeData, jobDescription)
