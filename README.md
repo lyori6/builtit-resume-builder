@@ -8,6 +8,7 @@ A dynamic, modern resume generator built with Next.js that supports multiple res
 - **Dynamic Loading**: Select and load different resumes on-the-fly
 - **PDF Generation**: Print-optimized PDF output with proper formatting
 - **JSON Export**: Export any resume version as JSON
+- **Prompt Overrides**: Customize Gemini system prompts locally to fine-tune AI behavior
 - **Responsive Design**: Clean, professional layout that works on all devices
 - **Modern UI**: Built with Tailwind CSS for a polished experience
 
@@ -62,6 +63,17 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) to view the resume generator.
 
+### Gemini API Key Setup
+
+The public tool expects each user to bring a free Gemini API key. The key is saved only in the browser and never sent to the server.
+
+1. Visit [AI Studio](https://aistudio.google.com/app/apikey) and create an API key.
+2. In the app, open the **Connect your Gemini API key** card and paste the key.
+3. Click **Save key** – the app validates the key and unlocks optimization features.
+
+See [`docs/gemini-key-setup.md`](docs/gemini-key-setup.md) for screenshots, deletion instructions, and troubleshooting tips.
+See [`docs/storage-and-privacy.md`](docs/storage-and-privacy.md) to understand what data stays local.
+
 ### Build for Production
 
 ```bash
@@ -70,6 +82,12 @@ npm start
 ```
 
 ## Managing Resume Versions
+
+If you don’t already have a JSON resume, the app’s onboarding screen lets you:
+- Paste existing JSON (generated via ChatGPT, Gemini, Claude, etc.) for validation.
+- Paste plain text from your current resume and convert it to JSON using your Gemini key.
+
+Need a template? Check [`docs/resume-json-template.md`](docs/resume-json-template.md) for a schema example and a ready-to-use AI prompt.
 
 ### Adding a New Resume
 
@@ -194,6 +212,12 @@ The resume is optimized for PDF generation with:
 - Proper page break handling
 - Optimized margins and spacing
 - Hidden UI elements during printing
+
+### Prompt Settings
+
+- Open the **Prompt settings** button in the control bar to edit the system prompts used for text conversion, optimization, and adjustments.
+- Changes are stored in your browser via `localStorage`; reset restores the defaults from `lib/prompts.ts`.
+- Prompt overrides are sent with every Gemini request, letting you fine-tune tone and constraints without changing the codebase.
 
 ## Contributing
 

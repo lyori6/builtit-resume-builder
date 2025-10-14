@@ -1,9 +1,36 @@
 'use client'
 
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useRef } from 'react'
 import DOMPurify from 'dompurify'
-import { Download, Mail, Phone, MapPin, Globe, Linkedin, ChevronDown, ChevronUp, Upload, Check, AlertCircle, Sparkles, Loader2 } from 'lucide-react'
+import {
+  Download,
+  Mail,
+  Phone,
+  MapPin,
+  Globe,
+  Linkedin,
+  ChevronDown,
+  ChevronUp,
+  Upload,
+  Check,
+  AlertCircle,
+  Sparkles,
+  Loader2,
+  Key,
+  Info,
+  Trash2,
+  Code,
+  FileText,
+  RotateCcw,
+  X
+} from 'lucide-react'
 import { validateResumeJSON, ResumeData } from '@/lib/resume-types'
+import { storage } from '@/lib/local-storage'
+import {
+  DEFAULT_OPTIMIZATION_SYSTEM_PROMPT,
+  DEFAULT_ADJUSTMENT_SYSTEM_PROMPT,
+  DEFAULT_TEXT_CONVERSION_SYSTEM_PROMPT
+} from '@/lib/prompts'
 
 interface ResumeOption {
   id: string
@@ -178,6 +205,7 @@ const cloneResumeData = (data: ResumeData): ResumeData =>
   JSON.parse(JSON.stringify(data))
 
 const MAX_DIFF_ITEMS = 50
+const GEMINI_KEY_HELP_URL = 'https://aistudio.google.com/app/apikey'
 
 const ResumeGenerator = () => {
   const [resumeData, setResumeData] = useState<any>(null)
@@ -190,6 +218,11 @@ const ResumeGenerator = () => {
   const [isJSONValid, setIsJSONValid] = useState<boolean | null>(null)
   const [jsonErrors, setJsonErrors] = useState<string[]>([])
   const [customResumeLoaded, setCustomResumeLoaded] = useState(false)
+  const customResumeLoadedRef = useRef(false)
+  const [intakeMode, setIntakeMode] = useState<'json' | 'text'>('json')
+  const [rawResumeText, setRawResumeText] = useState('')
+  const [isConvertingText, setIsConvertingText] = useState(false)
+  const [textConversionError, setTextConversionError] = useState<string | null>(null)
   
   // Job description optimization functionality
   const [jobDescription, setJobDescription] = useState<string>('')
@@ -207,6 +240,36 @@ const ResumeGenerator = () => {
   const [adjustmentError, setAdjustmentError] = useState<string | null>(null)
   const [adjustmentSuccess, setAdjustmentSuccess] = useState(false)
   const [showDiff, setShowDiff] = useState(false)
+  const [storedGeminiKey, setStoredGeminiKey] = useState<string | null>(null)
+  const [geminiKeyInput, setGeminiKeyInput] = useState('')
+  const [isValidatingKey, setIsValidatingKey] = useState(false)
+  const [geminiKeyStatus, setGeminiKeyStatus] = useState<'idle' | 'success' | 'error'>('idle')
+  const [geminiKeyError, setGeminiKeyError] = useState<string | null>(null)
+  const [systemPrompt, setSystemPrompt] = useState(DEFAULT_OPTIMIZATION_SYSTEM_PROMPT)
+  const [adjustmentPrompt, setAdjustmentPrompt] = useState(DEFAULT_ADJUSTMENT_SYSTEM_PROMPT)
+  const [conversionPrompt, setConversionPrompt] = useState(DEFAULT_TEXT_CONVERSION_SYSTEM_PROMPT)
+  const [draftSystemPrompt, setDraftSystemPrompt] = useState(DEFAULT_OPTIMIZATION_SYSTEM_PROMPT)
+  const [draftAdjustmentPrompt, setDraftAdjustmentPrompt] = useState(DEFAULT_ADJUSTMENT_SYSTEM_PROMPT)
+  const [draftConversionPrompt, setDraftConversionPrompt] = useState(DEFAULT_TEXT_CONVERSION_SYSTEM_PROMPT)
+  const [showPromptSettings, setShowPromptSettings] = useState(false)
+  const [promptSaveState, setPromptSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
+  const [promptError, setPromptError] = useState<string | null>(null)
+
+  const downloadJSONFile = (jsonString: string, filename: string) => {
+    try {
+      const blob = new Blob([jsonString], { type: 'application/json;charset=utf-8' })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = filename
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error('Failed to download JSON file:', error)
+    }
+  }
 
   const diffItems = useMemo(
     () => buildResumeDiff(originalResume, (resumeData as ResumeData | null) ?? null),
@@ -224,38 +287,93 @@ const ResumeGenerator = () => {
   }, [diffItems.length])
 
   useEffect(() => {
-    // Load available resumes on component mount
-    fetchAvailableResumes()
-    
-    // Check for saved custom resume
-    const savedJSON = sessionStorage.getItem('customResumeJSON')
-    if (savedJSON) {
-      handleJSONPaste(savedJSON)
+    const key = storage.getGeminiApiKey()
+    if (key) {
+      setStoredGeminiKey(key)
+      setGeminiKeyStatus('success')
+    }
+
+    const savedPrompts = storage.getPrompts()
+    if (savedPrompts.systemPrompt && savedPrompts.systemPrompt.trim().length > 0) {
+      setSystemPrompt(savedPrompts.systemPrompt)
+      setDraftSystemPrompt(savedPrompts.systemPrompt)
+    }
+    if (savedPrompts.adjustmentPrompt && savedPrompts.adjustmentPrompt.trim().length > 0) {
+      setAdjustmentPrompt(savedPrompts.adjustmentPrompt)
+      setDraftAdjustmentPrompt(savedPrompts.adjustmentPrompt)
+    }
+    if (savedPrompts.conversionPrompt && savedPrompts.conversionPrompt.trim().length > 0) {
+      setConversionPrompt(savedPrompts.conversionPrompt)
+      setDraftConversionPrompt(savedPrompts.conversionPrompt)
     }
   }, [])
+
+  useEffect(() => {
+    if (showPromptSettings) {
+      setDraftSystemPrompt(systemPrompt)
+      setDraftAdjustmentPrompt(adjustmentPrompt)
+      setDraftConversionPrompt(conversionPrompt)
+      setPromptSaveState('idle')
+      setPromptError(null)
+    }
+  }, [showPromptSettings, systemPrompt, adjustmentPrompt, conversionPrompt])
+
+  useEffect(() => {
+    const savedResumeJSON = storage.getResume('custom')
+    if (savedResumeJSON) {
+      setPastedJSON(savedResumeJSON)
+      try {
+        const parsed = JSON.parse(savedResumeJSON)
+        setResumeData(parsed)
+        setIsJSONValid(true)
+        setJsonErrors([])
+        setCustomResumeLoaded(true)
+        customResumeLoadedRef.current = true
+        setSelectedResume('custom')
+        setLoading(false)
+      } catch (error) {
+        console.error('Failed to parse saved custom resume:', error)
+        setIsJSONValid(false)
+        setJsonErrors(['Stored custom resume is invalid JSON. Please reload or clear it.'])
+        setLoading(false)
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    // Load available resumes on component mount
+    fetchAvailableResumes()
+  }, [])
+
+  useEffect(() => {
+    if (customResumeLoaded) {
+      setSelectedResume('custom')
+    }
+  }, [customResumeLoaded])
 
   useEffect(() => {
     // Load selected resume data when selection changes
     if (selectedResume && selectedResume !== 'custom') {
       fetchResumeData(selectedResume)
       setCustomResumeLoaded(false)
+      customResumeLoadedRef.current = false
     }
   }, [selectedResume])
 
   const fetchAvailableResumes = async () => {
     try {
       const response = await fetch('/api/resume')
-      const resumes = await response.json()
-      setAvailableResumes(resumes)
-      
-      // Auto-select the first resume (current.json if available)
-      const defaultResume = resumes.find((r: ResumeOption) => r.id === 'current') || resumes[0]
-      if (defaultResume) {
-        setSelectedResume(defaultResume.filename)
-      }
-    } catch (error) {
-      console.error('Error fetching available resumes:', error)
+    const resumes = await response.json()
+    setAvailableResumes(resumes)
+    
+    // Auto-select the first resume (current.json if available)
+    const defaultResume = resumes.find((r: ResumeOption) => r.id === 'current') || resumes[0]
+    if (defaultResume && !customResumeLoadedRef.current) {
+      setSelectedResume(defaultResume.filename)
     }
+  } catch (error) {
+    console.error('Error fetching available resumes:', error)
+  }
   }
 
   const fetchResumeData = async (filename: string) => {
@@ -282,14 +400,136 @@ const ResumeGenerator = () => {
 
   const exportJSON = () => {
     if (!resumeData) return
-    
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(resumeData, null, 2))
-    const dlAnchor = document.createElement('a')
-    dlAnchor.setAttribute("href", dataStr)
-    dlAnchor.setAttribute("download", selectedResume || "CV.json")
-    document.body.appendChild(dlAnchor)
-    dlAnchor.click()
-    dlAnchor.remove()
+
+    downloadJSONFile(JSON.stringify(resumeData, null, 2), selectedResume || 'resume.json')
+  }
+
+  const handleSaveGeminiKey = async () => {
+    const trimmedKey = geminiKeyInput.trim()
+    if (!trimmedKey) {
+      setGeminiKeyError('Enter your Gemini API key before saving.')
+      setGeminiKeyStatus('error')
+      return false
+    }
+
+    try {
+      setIsValidatingKey(true)
+      setGeminiKeyError(null)
+      setGeminiKeyStatus('idle')
+
+      const response = await fetch('/api/check-key', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ apiKey: trimmedKey })
+      })
+
+      if (!response.ok) {
+        const result = await response.json().catch(() => ({}))
+        const message =
+          typeof result.error === 'string'
+            ? result.error
+            : 'Unable to validate Gemini key. Double-check the value and try again.'
+        throw new Error(message)
+      }
+
+      storage.saveGeminiApiKey(trimmedKey)
+      setStoredGeminiKey(trimmedKey)
+      setGeminiKeyStatus('success')
+      setGeminiKeyInput('')
+      return true
+    } catch (error) {
+      console.error('Gemini key validation error:', error)
+      setGeminiKeyStatus('error')
+      setGeminiKeyError(
+        error instanceof Error
+          ? error.message
+          : 'Unable to validate Gemini key. Double-check the value and try again.'
+      )
+      return false
+    } finally {
+      setIsValidatingKey(false)
+    }
+  }
+
+  const handleDeleteGeminiKey = () => {
+    storage.removeGeminiApiKey()
+    setStoredGeminiKey(null)
+    setGeminiKeyInput('')
+    setGeminiKeyStatus('idle')
+    setGeminiKeyError(null)
+  }
+
+  const handleSavePrompts = () => {
+    try {
+      setPromptSaveState('saving')
+      setPromptError(null)
+      storage.savePrompts({
+        systemPrompt: draftSystemPrompt,
+        adjustmentPrompt: draftAdjustmentPrompt,
+        conversionPrompt: draftConversionPrompt
+      })
+      setSystemPrompt(draftSystemPrompt)
+      setAdjustmentPrompt(draftAdjustmentPrompt)
+      setConversionPrompt(draftConversionPrompt)
+      setPromptSaveState('saved')
+      setTimeout(() => setPromptSaveState('idle'), 2000)
+    } catch (error) {
+      console.error('Failed to save prompts:', error)
+      setPromptSaveState('error')
+      setPromptError('Unable to save prompts locally. Try again.')
+    }
+  }
+
+  const handleResetPrompts = () => {
+    setDraftSystemPrompt(DEFAULT_OPTIMIZATION_SYSTEM_PROMPT)
+    setDraftAdjustmentPrompt(DEFAULT_ADJUSTMENT_SYSTEM_PROMPT)
+    setDraftConversionPrompt(DEFAULT_TEXT_CONVERSION_SYSTEM_PROMPT)
+    setSystemPrompt(DEFAULT_OPTIMIZATION_SYSTEM_PROMPT)
+    setAdjustmentPrompt(DEFAULT_ADJUSTMENT_SYSTEM_PROMPT)
+    setConversionPrompt(DEFAULT_TEXT_CONVERSION_SYSTEM_PROMPT)
+    storage.savePrompts({
+      systemPrompt: DEFAULT_OPTIMIZATION_SYSTEM_PROMPT,
+      adjustmentPrompt: DEFAULT_ADJUSTMENT_SYSTEM_PROMPT,
+      conversionPrompt: DEFAULT_TEXT_CONVERSION_SYSTEM_PROMPT
+    })
+    setPromptSaveState('saved')
+    setPromptError(null)
+    setTimeout(() => setPromptSaveState('idle'), 2000)
+  }
+
+  const clearWorkspace = () => {
+    storage.clearAll()
+    handleDeleteGeminiKey()
+
+    setRawResumeText('')
+    setTextConversionError(null)
+    setIntakeMode('json')
+    setPastedJSON('')
+    setIsJSONValid(null)
+    setJsonErrors([])
+    setCustomResumeLoaded(false)
+    customResumeLoadedRef.current = false
+    setResumeData(null)
+    setOriginalResume(null)
+    setOptimizationSuccess(false)
+    setAdjustmentSuccess(false)
+    setFinalAdjustments('')
+    setShowDiff(false)
+    setSystemPrompt(DEFAULT_OPTIMIZATION_SYSTEM_PROMPT)
+    setAdjustmentPrompt(DEFAULT_ADJUSTMENT_SYSTEM_PROMPT)
+    setConversionPrompt(DEFAULT_TEXT_CONVERSION_SYSTEM_PROMPT)
+    setDraftSystemPrompt(DEFAULT_OPTIMIZATION_SYSTEM_PROMPT)
+    setDraftAdjustmentPrompt(DEFAULT_ADJUSTMENT_SYSTEM_PROMPT)
+    setDraftConversionPrompt(DEFAULT_TEXT_CONVERSION_SYSTEM_PROMPT)
+    setPromptSaveState('idle')
+    setPromptError(null)
+    setShowPromptSettings(false)
+    setSelectedResume('')
+    setLoading(true)
+
+    void fetchAvailableResumes()
   }
 
   // Handle paste JSON validation
@@ -308,11 +548,6 @@ const ResumeGenerator = () => {
       
       setIsJSONValid(validation.isValid)
       setJsonErrors(validation.errors)
-      
-      // Store in sessionStorage
-      if (validation.isValid) {
-        sessionStorage.setItem('customResumeJSON', value)
-      }
     } catch (error) {
       setIsJSONValid(false)
       setJsonErrors(['Invalid JSON format. Please check your syntax.'])
@@ -328,14 +563,22 @@ const ResumeGenerator = () => {
       setResumeData(parsed)
       setSelectedResume('custom')
       setCustomResumeLoaded(true)
+      customResumeLoadedRef.current = true
       setLoading(false)
       setOriginalResume(null)
       setShowDiff(false)
       setOptimizationSuccess(false)
       setAdjustmentSuccess(false)
+      storage.saveResume('custom', JSON.stringify(parsed, null, 2))
+      setIntakeMode('json')
     } catch (error) {
       console.error('Error loading custom resume:', error)
     }
+  }
+
+  const downloadPastedJSON = () => {
+    if (!pastedJSON.trim()) return
+    downloadJSONFile(pastedJSON, 'resume.json')
   }
 
   // Clear custom resume
@@ -343,13 +586,19 @@ const ResumeGenerator = () => {
     setPastedJSON('')
     setIsJSONValid(null)
     setJsonErrors([])
+    setResumeData(null)
     setCustomResumeLoaded(false)
+    customResumeLoadedRef.current = false
     setOptimizationSuccess(false)
     setAdjustmentSuccess(false)
     setFinalAdjustments('')
     setOriginalResume(null)
     setShowDiff(false)
-    sessionStorage.removeItem('customResumeJSON')
+    storage.removeResume('custom')
+    setLoading(true)
+    setIntakeMode('json')
+    setRawResumeText('')
+    setTextConversionError(null)
 
     // Revert to first available resume
     if (availableResumes.length > 0) {
@@ -361,9 +610,82 @@ const ResumeGenerator = () => {
     }
   }
 
+  const convertTextToResume = async () => {
+    if (!rawResumeText.trim()) {
+      setTextConversionError('Paste your resume text before converting.')
+      return
+    }
+    if (!storedGeminiKey) {
+      setTextConversionError('Add your Gemini API key to convert resume text.')
+      return
+    }
+
+    try {
+      setIsConvertingText(true)
+      setTextConversionError(null)
+
+      const response = await fetch('/api/convert-resume', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-gemini-api-key': storedGeminiKey
+        },
+        body: JSON.stringify({
+          resumeText: rawResumeText,
+          apiKey: storedGeminiKey,
+          promptOverrides: {
+            systemPrompt: conversionPrompt
+          }
+        })
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Conversion failed')
+      }
+
+      if (result.success && result.resume) {
+        const serialized = JSON.stringify(result.resume, null, 2)
+
+        const validation = validateResumeJSON(result.resume)
+        if (!validation.isValid) {
+          throw new Error(
+            `Converted resume is missing required fields:\n${validation.errors.join('\n')}`
+          )
+        }
+
+        setResumeData(result.resume)
+        setPastedJSON(serialized)
+        setIsJSONValid(true)
+        setJsonErrors([])
+        setCustomResumeLoaded(true)
+        customResumeLoadedRef.current = true
+        setSelectedResume('custom')
+        setLoading(false)
+        setOriginalResume(null)
+        setShowDiff(false)
+        setOptimizationSuccess(false)
+        setAdjustmentSuccess(false)
+        storage.saveResume('custom', serialized)
+      }
+    } catch (error) {
+      console.error('Text conversion error:', error)
+      setTextConversionError(
+        error instanceof Error ? error.message : 'Unable to convert resume text.'
+      )
+    } finally {
+      setIsConvertingText(false)
+    }
+  }
+
   // Optimize resume with Gemini
   const optimizeResume = async () => {
     if (!resumeData || !jobDescription.trim()) return
+    if (!storedGeminiKey) {
+      setOptimizationError('Add your Gemini API key to run optimization.')
+      return
+    }
     
     try {
       setIsOptimizing(true)
@@ -379,10 +701,15 @@ const ResumeGenerator = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-gemini-api-key': storedGeminiKey
         },
         body: JSON.stringify({
           resumeData,
-          jobDescription
+          jobDescription,
+          apiKey: storedGeminiKey,
+          promptOverrides: {
+            systemPrompt
+          }
         })
       })
       
@@ -397,8 +724,8 @@ const ResumeGenerator = () => {
         setResumeData(result.optimizedResume)
 
         // Update session storage if this was a custom resume
-        if (customResumeLoaded) {
-          sessionStorage.setItem('customResumeJSON', JSON.stringify(result.optimizedResume, null, 2))
+        if (customResumeLoadedRef.current || selectedResume === 'custom') {
+          storage.saveResume('custom', JSON.stringify(result.optimizedResume, null, 2))
         }
 
         // Set success state
@@ -421,8 +748,8 @@ const ResumeGenerator = () => {
       setResumeData(originalResume)
 
       // Update session storage if this was a custom resume
-      if (customResumeLoaded) {
-        sessionStorage.setItem('customResumeJSON', JSON.stringify(originalResume, null, 2))
+      if (customResumeLoadedRef.current || selectedResume === 'custom') {
+        storage.saveResume('custom', JSON.stringify(originalResume, null, 2))
       }
 
       setOriginalResume(null)
@@ -435,6 +762,10 @@ const ResumeGenerator = () => {
   // Apply final adjustments with Gemini Flash
   const applyFinalAdjustments = async () => {
     if (!resumeData || !finalAdjustments.trim()) return
+    if (!storedGeminiKey) {
+      setAdjustmentError('Add your Gemini API key to apply adjustments.')
+      return
+    }
 
     try {
       setIsAdjusting(true)
@@ -450,10 +781,15 @@ const ResumeGenerator = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-gemini-api-key': storedGeminiKey
         },
         body: JSON.stringify({
           resumeData,
-          adjustmentInstructions: finalAdjustments
+          adjustmentInstructions: finalAdjustments,
+          apiKey: storedGeminiKey,
+          promptOverrides: {
+            systemPrompt: adjustmentPrompt
+          }
         })
       })
 
@@ -468,8 +804,8 @@ const ResumeGenerator = () => {
         setResumeData(result.adjustedResume)
 
         // Update session storage if this was a custom resume
-        if (customResumeLoaded) {
-          sessionStorage.setItem('customResumeJSON', JSON.stringify(result.adjustedResume, null, 2))
+        if (customResumeLoadedRef.current || selectedResume === 'custom') {
+          storage.saveResume('custom', JSON.stringify(result.adjustedResume, null, 2))
         }
 
         // Set success state
@@ -549,7 +885,7 @@ const ResumeGenerator = () => {
     )
   }
 
-  if ((loading && !customResumeLoaded) || (!resumeData && !customResumeLoaded)) {
+  if (loading && !customResumeLoaded && selectedResume && selectedResume !== 'custom') {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -566,26 +902,59 @@ const ResumeGenerator = () => {
       <div className="min-h-screen bg-gray-50">
         <div className="print:hidden p-4 bg-white shadow-sm border-b">
           <div className="max-w-4xl mx-auto">
-            <div className="text-center py-8">
-              <h1 className="text-2xl font-bold text-gray-900 mb-4">Resume Generator</h1>
-              <p className="text-gray-600 mb-8">Paste your resume JSON below to get started</p>
-              
-              {/* Paste JSON Section */}
-              <div className="max-w-2xl mx-auto bg-gray-50 rounded-lg p-6 border border-gray-200">
-                <div className="space-y-4">
-                  <textarea
-                    value={pastedJSON}
-                    onChange={(e) => handleJSONPaste(e.target.value)}
-                    placeholder="Paste your resume JSON here..."
-                    className="w-full h-48 px-4 py-3 text-sm font-mono border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                    spellCheck={false}
-                  />
-                  
-                  {/* Validation Status */}
-                  {pastedJSON && (
-                    <div className="text-left">
-                      {isJSONValid === true && (
-                        <div className="flex items-center justify-between">
+            <div className="py-8">
+              <div className="text-center mb-6">
+                <h1 className="text-2xl font-bold text-gray-900 mb-3">BuiltIt Resume Builder</h1>
+                <p className="text-gray-600">
+                  Bring your resume as JSON or plain text, connect your Gemini key, and start tailoring it for new roles.
+                </p>
+              </div>
+
+              <div className="flex justify-center mb-6">
+                <div className="inline-flex rounded-lg border border-gray-200 bg-white shadow-sm">
+                  <button
+                    onClick={() => setIntakeMode('json')}
+                    className={`flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors rounded-l-lg ${
+                      intakeMode === 'json'
+                        ? 'bg-blue-600 text-white'
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    <Code size={16} />
+                    Paste JSON
+                  </button>
+                  <button
+                    onClick={() => setIntakeMode('text')}
+                    className={`flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors rounded-r-lg ${
+                      intakeMode === 'text'
+                        ? 'bg-blue-600 text-white'
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    <FileText size={16} />
+                    Paste Text
+                  </button>
+                </div>
+              </div>
+
+              <div className="max-w-2xl mx-auto bg-gray-50 rounded-lg p-6 border border-gray-200 space-y-4 text-left">
+                {intakeMode === 'json' ? (
+                  <>
+                    <p className="text-sm text-gray-600">
+                      Already have a resume in JSON? Paste it below. Need a template? Check <span className="font-mono text-xs bg-gray-200 px-1 py-0.5 rounded">docs/resume-json-template.md</span> for the schema and prompt tips.
+                    </p>
+                    <textarea
+                      value={pastedJSON}
+                      onChange={(e) => handleJSONPaste(e.target.value)}
+                      placeholder="Paste your resume JSON here..."
+                      className="w-full h-48 px-4 py-3 text-sm font-mono border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                      spellCheck={false}
+                    />
+
+                    {pastedJSON && (
+                      <div className="text-left">
+                        {isJSONValid === true && (
+                        <div className="flex flex-wrap items-center justify-between gap-2">
                           <div className="flex items-center gap-2 text-green-600 text-sm">
                             <Check size={16} />
                             <span>Valid JSON format</span>
@@ -596,24 +965,96 @@ const ResumeGenerator = () => {
                           >
                             Load Resume
                           </button>
+                          <button
+                            onClick={downloadPastedJSON}
+                            className="px-4 py-2 text-sm font-medium bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors shadow-sm"
+                          >
+                            Download JSON
+                          </button>
                         </div>
-                      )}
-                      {isJSONValid === false && (
-                        <div className="flex items-start gap-2 text-red-600 text-sm">
-                          <AlertCircle size={16} className="mt-0.5 flex-shrink-0" />
-                          <div>
-                            <div className="font-medium mb-1">Invalid JSON:</div>
-                            <ul className="list-disc list-inside space-y-1">
-                              {jsonErrors.map((error, index) => (
-                                <li key={index}>{error}</li>
-                              ))}
-                            </ul>
+                        )}
+                        {isJSONValid === false && (
+                          <div className="flex items-start gap-2 text-red-600 text-sm">
+                            <AlertCircle size={16} className="mt-0.5 flex-shrink-0" />
+                            <div>
+                              <div className="font-medium mb-1">Invalid JSON:</div>
+                              <ul className="list-disc list-inside space-y-1">
+                                {jsonErrors.map((error, index) => (
+                                  <li key={index}>{error}</li>
+                                ))}
+                              </ul>
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        )}
+                      </div>
+                    )}
+
+                    {!pastedJSON && (
+                      <div className="text-xs text-gray-500">
+                        Tip: Ask your favorite AI to “output my resume in this JSON format” using the schema in our docs.
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <p className="text-sm text-gray-600">
+                      Paste the plain text of your resume (from Google Docs, LinkedIn, etc.). We’ll convert it into the JSON schema using your Gemini key.
+                    </p>
+                    <textarea
+                      value={rawResumeText}
+                      onChange={(event) => setRawResumeText(event.target.value)}
+                      placeholder="Paste your resume text here..."
+                      className="w-full h-48 px-4 py-3 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                      spellCheck={false}
+                    />
+
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        {textConversionError && (
+                          <div className="flex items-start gap-2 text-red-600 text-xs mb-2">
+                            <AlertCircle size={14} className="mt-0.5 flex-shrink-0" />
+                            <div>
+                              <div className="font-medium">Conversion failed:</div>
+                              <div>{textConversionError}</div>
+                            </div>
+                          </div>
+                        )}
+                        {!storedGeminiKey && (
+                          <div className="flex items-center gap-1 text-blue-700 text-xs">
+                            <Info size={14} />
+                            <span>Add your Gemini key above to run the conversion.</span>
+                          </div>
+                        )}
+                      </div>
+
+                      <button
+                        onClick={convertTextToResume}
+                        disabled={
+                          isConvertingText ||
+                          !rawResumeText.trim() ||
+                          !storedGeminiKey
+                        }
+                        className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                      >
+                        {isConvertingText ? (
+                          <>
+                            <Loader2 size={16} className="animate-spin" />
+                            Converting...
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles size={16} />
+                            Convert to JSON
+                          </>
+                        )}
+                      </button>
                     </div>
-                  )}
-                </div>
+
+                    <div className="text-xs text-gray-500">
+                      We store the converted JSON locally so you can edit it later or download a backup.
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -623,10 +1064,209 @@ const ResumeGenerator = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <>
+      {showPromptSettings && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+          <div className="w-full max-w-3xl rounded-lg bg-white shadow-xl p-6 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900">Prompt Settings</h2>
+                <p className="text-sm text-gray-600 mt-1">
+                  Customize the system prompts used for conversion, optimization, and adjustments. Changes are saved locally and applied to future Gemini requests.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowPromptSettings(false)}
+                className="text-gray-500 hover:text-gray-700"
+                aria-label="Close prompt settings"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="mt-6 space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Text → JSON conversion prompt
+                </label>
+                <textarea
+                  value={draftConversionPrompt}
+                  onChange={(event) => setDraftConversionPrompt(event.target.value)}
+                  className="w-full h-32 px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  spellCheck={false}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Applied when converting plain text resumes into JSON.
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Optimization prompt
+                </label>
+                <textarea
+                  value={draftSystemPrompt}
+                  onChange={(event) => setDraftSystemPrompt(event.target.value)}
+                  className="w-full h-32 px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  spellCheck={false}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Used when tailoring a resume against a job description.
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Adjustment prompt
+                </label>
+                <textarea
+                  value={draftAdjustmentPrompt}
+                  onChange={(event) => setDraftAdjustmentPrompt(event.target.value)}
+                  className="w-full h-32 px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  spellCheck={false}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Used for quick follow-up edits (length tweaks, emphasis changes, etc.).
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="text-xs text-gray-500">
+                Prompts are saved in your browser. Reset restores the defaults.
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={handleResetPrompts}
+                  className="px-3 py-1.5 text-sm font-medium text-gray-600 bg-gray-100 rounded hover:bg-gray-200"
+                >
+                  Reset to defaults
+                </button>
+                <button
+                  onClick={() => setShowPromptSettings(false)}
+                  className="px-3 py-1.5 text-sm font-medium text-gray-600 bg-gray-100 rounded hover:bg-gray-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSavePrompts}
+                  disabled={promptSaveState === 'saving'}
+                  className="inline-flex items-center gap-2 px-4 py-1.5 text-sm font-medium bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-60"
+                >
+                  {promptSaveState === 'saving' && <Loader2 size={16} className="animate-spin" />}
+                  Save prompts
+                </button>
+              </div>
+            </div>
+
+            <div className="mt-2 min-h-[20px]">
+              {promptSaveState === 'saved' && (
+                <div className="text-xs text-green-600 flex items-center gap-1">
+                  <Check size={14} />
+                  Prompts saved locally.
+                </div>
+              )}
+              {promptSaveState === 'error' && promptError && (
+                <div className="text-xs text-red-600 flex items-center gap-1">
+                  <AlertCircle size={14} />
+                  {promptError}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="min-h-screen bg-gray-50">
       {/* Control Panel - hidden when printing */}
       <div className="print:hidden p-4 bg-white shadow-sm border-b">
         <div className="max-w-4xl mx-auto">
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
+            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
+              <div className="flex items-start gap-3">
+                <div className="mt-0.5">
+                  <Key size={18} className="text-blue-600" />
+                </div>
+                <div>
+                  <h2 className="text-sm font-semibold text-gray-900">Connect your Gemini API key</h2>
+                  <p className="text-xs text-gray-600">
+                    Use Google’s free Gemini API key to optimize your resume locally. We save it in your browser only—you can remove it anytime.
+                  </p>
+                  <a
+                    href={GEMINI_KEY_HELP_URL}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 mt-2"
+                  >
+                    <Info size={14} />
+                    How to get a free Gemini API key
+                  </a>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 self-start">
+                {storedGeminiKey && (
+                  <button
+                    onClick={handleDeleteGeminiKey}
+                    className="flex items-center gap-1 text-xs font-medium text-red-600 hover:text-red-700 transition-colors"
+                  >
+                    <Trash2 size={14} />
+                    Delete saved key
+                  </button>
+                )}
+                <button
+                  onClick={clearWorkspace}
+                  className="flex items-center gap-1 text-xs font-medium text-gray-600 hover:text-gray-900 transition-colors"
+                >
+                  <RotateCcw size={14} />
+                  Clear workspace
+                </button>
+              </div>
+            </div>
+
+            <div className="mt-4 flex flex-col md:flex-row md:items-center gap-3">
+              <input
+                type="password"
+                value={geminiKeyInput}
+                onChange={(event) => {
+                  setGeminiKeyInput(event.target.value)
+                  if (geminiKeyStatus === 'error') {
+                    setGeminiKeyStatus('idle')
+                    setGeminiKeyError(null)
+                  }
+                }}
+                placeholder={storedGeminiKey ? 'Key saved locally. Paste a new key to update.' : 'Paste your Gemini API key...'}
+                className="flex-1 rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                spellCheck={false}
+              />
+              <button
+                onClick={() => {
+                  void handleSaveGeminiKey()
+                }}
+                disabled={isValidatingKey || !geminiKeyInput.trim()}
+                className="inline-flex items-center justify-center gap-2 rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {isValidatingKey && <Loader2 size={16} className="animate-spin" />}
+                {storedGeminiKey ? 'Update key' : 'Save key'}
+              </button>
+            </div>
+
+            <div className="mt-2 min-h-[20px]">
+              {geminiKeyStatus === 'success' && storedGeminiKey && (
+                <p className="text-xs text-green-600 flex items-center gap-1">
+                  <Check size={14} />
+                  Key saved in your browser.
+                </p>
+              )}
+              {geminiKeyStatus === 'error' && geminiKeyError && (
+                <p className="text-xs text-red-600 flex items-center gap-1">
+                  <AlertCircle size={14} />
+                  {geminiKeyError}
+                </p>
+              )}
+            </div>
+          </div>
+
           {/* Top Row - Title and Actions */}
           <div className="flex justify-between items-center mb-4">
             <div className="flex items-center gap-4">
@@ -654,6 +1294,12 @@ const ResumeGenerator = () => {
             
             {/* Action Buttons */}
             <div className="flex gap-2">
+              <button
+                onClick={() => setShowPromptSettings(true)}
+                className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-purple-100 text-purple-700 rounded hover:bg-purple-200 transition-colors shadow-sm"
+              >
+                <Sparkles size={14} /> Prompt settings
+              </button>
               <button
                 onClick={generatePDF}
                 className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors shadow-sm"
@@ -791,11 +1437,17 @@ const ResumeGenerator = () => {
                         <span>Resume optimized! Generate PDF to see changes.</span>
                       </div>
                     )}
+                    {!storedGeminiKey && (
+                      <div className="flex items-center gap-1 text-blue-700 text-xs">
+                        <Info size={14} />
+                        <span>Add your Gemini key above to enable optimization.</span>
+                      </div>
+                    )}
                   </div>
                   
                   <button
                     onClick={optimizeResume}
-                    disabled={isOptimizing || !jobDescription.trim() || !resumeData}
+                    disabled={isOptimizing || !jobDescription.trim() || !resumeData || !storedGeminiKey}
                     className="px-4 py-2 text-xs font-medium bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                   >
                     {isOptimizing ? (
@@ -861,11 +1513,17 @@ const ResumeGenerator = () => {
                         <span>Adjustments applied! Generate PDF to see changes.</span>
                       </div>
                     )}
+                    {!storedGeminiKey && (
+                      <div className="flex items-center gap-1 text-green-700 text-xs">
+                        <Info size={14} />
+                        <span>Add your Gemini key above to enable adjustments.</span>
+                      </div>
+                    )}
                   </div>
 
                   <button
                     onClick={applyFinalAdjustments}
-                    disabled={isAdjusting || !finalAdjustments.trim() || !resumeData}
+                    disabled={isAdjusting || !finalAdjustments.trim() || !resumeData || !storedGeminiKey}
                     className="px-4 py-2 text-xs font-medium bg-green-600 text-white rounded hover:bg-green-700 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                   >
                     {isAdjusting ? (
@@ -1187,6 +1845,7 @@ const ResumeGenerator = () => {
         )}
       </div>
     </div>
+    </>
   )
 }
 
