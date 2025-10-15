@@ -36,7 +36,7 @@ test('final verification of working resume app', async ({ page }) => {
   }
 
   // Verify that the resume content is displayed
-  const resumeTitle = await page.getByRole('heading', { name: /Lyor.*Itzhaki/ }).isVisible();
+  const resumeTitle = await page.getByRole('heading', { name: /Jensen.*Huang/ }).isVisible();
   console.log('  Resume title visible:', resumeTitle);
 
   // Final assertions

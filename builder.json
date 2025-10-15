@@ -3,146 +3,139 @@ import { Download, Mail, Phone, MapPin, Globe, Linkedin } from 'lucide-react';
 
 const PDFResumeGenerator = () => {
   const [resumeData] = useState({
-    "basics": {
-      "name": "Lyor (Leo) Itzhaki",
-      "headline": "Product Lead & Founder | Building AI-Powered MVPs & Fintech Solutions",
-      "email": "lyori6@gmail.com",
-      "phone": "(408) 217-3383",
-      "location": "Redwood City, CA",
-      "url": {
-        "label": "lyori.com ",
-        "href": "https://www.lyori.com "
+    basics: {
+      name: "Jensen Huang",
+      headline: "Product Manager of Parallel Possibilities",
+      email: "jensen@example.com",
+      phone: "(650) 867-5309",
+      location: "Santa Clara, CA (often on Mars)",
+      url: {
+        label: "jensen-huang.fun",
+        href: "https://www.jensen-huang.fun"
       },
-      "customFields": [
+      customFields: [
         {
-          "id": "fcdvenj06hjzfwzh68nnntnb",
-          "icon": "linkedin-logo",
-          "name": "linkedin.com/in/lyor/",
-          "value": "https://www.linkedin.com/in/lyor/"
+          id: "profile-linkedin",
+          icon: "linkedin-logo",
+          name: "linkedin.com/in/jensen",
+          value: "https://www.linkedin.com/in/jensen"
         }
       ]
     },
-    "sections": {
-      "summary": {
-        "content": "Full-stack product leader shipping AI-powered fintech & e-commerce experiences impacting 30M+ users. At TrueML, delivered ~$3-5M in annualized revenue uplift by increasing checkout conversion by 33% and payment completions by 19% across platforms serving millions; drove 24% merchant adoption and +30-pt NPS jump for EcoCart's new post-purchase line, and now demonstrates rapid MVP development (idea to production-ready full-stack apps in days) through Builtit.dev"
+    sections: {
+      summary: {
+        content:
+          "Inventive product leader who once finished a capstone on a commuter rocket ride. Translates cosmic-scale ideas into launch-ready experiences, aligning engineers, marketers, and sentient toasters with equal patience."
       },
-      "experience": {
-        "items": [
+      experience: {
+        items: [
           {
-            "company": "BuildIt.dev",
-            "position": "Product Lead & Founder",
-            "location": "Redwood City, CA",
-            "date": "Dec 2024 – Present",
-            "summary": "Founded an early-stage micro-agency, delivering AI-powered, production-ready MVPs with integrated automation for non-technical founders.\n• Spearheaded market validation via 25+ founder discovery calls, defining core service offerings focused on AI-driven solutions for regulated niches.\n• Developed a rapid delivery playbook leveraging reusable components and AI automation patterns to accelerate functional MVP builds from weeks to days.",
-            "url": {
-              "label": "builtit.dev",
-              "href": "https://builtit.dev"
+            company: "NVIDIA Labs",
+            position: "Product Manager | Holographic Collaboration",
+            location: "Santa Clara, CA & Orbit",
+            date: "Aug 2023 – Present",
+            summary:
+              "• Owns an experimental meeting-without-gravity platform so remote teams can whiteboard in 3D.\n• Shipped auto-transcription for zero-gravity scribbles, improving meeting recall by 42%.\n• Coordinated launch with hardware, legal, and Martian customs on the first try.",
+            url: {
+              label: "Product teaser",
+              href: "https://labs.nvidia.com/holo-collab"
             }
           },
           {
-            "company": "EcoCart",
-            "position": "Product Manager",
-            "location": "San Francisco, CA",
-            "date": "Feb 2024 – Dec 2024",
-            "summary": "Drove new product direction and prototyped package protection at a post-purchase eCom startup. Launched a revenue-share GTM to increase merchant adoption.\n• Established package protection as the next company revenue pillar by leading comprehensive discovery (market, partner, 10+ merchant interviews, data analysis) and MVP definition, including blueprinting and prototype development with engineering & design.\n• Launched a Shopify revenue-share pilot to improve merchant retention and alignment, securing 24% adoption from targeted merchants in the first month and lifting average NPS from 35 to 65.\n• Prototyped an LLM-driven claims triage system, demonstrating a potential 40% reduction in manual review and enabling early CS workflow testing"
+            company: "Saturn Rings Streaming",
+            position: "Senior Associate Product Manager",
+            location: "Remote (timezones +6 to -6)",
+            date: "Jan 2021 – Jul 2023",
+            summary:
+              "• Led discovery for the solar system's streaming service for orbital tourists.\n• Introduced an AI curator nicknamed PopcornBot that tripled engagement with moon-volcano documentaries.\n• Mentored a team of four APMs; two now run product for Pluto's weather channel beta."
           },
           {
-            "company": "TrueML",
-            "position": "Product Manager",
-            "location": "San Francisco, CA",
-            "date": "Jan 2022 – Nov 2023",
-            "summary": "Owned the core payment product for a consumer debt platform. Conducted A/B tests, optimized user flows, and led MFA implementation to increase conversion and payment completion while ensuring compliance.\n• Led cross-functional optimization of the repayment platform (Eng, Data Science, Design, CS), delivering ~$3-5M annualized revenue uplift by scaling A/B testing to 30+ tests/qtr, lifting checkout CVR by 33% and payment completions by 19%.\n• Partnered with Data Science to refine ML-driven user segmentation by integrating richer behavioral data, boosting plan selection rates by 12% and overall user engagement by 34%.\n• Led a mobile-first redesign of the core repayment flow, simplifying UX and reducing average checkout time by 15 seconds, contributing to a 19% lift in completed payments."
+            company: "Nebula Capital",
+            position: "Associate Product Manager",
+            location: "San Francisco, CA",
+            date: "Jul 2018 – Dec 2020",
+            summary:
+              "• Designed realtime dashboards for asteroid-mining startups, shrinking reporting time from hours to minutes.\n• Partnered with compliance to humanize risk messaging and cut 'galactic audit' tickets by 55%.\n• Co-led quarterly roadmap reviews with Jensen-in-the-Loop simulations to test investor reactions."
           },
           {
-            "company": "TrueML",
-            "position": "Product Operations Manager, D2C",
-            "location": "San Francisco, CA",
-            "date": "Jun 2020 – Jan 2022",
-            "summary": "Set up product ops & support org from scratch at a pre-PM fintech startup. Built SLAs, Looker performance dashboards, and aligned roadmaps across cross-functional teams.\n• Established the D2C customer support function, implementing foundational processes, SLAs, and dashboards that reduced average first response time from >24 hours to <4 hours while maintaining a 4.6/5 CSAT.\n• Developed and executed targeted HubSpot email and Twilio SMS campaigns based on user segmentation, driving a 25% increase in Monthly Active Users (MAU).\n• Spearheaded the specification and launch of BI dashboards (Looker) providing real-time visibility into support KPIs, leading to a 12% reduction in agent handle time and informing executive decision-making."
-          },
-          {
-            "company": "Early-stage Startups (Consultant)",
-            "position": "Product Manager",
-            "location": "Palo Alto, CA",
-            "date": "Aug 2019 – Sep 2020",
-            "summary": "Founding PM partnering directly with founders on 0->1 products. Led discovery, scoping, and delivery from concept to launch.\n\nProgForce: Designed and rapidly prototyped an internal gamified platform for quarterly travel forecasting; UX-tested mechanics that drove participation 40% → 70% in prototype testing.\n\nAssemblyDrop: Scoped and defined the MVP for an on-demand contractor marketplace, then piloted the platform, enrolling 5 pilot crews and onboarding 1,000+ SKUs."
+            company: "Cometary Systems",
+            position: "Product Analyst",
+            location: "Mountain View, CA",
+            date: "Sep 2016 – Jun 2018",
+            summary:
+              "• Automated manual reporting with GPU-powered dashboards adopted company-wide.\n• Mapped onboarding friction points and lifted activation by 18% for interplanetary customers.\n• Presented monthly workshops on decoding Martian user feedback; localization score climbed to 95%."
           }
         ]
       },
-      "projects": {
-        "items": [
+      projects: {
+        items: [
           {
-            "name": "DebtCat (Founder/Builder)",
-            "description": "Independently developed and launched an AI-powered consumer debt rights platform (Next.js, OpenAI API, Stripe, PostGrid) featuring an educational chatbot and automated dispute letter generation. Demonstrates end-to-end product creation for a real user need.",
-            "date": "2023 – Present",
-            "url": {
-              "label": "debtcat.com",
-              "href": "https://debtcat.com"
+            name: "GPU-Powered Espresso Queue",
+            description:
+              "Smart queueing app ensuring the espresso machine never idles during product sprints.",
+            date: "2022",
+            url: {
+              label: "Demo reel",
+              href: "https://www.jensen-huang.fun/espresso"
             }
           },
           {
-            "name": "FindMe.pet (Founder/Builder)",
-            "description": "Launched an AI pet adoption matching platform (Next.js, Petfinder API, OpenAI API) designed to reduce shelter return rates by analyzing lifestyle compatibility. Showcases AI application to solve a passion-driven problem.",
-            "date": "2024 – Present",
-            "url": {
-              "label": "findme.pet",
-              "href": "https://FindMe.pet"
+            name: "Martian Rover OKR Tracker",
+            description:
+              "Goal-tracking app for student robotics teams navigating low gravity (objective: don't flip over).",
+            date: "2020",
+            url: {
+              label: "Open source",
+              href: "https://github.com/parallel-dreamer/rover-okrs"
             }
           }
         ]
       },
-      "skills": {
-        "items": [
+      skills: {
+        items: [
           {
-            "name": "Product",
-            "keywords": [
-              "Product Strategy",
+            name: "Product",
+            keywords: [
               "Roadmapping",
-              "A/B Testing",
-              "Stakeholder Management",
-              "AI Product Strategy",
-              "LLM Workflow Design",
-              "User Research",
-              "Agile Methodologies",
-              "Market Analysis",
-              "Go-to-Market Strategy"
+              "Strategic Narratives",
+              "AI Feature Design",
+              "Experimentation",
+              "Stakeholder Alignment"
             ]
           },
           {
-            "name": "Technical",
-            "keywords": [
+            name: "Technical",
+            keywords: [
+              "GPU Architecture Basics",
+              "Python",
+              "TypeScript",
               "SQL",
-              "Next.js",
-              "React",
-              "JavaScript",
-              "Serverless (Cloudflare Workers, Vercel Functions)",
-              "Firebase",
-              "Supabase",
-              "API Integration (Stripe, OpenAI, Petfinder)"
+              "Prompt Engineering"
             ]
           },
           {
-            "name": "Tools",
-            "keywords": [
-              "Mixpanel",
-              "Google Analytics",
-              "Looker",
-              "HubSpot",
-              "Jira",
-              "Cursor AI",
-              "Windsurf",
-              "GA4",
-              "ClickUp"
+            name: "Team",
+            keywords: [
+              "Public Speaking",
+              "Mentorship",
+              "Product Operations",
+              "Workshop Facilitation",
+              "Cross-Planet Collaboration"
             ]
           }
         ]
       },
-      "education": {
-        "items": [
+      education: {
+        items: [
           {
-            "institution": "Shenkar College of Engineering",
-            "studyType": "B.Sc., Industrial Engineering & Management",
-            "date": "2017"
+            institution: "Community College of the Planet Mars",
+            studyType: "Associate of Science, Computer Science",
+            date: "2016"
+          },
+          {
+            institution: "NVIDIA Business School",
+            studyType: "MBA, Interplanetary Strategy",
+            date: "2018"
           }
         ]
       }

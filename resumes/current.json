@@ -1,20 +1,34 @@
 {
   "basics": {
-    "name": "Lyor (Leo) Itzhaki",
-    "headline": "Product Lead & Founder",
-    "email": "lyori6@gmail.com",
-    "phone": "(408) 217-3383",
-    "location": "Redwood City, CA",
+    "name": "Jensen Huang",
+    "headline": "Product Manager of Parallel Possibilities",
+    "email": "jensen@example.com",
+    "phone": "(650) 867-5309",
+    "location": "Santa Clara, CA (often found on Mars)",
     "url": {
-      "label": "lyori.com ",
-      "href": "https://www.lyori.com "
+      "label": "jensen-huang.fun",
+      "href": "https://www.jensen-huang.fun"
     },
     "customFields": [
       {
-        "id": "fcdvenj06hjzfwzh68nnntnb",
+        "id": "field-linkedin",
         "icon": "linkedin-logo",
-        "name": "linkedin.com/in/lyor/",
-        "value": "https://www.linkedin.com/in/lyor/"
+        "name": "linkedin.com/in/jensen",
+        "value": "https://www.linkedin.com/in/jensen"
+      }
+    ],
+    "profiles": [
+      {
+        "id": "profile1",
+        "network": "LinkedIn",
+        "username": "jensen",
+        "url": "https://www.linkedin.com/in/jensen"
+      },
+      {
+        "id": "profile2",
+        "network": "GitHub",
+        "username": "parallel-dreamer",
+        "url": "https://github.com/parallel-dreamer"
       }
     ],
     "picture": {
@@ -36,23 +50,169 @@
       "separateLinks": true,
       "visible": true,
       "id": "summary",
-      "content": "<p>Product leader with more than 5 years leading fintech and ecommerce products for 30 M+ users and over 3 years shipping generative-AI solutions. At TrueML I delivered $3–5 M annualized uplift (33 % CVR, 19 % payment lift), led EcoCart’s post-purchase pivot to 24 % adoption and a 30-pt NPS jump, and now accelerate AI-powered MVPs through Builtit.dev.</p>"
+      "content": "<p>Inventive product leader who once finished a capstone on a commuter rocket ride. I translate cosmic-scale ideas into launch-ready experiences, aligning engineers, marketers, and sentient toasters with equal patience. Obsessed with useful AI, ergonomic GPUs, and writing product specs that make people chuckle <em>and</em> ship.</p>"
     },
-    "awards": {
-      "name": "Awards",
+    "experience": {
+      "name": "Experience",
       "columns": 1,
       "separateLinks": true,
-      "visible": false,
-      "id": "awards",
-      "items": []
+      "visible": true,
+      "id": "experience",
+      "items": [
+        {
+          "id": "exp4",
+          "visible": true,
+          "company": "NVIDIA Labs",
+          "position": "Product Manager | Holographic Collaboration",
+          "location": "Santa Clara, CA & Orbit",
+          "date": "Aug 2023 \u2013 Present",
+          "summary": "<p>Owns an experimental &ldquo;meeting without gravity&rdquo; platform that lets remote teams whiteboard in 3D. Balances GPU demand with human attention spans.</p><ul><li><p>Shipped auto-transcription for zero-gravity scribbles, improving meeting recall by 42% without any floating markers lost in space.</p></li><li><p>Piloted sentiment-boost alerts that nudge moderators when morale dips; internal NPS climbed from 48 to 72 in two quarters.</p></li><li><p>Coordinated launch with hardware, legal, and Martian customs\u2014first product to clear orbital compliance paperwork on the first try.</p></li></ul>",
+          "url": {
+            "label": "Product teaser",
+            "href": "https://labs.nvidia.com/holo-collab"
+          }
+        },
+        {
+          "id": "exp3",
+          "visible": true,
+          "company": "Saturn Rings Streaming",
+          "position": "Senior Associate Product Manager",
+          "location": "Remote (timezones +6 to -6)",
+          "date": "Jan 2021 \u2013 Jul 2023",
+          "summary": "<p>Led discovery for the solar system's premier streaming service for orbital tourists.</p><ul><li><p>Launched dynamic bandwidth throttling that adapts to meteor showers, cutting stream drop-offs by 33%.</p></li><li><p>Introduced an AI curator nicknamed &ldquo;PopcornBot&rdquo; that tripled engagement with micro-documentaries about moon volcanoes.</p></li><li><p>Mentored a team of four APMs; two now run product for Pluto's weather channel beta.</p></li></ul>",
+          "url": {
+            "label": "Case study",
+            "href": "https://saturnrings.example.com/case-study"
+          }
+        },
+        {
+          "id": "exp2",
+          "visible": true,
+          "company": "Nebula Capital",
+          "position": "Associate Product Manager",
+          "location": "San Francisco, CA",
+          "date": "Jul 2018 \u2013 Dec 2020",
+          "summary": "<p>Rotational APM on an AI-first fintech squad helping founders fund cosmic ventures.</p><ul><li><p>Designed a realtime dashboard for asteroid mining startups, shrinking reporting time from six hours to twenty minutes.</p></li><li><p>Partnered with compliance to humanize risk messaging; decreased support tickets about &ldquo;galactic audits&rdquo; by 55%.</p></li><li><p>Co-led quarterly roadmap reviews with Jensen-in-the-Loop simulations to test investor reactions.</p></li></ul>",
+          "url": {
+            "label": "Platform overview",
+            "href": "https://nebula.capital/product"
+          }
+        },
+        {
+          "id": "exp1",
+          "visible": true,
+          "company": "Cometary Systems",
+          "position": "Product Analyst",
+          "location": "Mountain View, CA",
+          "date": "Sep 2016 \u2013 Jun 2018",
+          "summary": "<p>Started as the team's resident spreadsheet sorcerer and slowly automated himself into product.</p><ul><li><p>Mapped onboarding frictions and proposed feature flags that lifted activation by 18% for interplanetary customers.</p></li><li><p>Built the first KPI cockpit using GPUs in the conference room; engineering adopted it as the canonical source of truth.</p></li><li><p>Presented monthly &ldquo;How to interpret Martian user feedback&rdquo; sessions\u2014localization score rose to 95%.</p></li></ul>",
+          "url": {
+            "label": "Press blurb",
+            "href": "https://cometary.systems/blog/analytics"
+          }
+        },
+        {
+          "id": "exp0",
+          "visible": true,
+          "company": "Galactic Insights Cooperative",
+          "position": "Data Analyst Intern",
+          "location": "Mars Colony One",
+          "date": "Jun 2015 \u2013 Aug 2016",
+          "summary": "<p>Wrangled rover telemetry and snack-bar surveys to forecast campus energy needs.</p><ul><li><p>Introduced GPU-accelerated dashboards during a dorm blackout; energy planning error margin dropped by 21%.</p></li><li><p>Automated weekly reporting with Python scripts named after favorite sci-fi authors; saved the team 12 hours per sprint.</p></li><li><p>Presented findings to the Dean in a borrowed spacesuit after forgetting the indoor tie.</p></li></ul>",
+          "url": {
+            "label": "Intern diary",
+            "href": "https://galacticinsights.example.com/blog/intern"
+          }
+        }
+      ]
     },
-    "certifications": {
-      "name": "Certifications",
+    "projects": {
+      "name": "Projects",
       "columns": 1,
       "separateLinks": true,
-      "visible": false,
-      "id": "certifications",
-      "items": []
+      "visible": true,
+      "id": "projects",
+      "items": [
+        {
+          "id": "proj0",
+          "visible": true,
+          "name": "GPU-Powered Espresso Queue",
+          "description": "Smart queueing app ensuring the espresso machine never idles during product sprints.",
+          "date": "2022",
+          "summary": "<p>Used computer vision and an old dev kit to predict latte demand; adopted across three NVIDIA campuses.</p>",
+          "keywords": [
+            "Computer Vision",
+            "Edge AI",
+            "Employee Experience"
+          ],
+          "url": {
+            "label": "Demo reel",
+            "href": "https://jensen-huang.fun/espresso"
+          }
+        },
+        {
+          "id": "proj1",
+          "visible": true,
+          "name": "Martian Rover OKR Tracker",
+          "description": "Goal tracking app for student robotics teams navigating low gravity.",
+          "date": "2020",
+          "summary": "<p>Co-created playful OKR templates (&ldquo;Objective: don't flip over&rdquo;), improving weekly check-ins by 45%.</p>",
+          "keywords": [
+            "Productivity",
+            "Gamification",
+            "Education"
+          ],
+          "url": {
+            "label": "Open source",
+            "href": "https://github.com/parallel-dreamer/rover-okrs"
+          }
+        }
+      ]
+    },
+    "skills": {
+      "name": "Skills",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "skills",
+      "items": [
+        {
+          "id": "skill0",
+          "visible": true,
+          "name": "Product",
+          "keywords": [
+            "Roadmapping",
+            "Strategic Narratives",
+            "AI Feature Design",
+            "Experimentation",
+            "Stakeholder Alignment"
+          ]
+        },
+        {
+          "id": "skill1",
+          "visible": true,
+          "name": "Technical",
+          "keywords": [
+            "GPU Architecture Basics",
+            "Python",
+            "TypeScript",
+            "SQL",
+            "Prompt Engineering"
+          ]
+        },
+        {
+          "id": "skill2",
+          "visible": true,
+          "name": "Team",
+          "keywords": [
+            "Public Speaking",
+            "Mentorship",
+            "Product Operations",
+            "Workshop Facilitation",
+            "Cross-Planet Collaboration"
+          ]
+        }
+      ]
     },
     "education": {
       "name": "Education",
@@ -64,280 +224,93 @@
         {
           "id": "edu1",
           "visible": true,
-          "institution": "Shenkar College of Engineering",
-          "studyType": "B.Sc., Industrial Engineering & Management",
-          "area": "Industrial Engineering & Management",
-          "score": "",
-          "date": "2017",
-          "summary": "",
+          "institution": "Community College of the Planet Mars",
+          "studyType": "Associate of Science",
+          "area": "Computer Science",
+          "score": "GPA 3.9",
+          "date": "2016",
+          "summary": "<p>Captain of the GPU overclocking club; co-founded the Anti-Dust Coalition for better rover maintenance.</p>",
           "url": {
-            "label": "",
-            "href": ""
+            "label": "Campus tour",
+            "href": "https://marscommunity.example.com"
+          }
+        },
+        {
+          "id": "edu2",
+          "visible": true,
+          "institution": "NVIDIA Business School",
+          "studyType": "MBA",
+          "area": "Interplanetary Strategy",
+          "score": "GPA 4.0 (scaled for zero gravity)",
+          "date": "2018",
+          "summary": "<p>Thesis: &ldquo;Why every roadmap needs a warp-drive contingency&rdquo;. Class speaker voted &ldquo;Most likely to whiteboard during vacation&rdquo;.</p>",
+          "url": {
+            "label": "Program info",
+            "href": "https://nvidia.com/mba"
           }
         }
       ]
     },
-    "experience": {
-      "name": "Professional Experience",
+    "awards": {
+      "name": "Awards",
       "columns": 1,
       "separateLinks": true,
       "visible": true,
-      "id": "experience",
+      "id": "awards",
       "items": [
         {
-          "id": "exp_ebay",
+          "id": "award0",
           "visible": true,
-          "company": "",
-          "position": "Senior Product Manager (via Avenue Code) | eBay",
-          "location": "San Jose, CA",
-          "date": "Jul 2025 – Present",
-          "summary": "<p>Lead Trust & Safety for eBay’s live-commerce platform, owning policy enforcement and seller safeguards.</p><ul><li><p>Own end-to-end delivery of four initiatives (chat moderation, unpaid-item fraud, DSAR compliance, buyer/seller protections); removed ~30 % of critical blockers in month one.</p></li><li><p>Led seller-moderation controls that let hosts gate chat and buyer access; fast-tracked for upcoming eBay Live Tour events.</p></li><li><p>Set launch KPIs and partnered with Data Science to build dashboards for harmful-content rate, moderation latency, and unpaid-item rate, protecting eBay Live’s $19.5 B quarterly GMV.</p></li><li><p>Drove product decisions and approval cycles for Live Seller Console and checkout upgrades, cutting approval time from 3 weeks to 10 days.</p></li></ul>",
-          "url": {
-            "label": "",
-            "href": ""
-          }
-        },
-        {
-          "id": "exp0",
-          "visible": true,
-          "company": "",
-          "position": "Product Lead & Founder | Builtit.dev",
-          "location": "Redwood City, CA",
-          "date": "Dec 2024 – Present",
-          "summary": "<p>Founded a micro-agency that ships AI-powered MVPs end to end for non-technical founders.</p><ul><li><p>Validated demand via 25 founder interviews and launched two pilot builds using a reusable component + automation playbook, cutting build time from weeks to days.</p></li></ul>",
-          "url": {
-            "label": "builtit.dev",
-            "href": "https://builtit.dev"
-          }
-        },
-        {
-          "id": "exp1",
-          "visible": true,
-          "company": "",
-          "position": "Product Manager | EcoCart",
-          "location": "San Francisco, CA",
-          "date": "Feb 2024 – Dec 2024",
-          "summary": "<p>Drove new product direction and prototyped package protection at a post-purchase e-commerce startup. Launched a revenue-share GTM to increase merchant adoption.</p><ul><li><p>Established package protection as the next revenue pillar through 10+ merchant interviews, partner evaluations, and data analysis; defined MVP and led engineering & design for prototype.</p></li><li><p>Launched Shopify revenue-share pilot, securing 24 % adoption in month one and lifting NPS from 35 to 65.</p></li><li><p>Prototyped LLM-driven claims triage, demonstrating a 40 % reduction in manual review for early CS workflow testing.</p></li></ul>",
-          "url": {
-            "label": "",
-            "href": ""
-          }
-        },
-        {
-          "id": "exp2",
-          "visible": true,
-          "company": "",
-          "position": "Product Manager | TrueML",
-          "location": "San Francisco, CA",
-          "date": "Jan 2022 – Nov 2023",
-          "summary": "<p>Owned core payment product for a consumer-debt platform. Ran 30+ A/B tests and led MFA rollout to boost conversion and compliance.</p><ul><li><p>Partnered with Eng, Data Science & Design to scale A/B testing to 30+ tests/quarter, driving $3–5 M annualized uplift (33 % CVR, 19 % payment lift).</p></li><li><p>Integrated richer behavioral data for ML segmentation, lifting plan selection by 12 % and engagement by 34 %.</p></li><li><p>Led mobile-first redesign, reducing average checkout time by 15 s and contributing to a 19 % payment lift.</p></li></ul>",
-          "url": {
-            "label": "",
-            "href": ""
-          }
-        },
-        {
-          "id": "exp3",
-          "visible": true,
-          "company": "",
-          "position": "Product Operations Manager, D2C | TrueML",
-          "location": "San Francisco, CA",
-          "date": "Jun 2020 – Jan 2022",
-          "summary": "<p>Built product ops & support org from scratch at a pre-PM fintech startup.</p><ul><li><p>Established support SLAs and Looker dashboards, cutting first response time from 24 h to <4 h and maintaining 4.6/5 CSAT.</p></li><li><p>Launched targeted HubSpot email & Twilio SMS campaigns, driving +25 % MAU.</p></li><li><p>Designed BI dashboards for real-time support KPIs, reducing agent handle time by 12 %.</p></li></ul>",
-          "url": {
-            "label": "",
-            "href": ""
-          }
-        },
-        {
-          "id": "exp4",
-          "visible": true,
-          "company": "",
-          "position": "Founding Product Manager | Early-stage Startups (Consultant)",
-          "location": "Palo Alto, CA",
-          "date": "Aug 2019 – Sep 2020",
-          "summary": "<p>Partnered with founders on 0→1 products: discovery, scoping, and delivery.</p><ul><li><p><strong>ProgForce:</strong> Rapid-prototyped gamified forecasting UX, boosting participation from 40 % to 70 % in tests.</p></li><li><p><strong>AssemblyDrop:</strong> Defined marketplace MVP, piloting with 5 crews and 1,000+ SKUs onboarded.</p></li></ul>",
-          "url": {
-            "label": "",
-            "href": ""
-          }
+          "title": "Best Use of a GPU in a Meeting",
+          "date": "2022",
+          "awarder": "Internal NVIDIA Labs Summit",
+          "summary": "Recognized for literally placing a GPU on the table to accelerate brainstorming physics sims."
         }
       ]
-    },
-    "volunteer": {
-      "name": "Volunteering",
-      "columns": 1,
-      "separateLinks": true,
-      "visible": false,
-      "id": "volunteer",
-      "items": []
-    },
-    "interests": {
-      "name": "Interests",
-      "columns": 1,
-      "separateLinks": false,
-      "visible": false,
-      "id": "interests",
-      "items": []
     },
     "languages": {
       "name": "Languages",
       "columns": 1,
       "separateLinks": true,
-      "visible": false,
+      "visible": true,
       "id": "languages",
-      "items": []
+      "items": [
+        {
+          "id": "lang0",
+          "visible": true,
+          "language": "English",
+          "fluency": "Native"
+        },
+        {
+          "id": "lang1",
+          "visible": true,
+          "language": "Martian Standard",
+          "fluency": "Conversational"
+        }
+      ]
     },
-    "profiles": {
-      "name": "Profiles",
-      "columns": 1,
-      "separateLinks": true,
-      "visible": false,
-      "id": "profiles",
-      "items": []
-    },
-    "projects": {
-      "name": "Recent Projects",
+    "volunteer": {
+      "name": "Volunteer",
       "columns": 1,
       "separateLinks": true,
       "visible": true,
-      "id": "projects",
+      "id": "volunteer",
       "items": [
         {
-          "id": "prj1",
+          "id": "vol0",
           "visible": true,
-          "name": "TS Policy Watcher (Founder/Builder)",
-          "description": "Built an AI-powered competitive intelligence system that monitors Trust & Safety policy changes across 25+ platforms. Features automated change detection, AI summaries, and executive alerts with 99.9% uptime and 6-hour detection cycles.",
-          "date": "2025 – Present",
-          "summary": "",
-          "keywords": [],
+          "organization": "Mars Habitat Hackathon",
+          "position": "Product Coach",
+          "date": "2019 \u2013 Present",
+          "summary": "Mentor student teams designing life-support dashboards that even nervous astronauts understand.",
           "url": {
-            "label": "ts-policy-watcher.vercel.app",
-            "href": "https://ts-policy-watcher.vercel.app/"
-          }
-        },
-        {
-          "id": "prj3",
-          "visible": true,
-          "name": "DebtCat (Founder/Builder)",
-          "description": "Developed and launched an AI-powered consumer debt rights platform (Next.js, OpenAI API, Stripe, PostGrid) featuring educational chatbot and automated dispute letter generation. Demonstrates end-to-end product creation for real user needs.",
-          "date": "2023 – Present",
-          "summary": "",
-          "keywords": [],
-          "url": {
-            "label": "debtcat.com",
-            "href": "https://debtcat.com"
+            "label": "Hackathon",
+            "href": "https://marshabitat.io"
           }
         }
       ]
     },
-    "publications": {
-      "name": "Publications",
-      "columns": 1,
-      "separateLinks": true,
-      "visible": false,
-      "id": "publications",
-      "items": []
-    },
-    "references": {
-      "name": "References",
-      "columns": 1,
-      "separateLinks": true,
-      "visible": false,
-      "id": "references",
-      "items": []
-    },
-    "skills": {
-      "name": "Core Competencies",
-      "columns": 2,
-      "separateLinks": true,
-      "visible": true,
-      "id": "skills",
-      "items": [
-        {
-          "id": "sk1",
-          "visible": true,
-          "name": "Product",
-          "description": "",
-          "level": 0,
-          "keywords": [
-            "Generative AI",
-            "Prompt Engineering",
-            "Product Strategy",
-            "Roadmapping",
-            "A/B Testing",
-            "Stakeholder Management",
-            "AI Product Strategy",
-            "LLM Workflow Design",
-            "Responsible AI",
-            "Agile",
-            "Market Analysis",
-            "GTM"
-          ]
-        },
-        {
-          "id": "sk2",
-          "visible": true,
-          "name": "Technical",
-          "description": "",
-          "level": 0,
-          "keywords": [
-            "SQL",
-            "Python",
-            "TypeScript",
-            "JavaScript",
-            "Next.js",
-            "React",
-            "Tailwind CSS",
-            "Serverless",
-            "Firebase",
-            "Supabase",
-            "API Integration",
-            "OpenAI API",
-            "Stripe",
-            "PostGrid",
-            "Vercel",
-            "v0",
-            "Netlify",
-            "Cloudflare",
-            "Snowflake",
-            "GBQ (Google BigQuery)"
-          ]
-        },
-        {
-          "id": "sk3",
-          "visible": true,
-          "name": "Tools",
-          "description": "",
-          "level": 0,
-          "keywords": [
-            "Mixpanel",
-            "Google Analytics",
-            "Looker",
-            "HubSpot",
-            "Jira",
-            "Cursor AI",
-            "Windsurf",
-            "GA4",
-            "ClickUp",
-            "Smartlook",
-            "Slack",
-            "Figma",
-            "Notion"
-          ]
-        }
-      ]
-    },
-    "custom": {
-      "mlb3e2uyippzbsgqc5qvor2w": {
-        "name": "Custom Section",
-        "columns": 1,
-        "separateLinks": true,
-        "visible": true,
-        "id": "mlb3e2uyippzbsgqc5qvor2w",
-        "items": []
-      }
-    }
+    "custom": {}
   },
   "metadata": {
     "template": "onyx",
@@ -351,14 +324,9 @@
           "education"
         ],
         [
-          "profiles",
-          "interests",
-          "certifications",
           "awards",
-          "publications",
-          "volunteer",
-          "references",
-          "languages"
+          "languages",
+          "volunteer"
         ]
       ]
     ],

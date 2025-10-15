@@ -6,7 +6,6 @@
 
 The application requires a Gemini API key to function properly. This key should be set as an environment variable in your deployment platform.
 
-**API Key Source**: lyori6us@gmail.com Google Cloud account
 **Variable Name**: `GEMINI_API_KEY`
 **Model Used**: Gemini 2.0 Flash Experimental (`gemini-2.0-flash-exp`)
 
@@ -17,7 +16,7 @@ The application requires a Gemini API key to function properly. This key should 
    - Navigate to "Environment Variables" section  
    - Add new environment variable:
      - **Name**: `GEMINI_API_KEY`
-     - **Value**: [Your Gemini API key from lyori6us@gmail.com]
+     - **Value**: Your Gemini API key from Google AI Studio
      - **Environments**: Production, Preview, Development
 
 2. **Via Vercel CLI**:
@@ -66,17 +65,8 @@ After deployment, verify:
 ### Resume Files Structure
 
 The application now uses a simplified resume structure:
-- **`/resumes/current.json`** - The only active resume file used by dropdown
-- **`/resumes/archive/`** - Contains archived resume versions for reference
-- **Primary workflow** - Users paste custom JSON resumes for optimization
-
-### Personalized Optimization Features
-
-The system includes a personalized prompt specifically for Lyor Itzhaki:
-- Emphasizes senior PM experience in fintech/e-commerce
-- Highlights AI/ML product experience and full-stack building skills  
-- Focuses on results, experimentation, and builder PM execution
-- Maintains ATS-friendly formatting and job description alignment
+- **`/resumes/current.json`** – Fictional sample resume bundled for demo purposes
+- **Primary workflow** – Users paste custom JSON resumes for optimization or convert plain text via Gemini
 
 ### API Rate Limits and Costs
 

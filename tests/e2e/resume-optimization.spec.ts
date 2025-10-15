@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
 
 // Sample resume JSON for testing
 const sampleResumeJSON = {
@@ -66,23 +66,48 @@ Personal Notes:
 - Mention any cloud experience
 `;
 
+const STORAGE_KEY = 'builtit:resume-builder';
+const RESUME_TEXTAREA_SELECTOR = 'textarea[placeholder="Paste your resume JSON here..."]';
+
+const ensurePastePanelOpen = async (page: Page) => {
+  const textarea = page.locator(RESUME_TEXTAREA_SELECTOR);
+  if (await textarea.isVisible()) {
+    return;
+  }
+  const pasteToggle = page.getByRole('button', { name: /Paste Resume JSON/i }).first();
+  await pasteToggle.waitFor({ state: 'visible' });
+  await pasteToggle.click();
+  await expect(textarea).toBeVisible();
+};
+
 test.describe('Resume Optimization E2E Tests', () => {
-  
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page, context }) => {
+    await context.addInitScript(
+      ({ storageKey }) => {
+        window.localStorage.setItem(
+          storageKey,
+          JSON.stringify({
+            version: '1',
+            geminiApiKey: 'test-key'
+          })
+        )
+      },
+      { storageKey: STORAGE_KEY }
+    )
+
     await page.goto('/');
     await expect(page).toHaveTitle(/Resume Generator/);
+    await ensurePastePanelOpen(page);
   });
 
   test('should load the main page with paste functionality', async ({ page }) => {
-    // Check if paste section exists
     await expect(page.getByText('Paste Resume JSON')).toBeVisible();
-    
-    // Check if textarea for pasting JSON exists
-    await expect(page.locator('textarea[placeholder*="Paste your resume JSON"]')).toBeVisible();
+    await expect(page.locator(RESUME_TEXTAREA_SELECTOR)).toBeVisible();
   });
 
   test('should validate and load pasted resume JSON', async ({ page }) => {
-    const pasteTextarea = page.locator('textarea[placeholder*="Paste your resume JSON"]');
+    await ensurePastePanelOpen(page);
+    const pasteTextarea = page.locator(RESUME_TEXTAREA_SELECTOR);
     
     // Paste valid JSON
     await pasteTextarea.fill(JSON.stringify(sampleResumeJSON, null, 2));
@@ -100,13 +125,14 @@ test.describe('Resume Optimization E2E Tests', () => {
 
   test('should show AI optimization section when resume is loaded', async ({ page }) => {
     // Paste and load resume
-    const pasteTextarea = page.locator('textarea[placeholder*="Paste your resume JSON"]');
+    await ensurePastePanelOpen(page);
+    const pasteTextarea = page.locator(RESUME_TEXTAREA_SELECTOR);
     await pasteTextarea.fill(JSON.stringify(sampleResumeJSON, null, 2));
     await page.getByRole('button', { name: 'Load Resume' }).click();
     
     // Check if AI optimization section appears
     await expect(page.getByText('AI Resume Optimization')).toBeVisible();
-    await expect(page.getByText('Job Description + Personal Notes')).toBeVisible();
+    await expect(page.getByText('Job Description')).toBeVisible();
     
     // Check for optimization textarea
     await expect(page.locator('textarea[placeholder*="Paste job description"]')).toBeVisible();
@@ -119,7 +145,8 @@ test.describe('Resume Optimization E2E Tests', () => {
 
   test('should enable optimize button when job description is entered', async ({ page }) => {
     // Load resume first
-    const pasteTextarea = page.locator('textarea[placeholder*="Paste your resume JSON"]');
+    await ensurePastePanelOpen(page);
+    const pasteTextarea = page.locator(RESUME_TEXTAREA_SELECTOR);
     await pasteTextarea.fill(JSON.stringify(sampleResumeJSON, null, 2));
     await page.getByRole('button', { name: 'Load Resume' }).click();
     
@@ -133,18 +160,19 @@ test.describe('Resume Optimization E2E Tests', () => {
   });
 
   test('should handle invalid JSON with proper error messages', async ({ page }) => {
-    const pasteTextarea = page.locator('textarea[placeholder*="Paste your resume JSON"]');
+    await ensurePastePanelOpen(page);
+    const pasteTextarea = page.locator(RESUME_TEXTAREA_SELECTOR);
     
     // Paste invalid JSON
     await pasteTextarea.fill('{ invalid json }');
     
     // Check for error message
-    await expect(page.getByText('Invalid JSON:')).toBeVisible();
-    await expect(page.getByText('Invalid JSON format')).toBeVisible();
+    await expect(page.getByText('Invalid JSON format. Please check your syntax.')).toBeVisible();
   });
 
   test('should validate resume structure and show specific errors', async ({ page }) => {
-    const pasteTextarea = page.locator('textarea[placeholder*="Paste your resume JSON"]');
+    await ensurePastePanelOpen(page);
+    const pasteTextarea = page.locator(RESUME_TEXTAREA_SELECTOR);
     
     // Paste JSON missing required fields
     const incompleteJSON = {
@@ -161,13 +189,13 @@ test.describe('Resume Optimization E2E Tests', () => {
     await pasteTextarea.fill(JSON.stringify(incompleteJSON, null, 2));
     
     // Check for specific validation errors
-    await expect(page.getByText('Invalid JSON:')).toBeVisible();
-    await expect(page.getByText('Missing required field: basics')).toBeVisible();
+    await expect(page.getByText('Missing or invalid field: basics')).toBeVisible();
   });
 
   test('should show loading state during optimization', async ({ page }) => {
     // Load resume and enter job description
-    const pasteTextarea = page.locator('textarea[placeholder*="Paste your resume JSON"]');
+    await ensurePastePanelOpen(page);
+    const pasteTextarea = page.locator(RESUME_TEXTAREA_SELECTOR);
     await pasteTextarea.fill(JSON.stringify(sampleResumeJSON, null, 2));
     await page.getByRole('button', { name: 'Load Resume' }).click();
     
@@ -198,7 +226,8 @@ test.describe('Resume Optimization E2E Tests', () => {
     });
     
     // Load resume and try to optimize
-    const pasteTextarea = page.locator('textarea[placeholder*="Paste your resume JSON"]');
+    await ensurePastePanelOpen(page);
+    const pasteTextarea = page.locator(RESUME_TEXTAREA_SELECTOR);
     await pasteTextarea.fill(JSON.stringify(sampleResumeJSON, null, 2));
     await page.getByRole('button', { name: 'Load Resume' }).click();
     
@@ -238,7 +267,8 @@ test.describe('Resume Optimization E2E Tests', () => {
     });
     
     // Load resume and optimize
-    const pasteTextarea = page.locator('textarea[placeholder*="Paste your resume JSON"]');
+    await ensurePastePanelOpen(page);
+    const pasteTextarea = page.locator(RESUME_TEXTAREA_SELECTOR);
     await pasteTextarea.fill(JSON.stringify(sampleResumeJSON, null, 2));
     await page.getByRole('button', { name: 'Load Resume' }).click();
     
@@ -277,7 +307,8 @@ test.describe('Resume Optimization E2E Tests', () => {
 
   test('should maintain PDF generation functionality after optimization', async ({ page }) => {
     // Load resume
-    const pasteTextarea = page.locator('textarea[placeholder*="Paste your resume JSON"]');
+    await ensurePastePanelOpen(page);
+    const pasteTextarea = page.locator(RESUME_TEXTAREA_SELECTOR);
     await pasteTextarea.fill(JSON.stringify(sampleResumeJSON, null, 2));
     await page.getByRole('button', { name: 'Load Resume' }).click();
     

@@ -32,8 +32,10 @@ Tech-lead view of everything required to open the resume builder to the public w
 - [x] Provide sample JSON templates and links to “generate via your favorite AI” instructions. _(See `docs/resume-json-template.md` and onboarding copy.)_
 
 ## Phase 3 · Workspace & Prompt Controls
-- [ ] Refactor `app/page.tsx` into logical child components (key setup, intake, workspace dashboard, diff summary, adjustment panel).
+- [ ] Refactor `app/page.tsx` into logical child components (key setup, intake, workspace dashboard, diff summary, adjustment panel). _(Key setup/intake/workspace actions split; resume preview + diff table now live in dedicated components.)_
+- _Next increment_: wire new components fully and add diff-summary banner + improved prompt copy once preview modularization settles.
 - [x] Introduce prompt settings drawer with default system prompt (generalized) and user override + reset. _(Modal supports conversion/optimization/adjustment prompts + reset/save.)_
+- [x] Extract intake and diff/adjustment panels into components for easier iteration. _(Intake + workspace actions now componentized; preview rendering next.)_
 - [ ] Display resume preview using sanitized content with clear section headers and download button.
 - [ ] Surface concise summary-of-changes (bullet list) above expandable detailed diff.
 - [x] Add “Clear workspace” action wiping stored key, resumes, prompts. _(Button added beside API key controls.)_
@@ -54,9 +56,18 @@ Tech-lead view of everything required to open the resume builder to the public w
 ### Intake Follow-ups
 - Consider showing recently converted resumes in a dropdown history and add inline docs link to template file.
 
+### Workspace Follow-ups
+- Neutral sample resume replaces personal data (Jensen Huang demo); prompt copy polish still open.
+- Polish diff summary layout once data validations are finalized.
+- Componentization status:
+  1. ✅ `components/ResumePreview.tsx` now owns the sanitized resume layout.
+  2. ✅ `components/ResumeDiffTable.tsx` + `ResumeDiffSummary.tsx` power the diff UI with a concise banner.
+  3. 🔜 Keep prop surface minimal while tightening prompt copy/tooltips and styling the summary for launch polish.
+
 ## Phase 6 · Testing & Validation
 - [ ] Add unit tests for `validateResumeJSON`, local storage helper, and prompt builders.
 - [ ] Smoke-test flows manually: key management, JSON intake, text conversion, optimization, adjustment, diff summary, clear workspace.
+- [x] Ensure Playwright regression suite passes against the modularized UI (JSON intake toggles handled).
 - [ ] Capture edge cases (empty sections, malformed HTML) and document fixes/workarounds.
 - [ ] Conduct pilot feedback sessions (at least one ordinary user, one founder) and log findings/decisions in this file.
 

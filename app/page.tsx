@@ -4,11 +4,6 @@ import React, { useState, useEffect, useMemo, useRef } from 'react'
 import DOMPurify from 'dompurify'
 import {
   Download,
-  Mail,
-  Phone,
-  MapPin,
-  Globe,
-  Linkedin,
   ChevronDown,
   ChevronUp,
   Upload,
@@ -16,15 +11,14 @@ import {
   AlertCircle,
   Sparkles,
   Loader2,
-  Key,
-  Info,
-  Trash2,
-  Code,
-  FileText,
-  RotateCcw,
   X
 } from 'lucide-react'
 import { validateResumeJSON, ResumeData } from '@/lib/resume-types'
+import KeySetupPanel from '@/components/KeySetupPanel'
+import PromptSettingsModal from '@/components/PromptSettingsModal'
+import ResumeIntake from '@/components/ResumeIntake'
+import WorkspaceActions from '@/components/WorkspaceActions'
+import ResumePreview from '@/components/ResumePreview'
 import { storage } from '@/lib/local-storage'
 import {
   DEFAULT_OPTIMIZATION_SYSTEM_PROMPT,
@@ -276,10 +270,6 @@ const ResumeGenerator = () => {
     [originalResume, resumeData]
   )
 
-  const displayedDiffs = useMemo(() => diffItems.slice(0, MAX_DIFF_ITEMS), [diffItems])
-
-  const hasMoreDiffs = diffItems.length > MAX_DIFF_ITEMS
-
   useEffect(() => {
     if (diffItems.length === 0) {
       setShowDiff(false)
@@ -363,17 +353,11 @@ const ResumeGenerator = () => {
   const fetchAvailableResumes = async () => {
     try {
       const response = await fetch('/api/resume')
-    const resumes = await response.json()
-    setAvailableResumes(resumes)
-    
-    // Auto-select the first resume (current.json if available)
-    const defaultResume = resumes.find((r: ResumeOption) => r.id === 'current') || resumes[0]
-    if (defaultResume && !customResumeLoadedRef.current) {
-      setSelectedResume(defaultResume.filename)
+      const resumes = await response.json()
+      setAvailableResumes(resumes)
+    } catch (error) {
+      console.error('Error fetching available resumes:', error)
     }
-  } catch (error) {
-    console.error('Error fetching available resumes:', error)
-  }
   }
 
   const fetchResumeData = async (filename: string) => {
@@ -451,6 +435,17 @@ const ResumeGenerator = () => {
     } finally {
       setIsValidatingKey(false)
     }
+  }
+  const handleGeminiKeyInputChange = (value: string) => {
+    setGeminiKeyInput(value)
+    if (geminiKeyStatus === 'error') {
+      setGeminiKeyStatus('idle')
+      setGeminiKeyError(null)
+    }
+  }
+
+  const handleSaveGeminiKeyClick = () => {
+    void handleSaveGeminiKey()
   }
 
   const handleDeleteGeminiKey = () => {
@@ -686,6 +681,13 @@ const ResumeGenerator = () => {
       setOptimizationError('Add your Gemini API key to run optimization.')
       return
     }
+
+    const validation = validateResumeJSON(resumeData as ResumeData)
+    if (!validation.isValid) {
+      console.warn('Client-side resume validation failed:', validation.errors)
+      setOptimizationError('Resume JSON is not valid. Check required fields before optimizing.')
+      return
+    }
     
     try {
       setIsOptimizing(true)
@@ -822,40 +824,6 @@ const ResumeGenerator = () => {
     }
   }
 
-  const renderHTMLContent = (htmlContent: string) => {
-    const sanitizedHtml = typeof window !== 'undefined'
-      ? DOMPurify.sanitize(htmlContent)
-      : htmlContent
-
-    return (
-      <div
-        className="text-gray-700 leading-tight text-xs"
-        dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
-      />
-    )
-  }
-
-  const renderSummary = (summary: string) => {
-    if (summary.includes('<') && summary.includes('>')) {
-      return renderHTMLContent(summary)
-    }
-    
-    const points = summary.split('•').filter(point => point.trim())
-    if (points.length > 1) {
-      return (
-        <ul className="space-y-1">
-          {points.map((point, index) => (
-            <li key={index} className="flex items-start">
-              <span className="text-blue-600 mr-2 text-xs">•</span>
-              <span className="text-gray-700 leading-tight text-xs">{point.trim()}</span>
-            </li>
-          ))}
-        </ul>
-      )
-    }
-    return <p className="text-gray-700 leading-tight text-xs">{summary}</p>
-  }
-
   const renderDiffValue = (value: string) => {
     const trimmedValue = value?.trim()
 
@@ -899,169 +867,25 @@ const ResumeGenerator = () => {
   // Show paste interface if no resume is loaded
   if (!resumeData && !customResumeLoaded) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="print:hidden p-4 bg-white shadow-sm border-b">
-          <div className="max-w-4xl mx-auto">
-            <div className="py-8">
-              <div className="text-center mb-6">
-                <h1 className="text-2xl font-bold text-gray-900 mb-3">BuiltIt Resume Builder</h1>
-                <p className="text-gray-600">
-                  Bring your resume as JSON or plain text, connect your Gemini key, and start tailoring it for new roles.
-                </p>
-              </div>
-
-              <div className="flex justify-center mb-6">
-                <div className="inline-flex rounded-lg border border-gray-200 bg-white shadow-sm">
-                  <button
-                    onClick={() => setIntakeMode('json')}
-                    className={`flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors rounded-l-lg ${
-                      intakeMode === 'json'
-                        ? 'bg-blue-600 text-white'
-                        : 'text-gray-600 hover:text-gray-900'
-                    }`}
-                  >
-                    <Code size={16} />
-                    Paste JSON
-                  </button>
-                  <button
-                    onClick={() => setIntakeMode('text')}
-                    className={`flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors rounded-r-lg ${
-                      intakeMode === 'text'
-                        ? 'bg-blue-600 text-white'
-                        : 'text-gray-600 hover:text-gray-900'
-                    }`}
-                  >
-                    <FileText size={16} />
-                    Paste Text
-                  </button>
-                </div>
-              </div>
-
-              <div className="max-w-2xl mx-auto bg-gray-50 rounded-lg p-6 border border-gray-200 space-y-4 text-left">
-                {intakeMode === 'json' ? (
-                  <>
-                    <p className="text-sm text-gray-600">
-                      Already have a resume in JSON? Paste it below. Need a template? Check <span className="font-mono text-xs bg-gray-200 px-1 py-0.5 rounded">docs/resume-json-template.md</span> for the schema and prompt tips.
-                    </p>
-                    <textarea
-                      value={pastedJSON}
-                      onChange={(e) => handleJSONPaste(e.target.value)}
-                      placeholder="Paste your resume JSON here..."
-                      className="w-full h-48 px-4 py-3 text-sm font-mono border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                      spellCheck={false}
-                    />
-
-                    {pastedJSON && (
-                      <div className="text-left">
-                        {isJSONValid === true && (
-                        <div className="flex flex-wrap items-center justify-between gap-2">
-                          <div className="flex items-center gap-2 text-green-600 text-sm">
-                            <Check size={16} />
-                            <span>Valid JSON format</span>
-                          </div>
-                          <button
-                            onClick={loadCustomResume}
-                            className="px-4 py-2 text-sm font-medium bg-green-600 text-white rounded hover:bg-green-700 transition-colors shadow-sm"
-                          >
-                            Load Resume
-                          </button>
-                          <button
-                            onClick={downloadPastedJSON}
-                            className="px-4 py-2 text-sm font-medium bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors shadow-sm"
-                          >
-                            Download JSON
-                          </button>
-                        </div>
-                        )}
-                        {isJSONValid === false && (
-                          <div className="flex items-start gap-2 text-red-600 text-sm">
-                            <AlertCircle size={16} className="mt-0.5 flex-shrink-0" />
-                            <div>
-                              <div className="font-medium mb-1">Invalid JSON:</div>
-                              <ul className="list-disc list-inside space-y-1">
-                                {jsonErrors.map((error, index) => (
-                                  <li key={index}>{error}</li>
-                                ))}
-                              </ul>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {!pastedJSON && (
-                      <div className="text-xs text-gray-500">
-                        Tip: Ask your favorite AI to “output my resume in this JSON format” using the schema in our docs.
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    <p className="text-sm text-gray-600">
-                      Paste the plain text of your resume (from Google Docs, LinkedIn, etc.). We’ll convert it into the JSON schema using your Gemini key.
-                    </p>
-                    <textarea
-                      value={rawResumeText}
-                      onChange={(event) => setRawResumeText(event.target.value)}
-                      placeholder="Paste your resume text here..."
-                      className="w-full h-48 px-4 py-3 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                      spellCheck={false}
-                    />
-
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        {textConversionError && (
-                          <div className="flex items-start gap-2 text-red-600 text-xs mb-2">
-                            <AlertCircle size={14} className="mt-0.5 flex-shrink-0" />
-                            <div>
-                              <div className="font-medium">Conversion failed:</div>
-                              <div>{textConversionError}</div>
-                            </div>
-                          </div>
-                        )}
-                        {!storedGeminiKey && (
-                          <div className="flex items-center gap-1 text-blue-700 text-xs">
-                            <Info size={14} />
-                            <span>Add your Gemini key above to run the conversion.</span>
-                          </div>
-                        )}
-                      </div>
-
-                      <button
-                        onClick={convertTextToResume}
-                        disabled={
-                          isConvertingText ||
-                          !rawResumeText.trim() ||
-                          !storedGeminiKey
-                        }
-                        className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                      >
-                        {isConvertingText ? (
-                          <>
-                            <Loader2 size={16} className="animate-spin" />
-                            Converting...
-                          </>
-                        ) : (
-                          <>
-                            <Sparkles size={16} />
-                            Convert to JSON
-                          </>
-                        )}
-                      </button>
-                    </div>
-
-                    <div className="text-xs text-gray-500">
-                      We store the converted JSON locally so you can edit it later or download a backup.
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <ResumeIntake
+        intakeMode={intakeMode}
+        onIntakeModeChange={setIntakeMode}
+        pastedJSON={pastedJSON}
+        onJSONChange={handleJSONPaste}
+        isJSONValid={isJSONValid}
+        jsonErrors={jsonErrors}
+        onLoadJSON={loadCustomResume}
+        onDownloadJSON={downloadPastedJSON}
+        rawResumeText={rawResumeText}
+        onRawTextChange={setRawResumeText}
+        onConvertText={convertTextToResume}
+        isConvertingText={isConvertingText}
+        textConversionError={textConversionError}
+        hasStoredKey={!!storedGeminiKey}
+      />
     )
   }
+
 
   return (
     <>
@@ -1181,91 +1005,18 @@ const ResumeGenerator = () => {
       {/* Control Panel - hidden when printing */}
       <div className="print:hidden p-4 bg-white shadow-sm border-b">
         <div className="max-w-4xl mx-auto">
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
-            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
-              <div className="flex items-start gap-3">
-                <div className="mt-0.5">
-                  <Key size={18} className="text-blue-600" />
-                </div>
-                <div>
-                  <h2 className="text-sm font-semibold text-gray-900">Connect your Gemini API key</h2>
-                  <p className="text-xs text-gray-600">
-                    Use Google’s free Gemini API key to optimize your resume locally. We save it in your browser only—you can remove it anytime.
-                  </p>
-                  <a
-                    href={GEMINI_KEY_HELP_URL}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 mt-2"
-                  >
-                    <Info size={14} />
-                    How to get a free Gemini API key
-                  </a>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 self-start">
-                {storedGeminiKey && (
-                  <button
-                    onClick={handleDeleteGeminiKey}
-                    className="flex items-center gap-1 text-xs font-medium text-red-600 hover:text-red-700 transition-colors"
-                  >
-                    <Trash2 size={14} />
-                    Delete saved key
-                  </button>
-                )}
-                <button
-                  onClick={clearWorkspace}
-                  className="flex items-center gap-1 text-xs font-medium text-gray-600 hover:text-gray-900 transition-colors"
-                >
-                  <RotateCcw size={14} />
-                  Clear workspace
-                </button>
-              </div>
-            </div>
-
-            <div className="mt-4 flex flex-col md:flex-row md:items-center gap-3">
-              <input
-                type="password"
-                value={geminiKeyInput}
-                onChange={(event) => {
-                  setGeminiKeyInput(event.target.value)
-                  if (geminiKeyStatus === 'error') {
-                    setGeminiKeyStatus('idle')
-                    setGeminiKeyError(null)
-                  }
-                }}
-                placeholder={storedGeminiKey ? 'Key saved locally. Paste a new key to update.' : 'Paste your Gemini API key...'}
-                className="flex-1 rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                spellCheck={false}
-              />
-              <button
-                onClick={() => {
-                  void handleSaveGeminiKey()
-                }}
-                disabled={isValidatingKey || !geminiKeyInput.trim()}
-                className="inline-flex items-center justify-center gap-2 rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {isValidatingKey && <Loader2 size={16} className="animate-spin" />}
-                {storedGeminiKey ? 'Update key' : 'Save key'}
-              </button>
-            </div>
-
-            <div className="mt-2 min-h-[20px]">
-              {geminiKeyStatus === 'success' && storedGeminiKey && (
-                <p className="text-xs text-green-600 flex items-center gap-1">
-                  <Check size={14} />
-                  Key saved in your browser.
-                </p>
-              )}
-              {geminiKeyStatus === 'error' && geminiKeyError && (
-                <p className="text-xs text-red-600 flex items-center gap-1">
-                  <AlertCircle size={14} />
-                  {geminiKeyError}
-                </p>
-              )}
-            </div>
-          </div>
+          <KeySetupPanel
+            geminiKeyHelpUrl={GEMINI_KEY_HELP_URL}
+            storedGeminiKey={storedGeminiKey}
+            geminiKeyInput={geminiKeyInput}
+            isValidatingKey={isValidatingKey}
+            geminiKeyStatus={geminiKeyStatus}
+            geminiKeyError={geminiKeyError}
+            onKeyInputChange={handleGeminiKeyInputChange}
+            onSaveKey={handleSaveGeminiKeyClick}
+            onDeleteKey={handleDeleteGeminiKey}
+            onClearWorkspace={clearWorkspace}
+          />
 
           {/* Top Row - Title and Actions */}
           <div className="flex justify-between items-center mb-4">
@@ -1279,6 +1030,9 @@ const ResumeGenerator = () => {
                   onChange={(e) => setSelectedResume(e.target.value)}
                   className="appearance-none bg-white border border-gray-300 rounded px-3 py-1.5 pr-8 text-sm font-medium text-gray-700 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
+                  <option value="" disabled>
+                    {availableResumes.length > 0 ? 'Load sample resume…' : 'No saved resumes'}
+                  </option>
                   {customResumeLoaded && (
                     <option value="custom">📋 Custom Resume</option>
                   )}
@@ -1386,464 +1140,36 @@ const ResumeGenerator = () => {
             )}
           </div>
           
-          {/* AI Optimization Section */}
-          {(resumeData || customResumeLoaded) && (
-            <div className="bg-blue-50 rounded-lg p-4 border border-blue-200 mt-4">
-              <div className="flex items-center justify-between mb-3">
-                <h2 className="text-sm font-semibold text-blue-700 flex items-center gap-2">
-                  <Sparkles size={16} />
-                  AI Resume Optimization
-                </h2>
-                {originalResume && (
-                  <button
-                    onClick={revertToOriginal}
-                    className="text-xs text-blue-600 hover:text-blue-800 transition-colors"
-                  >
-                    Revert to Original
-                  </button>
-                )}
-              </div>
-              
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">
-                    Job Description
-                  </label>
-                  <textarea
-                    value={jobDescription}
-                    onChange={(e) => setJobDescription(e.target.value)}
-                    placeholder="Paste job description here..."
-                    className="w-full h-32 px-3 py-2 text-xs border border-blue-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                    spellCheck={false}
-                  />
-                </div>
-                
-                {/* Optimization Status and Button */}
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    {optimizationError && (
-                      <div className="flex items-start gap-2 text-red-600 text-xs mb-2">
-                        <AlertCircle size={14} className="mt-0.5 flex-shrink-0" />
-                        <div>
-                          <div className="font-medium">Optimization failed:</div>
-                          <div>{optimizationError}</div>
-                        </div>
-                      </div>
-                    )}
-                    
-                    {optimizationSuccess && !isOptimizing && (
-                      <div className="flex items-center gap-1 text-green-600 text-xs">
-                        <Check size={14} />
-                        <span>Resume optimized! Generate PDF to see changes.</span>
-                      </div>
-                    )}
-                    {!storedGeminiKey && (
-                      <div className="flex items-center gap-1 text-blue-700 text-xs">
-                        <Info size={14} />
-                        <span>Add your Gemini key above to enable optimization.</span>
-                      </div>
-                    )}
-                  </div>
-                  
-                  <button
-                    onClick={optimizeResume}
-                    disabled={isOptimizing || !jobDescription.trim() || !resumeData || !storedGeminiKey}
-                    className="px-4 py-2 text-xs font-medium bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                  >
-                    {isOptimizing ? (
-                      <>
-                        <Loader2 size={14} className="animate-spin" />
-                        Optimizing...
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles size={14} />
-                        Optimize Resume
-                      </>
-                    )}
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
+          <WorkspaceActions
+            resumeData={resumeData}
+            jobDescription={jobDescription}
+            onJobDescriptionChange={setJobDescription}
+            optimizeResume={optimizeResume}
+            isOptimizing={isOptimizing}
+            optimizationError={optimizationError}
+            optimizationSuccess={optimizationSuccess}
+            storedGeminiKey={storedGeminiKey}
+            finalAdjustments={finalAdjustments}
+            onFinalAdjustmentsChange={setFinalAdjustments}
+            applyFinalAdjustments={applyFinalAdjustments}
+            isAdjusting={isAdjusting}
+            adjustmentError={adjustmentError}
+            adjustmentSuccess={adjustmentSuccess}
+            originalResume={originalResume}
+            revertToOriginal={revertToOriginal}
+            showDiff={showDiff}
+          setShowDiff={setShowDiff}
+          diffItems={diffItems}
+          maxDiffItems={MAX_DIFF_ITEMS}
+          renderDiffValue={renderDiffValue}
+          formatDiffPath={createPathLabel}
+        />
 
-          {/* Final Adjustments Section */}
-          {(resumeData || customResumeLoaded) && (
-            <div className="bg-green-50 rounded-lg p-4 border border-green-200 mt-4">
-              <div className="flex items-center justify-between mb-3">
-                <h2 className="text-sm font-semibold text-green-700 flex items-center gap-2">
-                  <Sparkles size={16} />
-                  Final Adjustments
-                </h2>
-                <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded">
-                  Powered by Gemini 2.5 Flash
-                </span>
-              </div>
 
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">
-                    Quick Adjustments
-                  </label>
-                  <textarea
-                    value={finalAdjustments}
-                    onChange={(e) => setFinalAdjustments(e.target.value)}
-                    placeholder="Make it shorter, remove certain sections, emphasize specific skills, etc..."
-                    className="w-full h-24 px-3 py-2 text-xs border border-green-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
-                    spellCheck={false}
-                  />
-                </div>
-
-                {/* Adjustment Status and Button */}
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    {adjustmentError && (
-                      <div className="flex items-start gap-2 text-red-600 text-xs mb-2">
-                        <AlertCircle size={14} className="mt-0.5 flex-shrink-0" />
-                        <div>
-                          <div className="font-medium">Adjustment failed:</div>
-                          <div>{adjustmentError}</div>
-                        </div>
-                      </div>
-                    )}
-
-                    {adjustmentSuccess && !isAdjusting && (
-                      <div className="flex items-center gap-1 text-green-600 text-xs">
-                        <Check size={14} />
-                        <span>Adjustments applied! Generate PDF to see changes.</span>
-                      </div>
-                    )}
-                    {!storedGeminiKey && (
-                      <div className="flex items-center gap-1 text-green-700 text-xs">
-                        <Info size={14} />
-                        <span>Add your Gemini key above to enable adjustments.</span>
-                      </div>
-                    )}
-                  </div>
-
-                  <button
-                    onClick={applyFinalAdjustments}
-                    disabled={isAdjusting || !finalAdjustments.trim() || !resumeData || !storedGeminiKey}
-                    className="px-4 py-2 text-xs font-medium bg-green-600 text-white rounded hover:bg-green-700 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                  >
-                    {isAdjusting ? (
-                      <>
-                        <Loader2 size={14} className="animate-spin" />
-                        Adjusting...
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles size={14} />
-                        Apply Adjustments
-                      </>
-                    )}
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {diffItems.length > 0 && (
-            <div className="bg-white rounded-lg p-4 border border-blue-200 mt-4">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <h2 className="text-sm font-semibold text-blue-700">AI Changes Preview</h2>
-                  <p className="text-xs text-gray-600 mt-1">
-                    Comparing the current resume to your saved original.
-                  </p>
-                </div>
-                <button
-                  onClick={() => setShowDiff((prev) => !prev)}
-                  className="self-start px-3 py-1.5 text-xs font-medium text-blue-700 border border-blue-200 rounded hover:bg-blue-50 transition-colors"
-                >
-                  {showDiff ? 'Hide Changes' : `View Changes (${diffItems.length})`}
-                </button>
-              </div>
-
-              {showDiff ? (
-                <div className="mt-3 space-y-3 max-h-64 overflow-y-auto pr-1">
-                  {displayedDiffs.map((item, index) => (
-                    <div
-                      key={`${item.path.join('.')}-${index}`}
-                      className="border border-blue-100 bg-blue-50 rounded-lg p-3 shadow-sm"
-                    >
-                      <div className="text-xs font-semibold uppercase tracking-wide text-blue-800">
-                        {createPathLabel(item.path)}
-                      </div>
-                      <div className="mt-2 grid gap-3 sm:grid-cols-2">
-                        <div>
-                          <p className="text-[11px] font-semibold uppercase text-gray-500">Before</p>
-                          <div className="mt-1 rounded border border-white/70 bg-white/80 p-2">
-                            {renderDiffValue(item.before)}
-                          </div>
-                        </div>
-                        <div>
-                          <p className="text-[11px] font-semibold uppercase text-gray-500">After</p>
-                          <div className="mt-1 rounded border border-white/70 bg-white/80 p-2">
-                            {renderDiffValue(item.after)}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-
-                  {hasMoreDiffs && (
-                    <p className="text-xs text-gray-500">
-                      Showing first {MAX_DIFF_ITEMS} changes. Use JSON export for the full diff.
-                    </p>
-                  )}
-                </div>
-              ) : (
-                <p className="mt-3 text-xs text-gray-600">
-                  Click “View Changes” to review what Gemini updated before you download or export.
-                </p>
-              )}
-            </div>
-          )}
         </div>
       </div>
 
-      {/* Resume Content */}
-      <div className="max-w-4xl mx-auto bg-white text-gray-900 leading-tight text-xs resume-content">
-        {/* Header */}
-        <div className="text-center py-1.5 border-b border-gray-300">
-          <h1 className="text-xl font-bold text-gray-900 mb-0.5 tracking-wide">
-            {resumeData.basics.name}
-          </h1>
-          <p className="text-blue-600 font-semibold text-sm mb-1">
-            {resumeData.basics.headline}
-          </p>
-          
-          {/* Contact Info */}
-          <div className="flex justify-center items-center gap-x-3 text-xs text-gray-600">
-            <div className="flex items-center gap-1">
-              <Mail size={8} />
-              <a href={`mailto:${resumeData.basics.email}`} className="hover:text-blue-600">
-                {resumeData.basics.email}
-              </a>
-            </div>
-            <div className="flex items-center gap-1">
-              <Phone size={8} />
-              <span>{resumeData.basics.phone}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <MapPin size={8} />
-              <span>{resumeData.basics.location}</span>
-            </div>
-            {resumeData.basics.url && resumeData.basics.url.href && (
-              <div className="flex items-center gap-1">
-                <Globe size={8} />
-                <a href={resumeData.basics.url.href} className="hover:text-blue-600">
-                  {resumeData.basics.url.label || resumeData.basics.url.href}
-                </a>
-              </div>
-            )}
-            {resumeData.basics.customFields && resumeData.basics.customFields.length > 0 && (
-              <>
-                {resumeData.basics.customFields.map((field: any, index: number) => (
-                  <div key={index} className="flex items-center gap-1">
-                    <Linkedin size={8} />
-                    <a href={field.value} className="hover:text-blue-600">
-                      {field.name}
-                    </a>
-                  </div>
-                ))}
-              </>
-            )}
-            {resumeData.basics.profiles && resumeData.basics.profiles.length > 0 && (
-              <>
-                {resumeData.basics.profiles.map((profile: any, index: number) => (
-                  <div key={index} className="flex items-center gap-1">
-                    {profile.network === 'LinkedIn' && <Linkedin size={8} />}
-                    <a href={profile.url} className="hover:text-blue-600">
-                      {profile.username || profile.url}
-                    </a>
-                  </div>
-                ))}
-              </>
-            )}
-          </div>
-        </div>
-
-        {/* Summary */}
-        {resumeData.sections.summary && resumeData.sections.summary.visible && resumeData.sections.summary.content && (
-          <div className="py-1">
-            <h2 className="text-base font-bold text-gray-900 mb-1 pb-0.5 border-b border-blue-600 uppercase tracking-wide">
-              {resumeData.sections.summary.name}
-            </h2>
-            <div className="text-gray-700 leading-tight text-xs mt-0.5">
-              {renderSummary(resumeData.sections.summary.content)}
-            </div>
-          </div>
-        )}
-
-        {/* Experience */}
-        {resumeData.sections.experience && resumeData.sections.experience.visible && resumeData.sections.experience.items && resumeData.sections.experience.items.length > 0 && (
-          <div className="py-1">
-            <h2 className="text-base font-bold text-gray-900 mb-1 pb-0.5 border-b border-blue-600 uppercase tracking-wide">
-              {resumeData.sections.experience.name}
-            </h2>
-            <div className="space-y-2">
-              {resumeData.sections.experience.items.map((exp: any, index: number) => (
-                <div key={index}>
-                  <div className="flex justify-between items-start mb-0.5">
-                    <div className="flex-1">
-                      <h3 className="text-sm text-gray-900">
-                        {exp.position.includes('|') ? (
-                          <>
-                            {exp.position.split('|').reverse().map((part: string, idx: number) => (
-                              <span key={idx}>
-                                {idx === 0 ? (
-                                  <span className="font-bold">{part.trim()}</span>
-                                ) : (
-                                  <>
-                                    <span className="text-gray-400 mx-1.5">|</span>
-                                    <span className="font-medium">{part.trim()}</span>
-                                  </>
-                                )}
-                              </span>
-                            ))}
-                          </>
-                        ) : (
-                          <>
-                            {exp.company && (
-                              <>
-                                <span className="font-bold">{exp.company}</span>
-                                <span className="text-gray-400 mx-1.5">|</span>
-                              </>
-                            )}
-                            <span className="font-medium">{exp.position}</span>
-                          </>
-                        )}
-                      </h3>
-                    </div>
-                    <div className="text-right text-xs text-gray-500 ml-3">
-                      <p className="font-medium">{exp.date}</p>
-                      {exp.location && <p className="text-xs">{exp.location}</p>}
-                    </div>
-                  </div>
-                  {exp.summary && (
-                    <div className="text-gray-700 text-xs leading-tight mt-0.5">
-                      {renderSummary(exp.summary)}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Projects */}
-        {resumeData.sections.projects && resumeData.sections.projects.visible && resumeData.sections.projects.items && resumeData.sections.projects.items.length > 0 && (
-          <div className="py-1">
-            <h2 className="text-base font-bold text-gray-900 mb-1 pb-0.5 border-b border-blue-600 uppercase tracking-wide">
-              {resumeData.sections.projects.name}
-            </h2>
-            <div className="space-y-1.5">
-              {resumeData.sections.projects.items.map((project: any, index: number) => (
-                <div key={index}>
-                  <div className="flex justify-between items-start mb-0.5">
-                    <div className="flex-1">
-                      <h3 className="text-sm font-bold text-gray-900">
-                        {project.name}
-                      </h3>
-                      {project.description && (
-                        <p className="text-gray-700 font-medium text-xs">
-                          {project.description}
-                        </p>
-                      )}
-                    </div>
-                    <div className="text-right text-xs text-gray-500 ml-3">
-                      {project.date && <p className="font-medium">{project.date}</p>}
-                    </div>
-                  </div>
-                  {project.summary && (
-                    <div className="text-gray-700 text-xs leading-tight mb-0.5">
-                      {renderSummary(project.summary)}
-                    </div>
-                  )}
-                  {project.keywords && project.keywords.length > 0 && (
-                    <div className="flex flex-wrap gap-0.5 mb-0.5">
-                      {project.keywords.map((keyword: string, kidx: number) => (
-                        <span key={kidx} className="bg-blue-100 text-blue-800 text-xs px-1 py-0.5 rounded">
-                          {keyword}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                  {project.url && project.url.href && project.url.label && (
-                    <div>
-                      <a href={project.url.href} className="text-blue-600 hover:underline text-xs">
-                        {project.url.label.toLowerCase()}
-                      </a>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Skills */}
-        {resumeData.sections.skills && resumeData.sections.skills.visible && resumeData.sections.skills.items && resumeData.sections.skills.items.length > 0 && (
-          <div className="py-1">
-            <h2 className="text-base font-bold text-gray-900 mb-1 pb-0.5 border-b border-blue-600 uppercase tracking-wide">
-              {resumeData.sections.skills.name}
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-1.5 skills-grid">
-              {resumeData.sections.skills.items.map((skill: any, index: number) => (
-                <div key={index}>
-                  <h3 className="font-semibold text-gray-900 mb-0.5 text-xs">{skill.name}</h3>
-                  <div className="flex flex-wrap gap-0.5">
-                    {skill.keywords && skill.keywords.map((keyword: string, kidx: number) => (
-                      <span key={kidx} className="bg-blue-100 text-blue-800 text-xs px-1 py-0.5 rounded-full">
-                        {keyword}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Education */}
-        {resumeData.sections.education && resumeData.sections.education.visible && resumeData.sections.education.items && resumeData.sections.education.items.length > 0 && (
-          <div className="py-1">
-            <h2 className="text-base font-bold text-gray-900 mb-1 pb-0.5 border-b border-blue-600 uppercase tracking-wide">
-              {resumeData.sections.education.name}
-            </h2>
-            <div className="space-y-1.5">
-              {resumeData.sections.education.items.map((edu: any, index: number) => (
-                <div key={index}>
-                  <div className="flex justify-between items-start mb-0.5">
-                    <div className="flex-1">
-                      <h3 className="text-sm font-bold text-gray-900">
-                        {edu.institution}
-                      </h3>
-                      <p className="text-blue-600 font-semibold text-xs">
-                        {edu.studyType}
-                      </p>
-                    </div>
-                    <div className="text-right text-xs text-gray-500 ml-3">
-                      <p className="font-medium">{edu.date}</p>
-                      {edu.location && <p className="text-xs">{edu.location}</p>}
-                    </div>
-                  </div>
-                  {edu.score && (
-                    <p className="text-xs text-gray-600 mb-0.5">GPA: {edu.score}</p>
-                  )}
-                  {edu.summary && (
-                    <div className="text-gray-700 text-xs leading-tight">
-                      {renderSummary(edu.summary)}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
+      <ResumePreview resumeData={resumeData as ResumeData} />
     </div>
     </>
   )

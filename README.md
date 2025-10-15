@@ -25,19 +25,23 @@ A dynamic, modern resume generator built with Next.js that supports multiple res
 ├── app/
 │   ├── api/resume/route.ts    # API endpoint for resume data
 │   ├── globals.css            # Global styles
-│   ├── layout.tsx            # Root layout
-│   └── page.tsx              # Main resume component
+│   ├── layout.tsx             # Root layout
+│   └── page.tsx               # Main resume component
+├── components/
+│   ├── KeySetupPanel.tsx       # Gemini key management UI
+│   ├── PromptSettingsModal.tsx # Prompt override modal
+│   ├── ResumeIntake.tsx        # Intake experience for JSON/text resumes
+│   └── WorkspaceActions.tsx    # Optimization, adjustments, diff summary
 ├── lib/
 │   └── resume-utils.ts       # Resume utility functions
 ├── resumes/                  # Resume JSON files directory
-│   ├── current.json          # Current/main resume
-│   └── *.json               # Additional resume versions
+│   └── current.json          # Fictional Jensen Huang sample resume bundled for demos
 └── README.md
 ```
 
 ### How It Works
 
-1. **Resume Storage**: All resume JSON files are stored in the `/resumes` directory
+1. **Resume Storage**: All resume JSON files are stored in the `/resumes` directory (the repo ships with a single fictional sample; add your own as needed)
 2. **Dynamic Loading**: The API route (`/api/resume`) handles:
    - Listing available resume files
    - Loading specific resume data

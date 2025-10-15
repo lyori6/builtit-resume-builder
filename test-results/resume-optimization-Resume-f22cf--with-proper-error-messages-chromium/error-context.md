@@ -1,0 +1,296 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - alert [ref=e2]
+  - generic [ref=e3]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - generic [ref=e7]:
+          - generic [ref=e8]:
+            - img [ref=e10]
+            - generic [ref=e14]:
+              - heading "Connect your Gemini API key" [level=2] [ref=e15]
+              - paragraph [ref=e16]: Use Google’s free Gemini API key to optimize your resume locally. We save it in your browser only—you can remove it anytime.
+              - link "How to get a free Gemini API key" [ref=e17] [cursor=pointer]:
+                - /url: https://aistudio.google.com/app/apikey
+                - img [ref=e18] [cursor=pointer]
+                - text: How to get a free Gemini API key
+          - generic [ref=e20]:
+            - button "Delete saved key" [ref=e21] [cursor=pointer]:
+              - img [ref=e22] [cursor=pointer]
+              - text: Delete saved key
+            - button "Clear workspace" [ref=e25] [cursor=pointer]:
+              - img [ref=e26] [cursor=pointer]
+              - text: Clear workspace
+        - generic [ref=e29]:
+          - textbox "Key saved locally. Paste a new key to update." [ref=e30]
+          - button "Update key" [disabled] [ref=e31]
+        - paragraph [ref=e33]:
+          - img [ref=e34]
+          - text: Key saved in your browser.
+      - generic [ref=e36]:
+        - generic [ref=e37]:
+          - heading "Resume Generator" [level=1] [ref=e38]
+          - generic [ref=e39]:
+            - combobox [ref=e40]:
+              - option "Current" [selected]
+            - img
+        - generic [ref=e41]:
+          - button "Prompt settings" [ref=e42] [cursor=pointer]:
+            - img [ref=e43] [cursor=pointer]
+            - text: Prompt settings
+          - button "Download PDF" [ref=e45] [cursor=pointer]:
+            - img [ref=e46] [cursor=pointer]
+            - text: Download PDF
+          - button "Export JSON" [ref=e49] [cursor=pointer]:
+            - img [ref=e50] [cursor=pointer]
+            - text: Export JSON
+      - button "Paste Resume JSON" [ref=e55] [cursor=pointer]:
+        - img [ref=e56] [cursor=pointer]
+        - text: Paste Resume JSON
+        - img [ref=e59] [cursor=pointer]
+      - generic [ref=e61]:
+        - heading "AI Resume Optimization" [level=2] [ref=e63]:
+          - img [ref=e64]
+          - text: AI Resume Optimization
+        - generic [ref=e66]:
+          - generic [ref=e67]:
+            - generic [ref=e68]: Job Description
+            - textbox "Paste job description here..." [ref=e69]
+          - button "Optimize Resume" [disabled] [ref=e71]:
+            - img [ref=e72]
+            - text: Optimize Resume
+      - generic [ref=e74]:
+        - generic [ref=e75]:
+          - heading "Final Adjustments" [level=2] [ref=e76]:
+            - img [ref=e77]
+            - text: Final Adjustments
+          - generic [ref=e79]: Powered by Gemini 2.5 Flash
+        - generic [ref=e80]:
+          - generic [ref=e81]:
+            - generic [ref=e82]: Quick Adjustments
+            - textbox "Make it shorter, remove certain sections, emphasize specific skills, etc..." [ref=e83]
+          - button "Apply Adjustments" [disabled] [ref=e85]:
+            - img [ref=e86]
+            - text: Apply Adjustments
+    - generic [ref=e88]:
+      - generic [ref=e89]:
+        - heading "Jensen Huang" [level=1] [ref=e90]
+        - paragraph [ref=e91]: Product Manager of Parallel Possibilities
+        - generic [ref=e92]:
+          - generic [ref=e93]:
+            - img [ref=e94]
+            - link "jensen@example.com" [ref=e97] [cursor=pointer]:
+              - /url: mailto:jensen@example.com
+          - generic [ref=e98]:
+            - img [ref=e99]
+            - generic [ref=e101]: (650) 867-5309
+          - generic [ref=e102]:
+            - img [ref=e103]
+            - generic [ref=e106]: Santa Clara, CA (often found on Mars)
+          - generic [ref=e107]:
+            - img [ref=e108]
+            - link "jensen-huang.fun" [ref=e111] [cursor=pointer]:
+              - /url: https://www.jensen-huang.fun
+          - generic [ref=e112]:
+            - img [ref=e113]
+            - link "linkedin.com/in/jensen" [ref=e117] [cursor=pointer]:
+              - /url: https://www.linkedin.com/in/jensen
+          - generic [ref=e118]:
+            - img [ref=e119]
+            - link "jensen" [ref=e123] [cursor=pointer]:
+              - /url: https://www.linkedin.com/in/jensen
+          - link "parallel-dreamer" [ref=e125] [cursor=pointer]:
+            - /url: https://github.com/parallel-dreamer
+      - generic [ref=e126]:
+        - heading "Professional Summary" [level=2] [ref=e127]
+        - paragraph [ref=e130]:
+          - text: Inventive product leader who once finished a capstone on a commuter rocket ride. I translate cosmic-scale ideas into launch-ready experiences, aligning engineers, marketers, and sentient toasters with equal patience. Obsessed with useful AI, ergonomic GPUs, and writing product specs that make people chuckle
+          - emphasis [ref=e131]: and
+          - text: ship.
+      - generic [ref=e132]:
+        - heading "Experience" [level=2] [ref=e133]
+        - generic [ref=e134]:
+          - generic [ref=e135]:
+            - generic [ref=e136]:
+              - heading "Holographic Collaboration|Product Manager" [level=3] [ref=e138]:
+                - generic [ref=e140]: Holographic Collaboration
+                - generic [ref=e141]:
+                  - generic [ref=e142]: "|"
+                  - generic [ref=e143]: Product Manager
+              - generic [ref=e144]:
+                - paragraph [ref=e145]: Aug 2023 – Present
+                - paragraph [ref=e146]: Santa Clara, CA & Orbit
+            - generic [ref=e148]:
+              - paragraph [ref=e149]: Owns an experimental “meeting without gravity” platform that lets remote teams whiteboard in 3D. Balances GPU demand with human attention spans.
+              - list [ref=e150]:
+                - listitem [ref=e151]:
+                  - text: •
+                  - paragraph [ref=e152]: Shipped auto-transcription for zero-gravity scribbles, improving meeting recall by 42% without any floating markers lost in space.
+                - listitem [ref=e153]:
+                  - text: •
+                  - paragraph [ref=e154]: Piloted sentiment-boost alerts that nudge moderators when morale dips; internal NPS climbed from 48 to 72 in two quarters.
+                - listitem [ref=e155]:
+                  - text: •
+                  - paragraph [ref=e156]: Coordinated launch with hardware, legal, and Martian customs—first product to clear orbital compliance paperwork on the first try.
+          - generic [ref=e157]:
+            - generic [ref=e158]:
+              - heading "Saturn Rings Streaming|Senior Associate Product Manager" [level=3] [ref=e160]:
+                - generic [ref=e161]: Saturn Rings Streaming
+                - generic [ref=e162]: "|"
+                - generic [ref=e163]: Senior Associate Product Manager
+              - generic [ref=e164]:
+                - paragraph [ref=e165]: Jan 2021 – Jul 2023
+                - paragraph [ref=e166]: Remote (timezones +6 to -6)
+            - generic [ref=e168]:
+              - paragraph [ref=e169]: Led discovery for the solar system's premier streaming service for orbital tourists.
+              - list [ref=e170]:
+                - listitem [ref=e171]:
+                  - text: •
+                  - paragraph [ref=e172]: Launched dynamic bandwidth throttling that adapts to meteor showers, cutting stream drop-offs by 33%.
+                - listitem [ref=e173]:
+                  - text: •
+                  - paragraph [ref=e174]: Introduced an AI curator nicknamed “PopcornBot” that tripled engagement with micro-documentaries about moon volcanoes.
+                - listitem [ref=e175]:
+                  - text: •
+                  - paragraph [ref=e176]: Mentored a team of four APMs; two now run product for Pluto's weather channel beta.
+          - generic [ref=e177]:
+            - generic [ref=e178]:
+              - heading "Nebula Capital|Associate Product Manager" [level=3] [ref=e180]:
+                - generic [ref=e181]: Nebula Capital
+                - generic [ref=e182]: "|"
+                - generic [ref=e183]: Associate Product Manager
+              - generic [ref=e184]:
+                - paragraph [ref=e185]: Jul 2018 – Dec 2020
+                - paragraph [ref=e186]: San Francisco, CA
+            - generic [ref=e188]:
+              - paragraph [ref=e189]: Rotational APM on an AI-first fintech squad helping founders fund cosmic ventures.
+              - list [ref=e190]:
+                - listitem [ref=e191]:
+                  - text: •
+                  - paragraph [ref=e192]: Designed a realtime dashboard for asteroid mining startups, shrinking reporting time from six hours to twenty minutes.
+                - listitem [ref=e193]:
+                  - text: •
+                  - paragraph [ref=e194]: Partnered with compliance to humanize risk messaging; decreased support tickets about “galactic audits” by 55%.
+                - listitem [ref=e195]:
+                  - text: •
+                  - paragraph [ref=e196]: Co-led quarterly roadmap reviews with Jensen-in-the-Loop simulations to test investor reactions.
+          - generic [ref=e197]:
+            - generic [ref=e198]:
+              - heading "Cometary Systems|Product Analyst" [level=3] [ref=e200]:
+                - generic [ref=e201]: Cometary Systems
+                - generic [ref=e202]: "|"
+                - generic [ref=e203]: Product Analyst
+              - generic [ref=e204]:
+                - paragraph [ref=e205]: Sep 2016 – Jun 2018
+                - paragraph [ref=e206]: Mountain View, CA
+            - generic [ref=e208]:
+              - paragraph [ref=e209]: Started as the team's resident spreadsheet sorcerer and slowly automated himself into product.
+              - list [ref=e210]:
+                - listitem [ref=e211]:
+                  - text: •
+                  - paragraph [ref=e212]: Mapped onboarding frictions and proposed feature flags that lifted activation by 18% for interplanetary customers.
+                - listitem [ref=e213]:
+                  - text: •
+                  - paragraph [ref=e214]: Built the first KPI cockpit using GPUs in the conference room; engineering adopted it as the canonical source of truth.
+                - listitem [ref=e215]:
+                  - text: •
+                  - paragraph [ref=e216]: Presented monthly “How to interpret Martian user feedback” sessions—localization score rose to 95%.
+          - generic [ref=e217]:
+            - generic [ref=e218]:
+              - heading "Galactic Insights Cooperative|Data Analyst Intern" [level=3] [ref=e220]:
+                - generic [ref=e221]: Galactic Insights Cooperative
+                - generic [ref=e222]: "|"
+                - generic [ref=e223]: Data Analyst Intern
+              - generic [ref=e224]:
+                - paragraph [ref=e225]: Jun 2015 – Aug 2016
+                - paragraph [ref=e226]: Mars Colony One
+            - generic [ref=e228]:
+              - paragraph [ref=e229]: Wrangled rover telemetry and snack-bar surveys to forecast campus energy needs.
+              - list [ref=e230]:
+                - listitem [ref=e231]:
+                  - text: •
+                  - paragraph [ref=e232]: Introduced GPU-accelerated dashboards during a dorm blackout; energy planning error margin dropped by 21%.
+                - listitem [ref=e233]:
+                  - text: •
+                  - paragraph [ref=e234]: Automated weekly reporting with Python scripts named after favorite sci-fi authors; saved the team 12 hours per sprint.
+                - listitem [ref=e235]:
+                  - text: •
+                  - paragraph [ref=e236]: Presented findings to the Dean in a borrowed spacesuit after forgetting the indoor tie.
+      - generic [ref=e237]:
+        - heading "Projects" [level=2] [ref=e238]
+        - generic [ref=e239]:
+          - generic [ref=e240]:
+            - generic [ref=e241]:
+              - generic [ref=e242]:
+                - heading "GPU-Powered Espresso Queue" [level=3] [ref=e243]
+                - paragraph [ref=e244]: Smart queueing app ensuring the espresso machine never idles during product sprints.
+              - paragraph [ref=e246]: "2022"
+            - paragraph [ref=e249]: Used computer vision and an old dev kit to predict latte demand; adopted across three NVIDIA campuses.
+            - generic [ref=e250]:
+              - generic [ref=e251]: Computer Vision
+              - generic [ref=e252]: Edge AI
+              - generic [ref=e253]: Employee Experience
+            - link "demo reel" [ref=e255] [cursor=pointer]:
+              - /url: https://jensen-huang.fun/espresso
+          - generic [ref=e256]:
+            - generic [ref=e257]:
+              - generic [ref=e258]:
+                - heading "Martian Rover OKR Tracker" [level=3] [ref=e259]
+                - paragraph [ref=e260]: Goal tracking app for student robotics teams navigating low gravity.
+              - paragraph [ref=e262]: "2020"
+            - paragraph [ref=e265]: "Co-created playful OKR templates (“Objective: don't flip over”), improving weekly check-ins by 45%."
+            - generic [ref=e266]:
+              - generic [ref=e267]: Productivity
+              - generic [ref=e268]: Gamification
+              - generic [ref=e269]: Education
+            - link "open source" [ref=e271] [cursor=pointer]:
+              - /url: https://github.com/parallel-dreamer/rover-okrs
+      - generic [ref=e272]:
+        - heading "Skills" [level=2] [ref=e273]
+        - generic [ref=e274]:
+          - generic [ref=e275]:
+            - heading "Product" [level=3] [ref=e276]
+            - generic [ref=e277]:
+              - generic [ref=e278]: Roadmapping
+              - generic [ref=e279]: Strategic Narratives
+              - generic [ref=e280]: AI Feature Design
+              - generic [ref=e281]: Experimentation
+              - generic [ref=e282]: Stakeholder Alignment
+          - generic [ref=e283]:
+            - heading "Technical" [level=3] [ref=e284]
+            - generic [ref=e285]:
+              - generic [ref=e286]: GPU Architecture Basics
+              - generic [ref=e287]: Python
+              - generic [ref=e288]: TypeScript
+              - generic [ref=e289]: SQL
+              - generic [ref=e290]: Prompt Engineering
+          - generic [ref=e291]:
+            - heading "Team" [level=3] [ref=e292]
+            - generic [ref=e293]:
+              - generic [ref=e294]: Public Speaking
+              - generic [ref=e295]: Mentorship
+              - generic [ref=e296]: Product Operations
+              - generic [ref=e297]: Workshop Facilitation
+              - generic [ref=e298]: Cross-Planet Collaboration
+      - generic [ref=e299]:
+        - heading "Education" [level=2] [ref=e300]
+        - generic [ref=e301]:
+          - generic [ref=e302]:
+            - generic [ref=e303]:
+              - generic [ref=e304]:
+                - heading "Community College of the Planet Mars" [level=3] [ref=e305]
+                - paragraph [ref=e306]: Associate of Science
+              - paragraph [ref=e308]: "2016"
+            - paragraph [ref=e309]: "GPA: GPA 3.9"
+            - paragraph [ref=e312]: Captain of the GPU overclocking club; co-founded the Anti-Dust Coalition for better rover maintenance.
+          - generic [ref=e313]:
+            - generic [ref=e314]:
+              - generic [ref=e315]:
+                - heading "NVIDIA Business School" [level=3] [ref=e316]
+                - paragraph [ref=e317]: MBA
+              - paragraph [ref=e319]: "2018"
+            - paragraph [ref=e320]: "GPA: GPA 4.0 (scaled for zero gravity)"
+            - paragraph [ref=e323]: "Thesis: “Why every roadmap needs a warp-drive contingency”. Class speaker voted “Most likely to whiteboard during vacation”."
+```
