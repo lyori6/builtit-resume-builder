@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
     }
 
     const genAI = new GoogleGenerativeAI(apiKey)
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-pro' })
+    const model = genAI.getGenerativeModel({ model: 'gemini-flash-latest' })
     const prompt = buildTextToResumeJsonPrompt(resumeText, promptOverrides?.systemPrompt)
 
     console.log('Requesting text-to-JSON conversion via Gemini...')
@@ -50,8 +50,8 @@ export async function POST(request: NextRequest) {
     if (!validation.isValid) {
       console.error('Converted resume failed validation:', validation.errors)
       return NextResponse.json(
-        { error: 'Converted resume is invalid.', details: validation.errors },
-        { status: 500 }
+        { error: 'Converted resume is invalid', details: validation.errors },
+        { status: 422 }
       )
     }
 

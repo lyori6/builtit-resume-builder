@@ -251,7 +251,7 @@ export function validateResumeJSON(json: any): { isValid: boolean; errors: strin
       ensureStringField(value.label, `${path}.label`, { optional: true, allowEmpty: true })
     }
     if ('href' in value) {
-      ensureStringField(value.href, `${path}.href`, { optional: true })
+      ensureStringField(value.href, `${path}.href`, { optional: true, allowEmpty: true })
     }
   }
 

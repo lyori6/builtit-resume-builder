@@ -19,6 +19,8 @@ import PromptSettingsModal from '@/components/PromptSettingsModal'
 import ResumeIntake from '@/components/ResumeIntake'
 import WorkspaceActions from '@/components/WorkspaceActions'
 import ResumePreview from '@/components/ResumePreview'
+import OnboardingWizard from '@/components/OnboardingWizard'
+import IntakeDecision from '@/components/IntakeDecision'
 import { storage } from '@/lib/local-storage'
 import {
   DEFAULT_OPTIMIZATION_SYSTEM_PROMPT,
@@ -111,7 +113,7 @@ const primitiveArraysEqual = (a: unknown[], b: unknown[]) => {
 }
 
 const toDisplayString = (value: unknown) => {
-  if (value === null || value === undefined) return '—'
+  if (value === null || value === undefined) return '--'
   if (Array.isArray(value)) return value.map((entry) => `${entry}`).join(', ')
   if (typeof value === 'string') return value
   if (typeof value === 'number' || typeof value === 'boolean') return String(value)
@@ -213,6 +215,7 @@ const ResumeGenerator = () => {
   const [jsonErrors, setJsonErrors] = useState<string[]>([])
   const [customResumeLoaded, setCustomResumeLoaded] = useState(false)
   const customResumeLoadedRef = useRef(false)
+  const [intakeFlow, setIntakeFlow] = useState<'decision' | 'json' | 'helper'>('decision')
   const [intakeMode, setIntakeMode] = useState<'json' | 'text'>('json')
   const [rawResumeText, setRawResumeText] = useState('')
   const [isConvertingText, setIsConvertingText] = useState(false)
@@ -248,6 +251,7 @@ const ResumeGenerator = () => {
   const [showPromptSettings, setShowPromptSettings] = useState(false)
   const [promptSaveState, setPromptSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [promptError, setPromptError] = useState<string | null>(null)
+  const [isOnboardingOpen, setIsOnboardingOpen] = useState(false)
 
   const downloadJSONFile = (jsonString: string, filename: string) => {
     try {
@@ -299,6 +303,12 @@ const ResumeGenerator = () => {
   }, [])
 
   useEffect(() => {
+    if (!storage.isOnboardingCompleted()) {
+      setIsOnboardingOpen(true)
+    }
+  }, [])
+
+  useEffect(() => {
     if (showPromptSettings) {
       setDraftSystemPrompt(systemPrompt)
       setDraftAdjustmentPrompt(adjustmentPrompt)
@@ -321,6 +331,7 @@ const ResumeGenerator = () => {
         customResumeLoadedRef.current = true
         setSelectedResume('custom')
         setLoading(false)
+        setIntakeFlow('json')
       } catch (error) {
         console.error('Failed to parse saved custom resume:', error)
         setIsJSONValid(false)
@@ -376,6 +387,47 @@ const ResumeGenerator = () => {
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleSelectJSONPath = () => {
+    setIntakeFlow('json')
+    setIntakeMode('json')
+  }
+
+  const handleSelectHelperPath = () => {
+    setIntakeFlow('helper')
+    setIntakeMode('text')
+  }
+
+  const handleBackToDecision = () => {
+    setIntakeFlow('decision')
+    setPastedJSON('')
+    setIsJSONValid(null)
+    setJsonErrors([])
+    setRawResumeText('')
+    setTextConversionError(null)
+  }
+
+  const handleIntakeModeChange = (mode: 'json' | 'text') => {
+    setIntakeMode(mode)
+    if (mode === 'json') {
+      setIntakeFlow('json')
+    } else {
+      setIntakeFlow('helper')
+    }
+  }
+
+  const handleOpenOnboarding = () => {
+    setIsOnboardingOpen(true)
+  }
+
+  const handleCloseOnboarding = () => {
+    setIsOnboardingOpen(false)
+  }
+
+  const handleCompleteOnboarding = () => {
+    storage.setOnboardingCompleted()
+    setIsOnboardingOpen(false)
   }
 
   const generatePDF = () => {
@@ -500,6 +552,7 @@ const ResumeGenerator = () => {
 
     setRawResumeText('')
     setTextConversionError(null)
+    setIntakeFlow('decision')
     setIntakeMode('json')
     setPastedJSON('')
     setIsJSONValid(null)
@@ -566,6 +619,7 @@ const ResumeGenerator = () => {
       setAdjustmentSuccess(false)
       storage.saveResume('custom', JSON.stringify(parsed, null, 2))
       setIntakeMode('json')
+      setIntakeFlow('json')
     } catch (error) {
       console.error('Error loading custom resume:', error)
     }
@@ -574,6 +628,53 @@ const ResumeGenerator = () => {
   const downloadPastedJSON = () => {
     if (!pastedJSON.trim()) return
     downloadJSONFile(pastedJSON, 'resume.json')
+  }
+
+  const handleJSONFileDrop = (file: File) => {
+    const reader = new FileReader()
+    reader.onload = () => {
+      const text = reader.result
+      if (typeof text !== 'string') {
+        setIsJSONValid(false)
+        setJsonErrors(['Unable to read the file. Please try again or paste the JSON manually.'])
+        return
+      }
+
+      setPastedJSON(text)
+
+      try {
+        const parsed = JSON.parse(text)
+        const validation = validateResumeJSON(parsed)
+        setIsJSONValid(validation.isValid)
+        setJsonErrors(validation.errors)
+
+        if (validation.isValid) {
+          setResumeData(parsed)
+          setSelectedResume('custom')
+          setCustomResumeLoaded(true)
+          customResumeLoadedRef.current = true
+          storage.saveResume('custom', JSON.stringify(parsed, null, 2))
+          setLoading(false)
+          setIntakeFlow('json')
+          setOptimizationSuccess(false)
+          setAdjustmentSuccess(false)
+          setOriginalResume(null)
+          setShowDiff(false)
+        }
+      } catch (error) {
+        console.error('Failed to parse uploaded JSON:', error)
+        setIsJSONValid(false)
+        setJsonErrors(['Invalid JSON file. Double-check the contents or paste it manually.'])
+      }
+    }
+
+    reader.onerror = () => {
+      console.error('Failed to read file')
+      setIsJSONValid(false)
+      setJsonErrors(['Unable to read the file. Please try again or paste the JSON manually.'])
+    }
+
+    reader.readAsText(file)
   }
 
   // Clear custom resume
@@ -637,7 +738,10 @@ const ResumeGenerator = () => {
       const result = await response.json()
 
       if (!response.ok) {
-        throw new Error(result.error || 'Conversion failed')
+        const detailMessage = Array.isArray(result.details)
+          ? `${result.error || 'Conversion failed'}\n${result.details.join('\n')}`
+          : result.error || 'Conversion failed'
+        throw new Error(detailMessage)
       }
 
       if (result.success && result.resume) {
@@ -827,8 +931,8 @@ const ResumeGenerator = () => {
   const renderDiffValue = (value: string) => {
     const trimmedValue = value?.trim()
 
-    if (!trimmedValue || trimmedValue === '—') {
-      return <p className="text-xs text-gray-500">—</p>
+    if (!trimmedValue || trimmedValue === '--') {
+      return <p className="text-xs text-gray-500">--</p>
     }
 
     const containsHTML = /<[a-z][\s\S]*>/i.test(trimmedValue)
@@ -867,28 +971,61 @@ const ResumeGenerator = () => {
   // Show paste interface if no resume is loaded
   if (!resumeData && !customResumeLoaded) {
     return (
-      <ResumeIntake
-        intakeMode={intakeMode}
-        onIntakeModeChange={setIntakeMode}
-        pastedJSON={pastedJSON}
-        onJSONChange={handleJSONPaste}
-        isJSONValid={isJSONValid}
-        jsonErrors={jsonErrors}
-        onLoadJSON={loadCustomResume}
-        onDownloadJSON={downloadPastedJSON}
-        rawResumeText={rawResumeText}
-        onRawTextChange={setRawResumeText}
-        onConvertText={convertTextToResume}
-        isConvertingText={isConvertingText}
-        textConversionError={textConversionError}
-        hasStoredKey={!!storedGeminiKey}
-      />
+      <>
+        <OnboardingWizard
+          isOpen={isOnboardingOpen}
+          onClose={handleCloseOnboarding}
+          onComplete={handleCompleteOnboarding}
+          geminiKeyHelpUrl={GEMINI_KEY_HELP_URL}
+        />
+        {intakeFlow === 'decision' ? (
+          <IntakeDecision
+            onSelectJSONPath={handleSelectJSONPath}
+            onSelectHelperPath={handleSelectHelperPath}
+          />
+        ) : (
+          <ResumeIntake
+            intakeMode={intakeMode}
+            onIntakeModeChange={handleIntakeModeChange}
+            pastedJSON={pastedJSON}
+            onJSONChange={handleJSONPaste}
+            isJSONValid={isJSONValid}
+            jsonErrors={jsonErrors}
+            onLoadJSON={loadCustomResume}
+            onDownloadJSON={downloadPastedJSON}
+            onJSONFileDrop={handleJSONFileDrop}
+            isUploadingJSON={false}
+            rawResumeText={rawResumeText}
+            onRawTextChange={setRawResumeText}
+            onConvertText={convertTextToResume}
+            isConvertingText={isConvertingText}
+            textConversionError={textConversionError}
+            hasStoredKey={!!storedGeminiKey}
+            onOpenOnboarding={handleOpenOnboarding}
+            showModeToggle={false}
+            onBackToDecision={handleBackToDecision}
+            geminiKeyInput={geminiKeyInput}
+            geminiKeyStatus={geminiKeyStatus}
+            geminiKeyError={geminiKeyError}
+            isValidatingGeminiKey={isValidatingKey}
+            onGeminiKeyInputChange={handleGeminiKeyInputChange}
+            onSaveGeminiKey={handleSaveGeminiKeyClick}
+            geminiKeyHelpUrl={GEMINI_KEY_HELP_URL}
+          />
+        )}
+      </>
     )
   }
 
 
   return (
     <>
+      <OnboardingWizard
+        isOpen={isOnboardingOpen}
+        onClose={handleCloseOnboarding}
+        onComplete={handleCompleteOnboarding}
+        geminiKeyHelpUrl={GEMINI_KEY_HELP_URL}
+      />
       {showPromptSettings && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
           <div className="w-full max-w-3xl rounded-lg bg-white shadow-xl p-6 max-h-[90vh] overflow-y-auto">

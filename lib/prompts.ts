@@ -1,19 +1,19 @@
 import { ResumeData } from './resume-types'
 
-export const DEFAULT_TEXT_CONVERSION_SYSTEM_PROMPT = `System: You convert plain-text resumes into structured JSON using the provided schema. Preserve all factual details, dates, companies, and quantifiable outcomes. When content includes bullet points, render them as HTML <ul><li>…</li></ul>. Do not fabricate information or invent new roles.
+export const DEFAULT_TEXT_CONVERSION_SYSTEM_PROMPT = `System: You convert plain-text resumes into structured JSON using the provided schema. Preserve all factual details, dates, companies, and quantifiable outcomes. When content includes bullet points, render them as HTML <ul><li>...</li></ul>. Do not fabricate information or invent new roles.
 
 Constraints:
 - Follow the JSON schema exactly. All keys must match.
 - If information is missing (e.g., phone, location), use an empty string.
-- Produce valid JSON only—no markdown, commentary, or backticks.
+- Remove optional sections (projects, certifications, etc.) if they have no content, or set "visible": false with an empty "items" array.
+- Produce valid JSON only - no markdown, commentary, or backticks.
 - Keep summaries concise and professional.`
 
 export const DEFAULT_OPTIMIZATION_SYSTEM_PROMPT = `System: You are tailoring a resume. Use only the provided resume content as the source of truth. Align the language with the job description while keeping content believable and concise.`
 
 export const DEFAULT_ADJUSTMENT_SYSTEM_PROMPT = `System: Apply precise edits to the resume according to the instructions. Keep all other content unchanged.`
 
-const RESUME_SCHEMA_SNIPPET = `
-{
+const RESUME_SCHEMA_SNIPPET = `{
   "basics": {
     "name": "string",
     "headline": "string",
@@ -21,9 +21,6 @@ const RESUME_SCHEMA_SNIPPET = `
     "phone": "string",
     "location": "string",
     "url": { "label": "string", "href": "string" },
-    "customFields": [
-      { "id": "string", "icon": "string", "name": "string", "value": "string" }
-    ],
     "profiles": [
       { "network": "string", "username": "string", "url": "string" }
     ]
@@ -31,29 +28,64 @@ const RESUME_SCHEMA_SNIPPET = `
   "sections": {
     "summary": {
       "id": "summary",
-      "name": "string",
+      "name": "Professional Summary",
       "visible": true,
-      "content": "<p>HTML content</p>"
+      "content": "<p>Short HTML summary.</p>"
     },
     "experience": {
       "id": "experience",
-      "name": "string",
+      "name": "Experience",
       "visible": true,
       "items": [
         {
-          "id": "string",
+          "id": "exp-1",
           "visible": true,
           "company": "string",
           "position": "string",
           "location": "string",
           "date": "string",
-          "summary": "<p>HTML bullet points</p>"
+          "summary": "<ul><li>HTML bullet</li></ul>"
+        }
+      ]
+    },
+    "projects": {
+      "id": "projects",
+      "name": "Projects",
+      "visible": false,
+      "items": []
+    },
+    "skills": {
+      "id": "skills",
+      "name": "Skills",
+      "visible": true,
+      "items": [
+        {
+          "id": "skill-1",
+          "visible": true,
+          "name": "string",
+          "keywords": ["string"]
+        }
+      ]
+    },
+    "education": {
+      "id": "education",
+      "name": "Education",
+      "visible": true,
+      "items": [
+        {
+          "id": "edu-1",
+          "visible": true,
+          "institution": "string",
+          "studyType": "string",
+          "date": "string",
+          "location": "string",
+          "score": "string",
+          "summary": "string"
         }
       ]
     }
   }
-}
-`
+}`
 
 export const buildTextToResumeJsonPrompt = (
   resumeText: string,

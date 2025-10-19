@@ -8,7 +8,9 @@ type StoredData = {
   prompts?: {
     systemPrompt?: string
     adjustmentPrompt?: string
+    conversionPrompt?: string
   }
+  onboardingCompleted?: boolean
 }
 
 const defaultData: StoredData = {
@@ -130,5 +132,18 @@ export const storage = {
   clearAll() {
     if (!isBrowser()) return
     writeStorage({ ...defaultData })
+  },
+
+  isOnboardingCompleted(): boolean {
+    const data = readStorage()
+    return data.onboardingCompleted === true
+  },
+
+  setOnboardingCompleted() {
+    const data = readStorage()
+    writeStorage({
+      ...data,
+      onboardingCompleted: true
+    })
   }
 }

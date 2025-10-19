@@ -35,18 +35,30 @@ const KeySetupPanel: FC<KeySetupPanelProps> = ({
           <Key size={18} className="text-blue-600" />
         </div>
         <div>
-          <h2 className="text-sm font-semibold text-gray-900">Connect your Gemini API key</h2>
-          <p className="text-xs text-gray-600">
-            Use Google’s free Gemini API key to optimize your resume locally. We save it in your browser only—you can remove it anytime.
-          </p>
+          <h2 className="text-sm font-semibold text-gray-900">Bring your Gemini API key</h2>
+          <div className="space-y-1 text-xs text-gray-600">
+            <p>
+              Grab a key from Google AI Studio's free tier. We only store it in your browser, so you can remove it whenever you like.
+            </p>
+            <ul className="space-y-1">
+              <li className="flex items-center gap-2 text-gray-600">
+                <span className="block h-1.5 w-1.5 rounded-full bg-blue-500" aria-hidden="true" />
+                Free to use with no billing required.
+              </li>
+              <li className="flex items-center gap-2 text-gray-600">
+                <span className="block h-1.5 w-1.5 rounded-full bg-blue-500" aria-hidden="true" />
+                Key stays on this device; nothing is sent to our servers.
+              </li>
+            </ul>
+          </div>
           <a
             href={geminiKeyHelpUrl}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 mt-2"
+            className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-700 mt-2"
           >
             <Info size={14} />
-            How to get a free Gemini API key
+            Get your free Gemini API key
           </a>
         </div>
       </div>

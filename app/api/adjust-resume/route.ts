@@ -37,8 +37,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Initialize Gemini 2.5 Flash model for quick adjustments
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
+    // Initialize Gemini Flash latest model for quick adjustments
+    const model = genAI.getGenerativeModel({ model: 'gemini-flash-latest' })
 
     // Create focused adjustment prompt
     const prompt = buildAdjustmentPrompt(
