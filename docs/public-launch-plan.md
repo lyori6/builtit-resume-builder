@@ -15,6 +15,14 @@ Tech-lead view of everything required to open the resume builder to the public w
 
 ---
 
+### Latest Engineering Updates (2025-10-19)
+- Restored the lint baseline by upgrading `eslint-config-next` to match Next 14.2 and tightening TypeScript coverage across `app/page.tsx`, `WorkspaceActions`, and storage helpers.
+- Confirmed the production build succeeds (Next.js type checks) after refining `lib/resume-types.ts` summary handling.
+- Unblocked UX polish work by documenting progressive disclosure and workspace status header refinements under the intake/workspace follow-up sections.
+- Added deterministic `data-testid` hooks and shared Playwright helpers so the intake flow is scriptable without depending on visible copy.
+- Introduced a lightweight `tsx --test` unit suite covering `validateResumeJSON` edge cases and local-storage behavior; prompt builder coverage remains on deck.
+- Replaced the full Playwright regression pack with a single smoke flow that verifies JSON intake + workspace load, keeping the suite fast and reliable.
+
 ## Phase 0 · Discovery & Alignment
 - [ ] Confirm target personas (ordinary job seeker, founder/advanced) and primary success metrics for public launch.
 - [ ] Collect sample plaintext resumes to benchmark conversion accuracy.
@@ -73,20 +81,32 @@ Tech-lead view of everything required to open the resume builder to the public w
 
 ### Intake Follow-ups
 - Validate the new decision screen copy (JSON vs. help me) with pilot users; adjust wording/order if drop-off persists.
+- Introduce progressive disclosure on JSON/Text tabs (collapsible "How this works" guidance + inline validation summary) so experienced users can move faster.
+- Introduced progressive disclosure on JSON intake: helper moved into collapsible panel + inline paste focus for rapid load.
+- Rebuilt the intake hero into two cards (Have JSON / Need JSON) with concise copy, inline validation chips, an always-visible paste/upload flow, and a Gemini key banner to guide conversions.
+- Added a lightweight BuiltIt logo + favicon (`public/logo.svg`, `public/favicon.svg`) and updated site metadata to reference it.
+- Normalized incoming resumes so legacy custom sections load cleanly; smoke reports removed from the repo for a clean handoff.
+- Explore condensing the decision screen into a reversible intake toggle to reduce hesitation and keep the flow feeling lightweight.
 - Reinforce the one-resume-at-a-time constraint in success states/download dialog so expectations stay clear.
 
 ### Workspace Follow-ups
 - Neutral sample resume replaces personal data (Jensen Huang demo); prompt copy polish still open.
+- Add a compact status strip in the workspace showing key + resume state, missing actions, and co-located "Apply all changes" / download CTA for the diff summary.
 - Polish diff summary layout once data validations are finalized and ensure summary copy matches shared error messaging.
 - Componentization status:
   1. ✅ `components/ResumePreview.tsx` now owns the sanitized resume layout.
   2. ✅ `components/ResumeDiffTable.tsx` + `ResumeDiffSummary.tsx` power the diff UI; summary copy still needs launch-ready language + download CTA hook.
   3. 🔜 Keep prop surface minimal while tightening prompt copy/tooltips and styling the summary for launch polish.
+- Simplified workspace header by removing the legacy sample selector so primary actions stay the focus.
 
 ## Phase 6 · Testing & Validation
-- [ ] Add unit tests for `validateResumeJSON`, local storage helper, and prompt builders.
+- [x] Restore lint baseline (upgrade `eslint-config-next`, remove implicit `any` usage, tighten storage/diff typing).
+- [x] Confirm `npm run build` passes locally after schema typing adjustments in `lib/resume-types.ts`.
+- [x] Add unit tests for `validateResumeJSON` and the local storage helper (`tests/unit` via `tsx --test`).
+- [ ] Add targeted unit coverage for prompt builders.
 - [ ] Smoke-test flows manually: key management, JSON intake, text conversion, optimization, adjustment, diff summary, clear workspace.
-- [x] Ensure Playwright regression suite passes against the modularized UI (JSON intake toggles handled).
+- [x] Ensure Playwright smoke flow covers JSON intake → workspace happy path (full regression moved to manual QA).
+  - Command: `PLAYWRIGHT_BASE_URL=http://127.0.0.1:3002 npx playwright test tests/e2e/smoke-flow.spec.ts --project=chromium --workers=1`
 - [ ] Capture edge cases (empty sections, malformed HTML) and document fixes/workarounds.
 - [ ] Conduct pilot feedback sessions (at least one ordinary user, one founder) and log findings/decisions in this file.
 - [ ] Collect social proof (quotes/metrics) from pilot testers for launch marketing.

@@ -11,6 +11,7 @@ A dynamic, modern resume generator built with Next.js that supports multiple res
 - **Prompt Overrides**: Customize Gemini system prompts locally to fine-tune AI behavior
 - **Responsive Design**: Clean, professional layout that works on all devices
 - **Modern UI**: Built with Tailwind CSS for a polished experience
+- **Branding Ready**: Ships with a scalable SVG logo and favicon in `public/`
 
 ## Architecture
 

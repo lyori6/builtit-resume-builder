@@ -13,27 +13,25 @@ const IntakeDecision: FC<IntakeDecisionProps> = ({ onSelectJSONPath, onSelectHel
     <div className="print:hidden p-4 bg-white shadow-sm border-b">
       <div className="max-w-4xl mx-auto py-10 space-y-10">
         <div className="text-center space-y-3">
-          <span className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
-            Step 1 of 3
-          </span>
-          <h1 className="text-2xl font-bold text-gray-900">How do you want to get started?</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Choose your starting point</h1>
           <p className="text-sm text-gray-600">
-            We'll tailor the experience based on whether you already have a JSON export of your resume.
+            Bring your own JSON resume or let BuiltIt help you create one from scratch.
           </p>
         </div>
 
         <div className="grid gap-5 md:grid-cols-2">
           <button
             onClick={onSelectJSONPath}
+            data-testid="intake-option-json"
             className="flex h-full flex-col rounded-2xl border border-gray-200 bg-white p-5 text-left shadow-sm transition-all hover:-translate-y-1 hover:border-blue-500 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="rounded-full bg-blue-50 p-3 text-blue-600">
-                  <FileCode size={20} />
+                <div className="rounded-full bg-blue-100 p-3 text-blue-600">
+                  <FileCode size={22} />
                 </div>
                 <div>
-                  <h2 className="text-lg font-semibold text-gray-900">I already have JSON</h2>
+                  <h2 className="text-xl font-bold text-gray-900">I already have JSON</h2>
                   <p className="text-sm text-gray-600">
                     Paste or upload your JSON resume and jump straight into optimization.
                   </p>
@@ -59,17 +57,18 @@ const IntakeDecision: FC<IntakeDecisionProps> = ({ onSelectJSONPath, onSelectHel
 
           <button
             onClick={onSelectHelperPath}
+            data-testid="intake-option-helper"
             className="flex h-full flex-col rounded-2xl border border-gray-200 bg-white p-5 text-left shadow-sm transition-all hover:-translate-y-1 hover:border-blue-500 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="rounded-full bg-purple-50 p-3 text-purple-600">
-                  <Sparkles size={20} />
+                <div className="rounded-full bg-purple-100 p-3 text-purple-600">
+                  <Sparkles size={22} />
                 </div>
                 <div>
-                  <h2 className="text-lg font-semibold text-gray-900">Help me create JSON</h2>
+                  <h2 className="text-xl font-bold text-gray-900">Help me create JSON</h2>
                   <p className="text-sm text-gray-600">
-                    Generate JSON with your favorite AI or let BuiltIt convert your existing resume.
+                    Use your own AI prompt or let BuiltIt convert plain text into the right format.
                   </p>
                 </div>
               </div>
@@ -82,7 +81,7 @@ const IntakeDecision: FC<IntakeDecisionProps> = ({ onSelectJSONPath, onSelectHel
               </li>
               <li className="flex items-center gap-2">
                 <Sparkles size={16} className="text-purple-500" />
-                Optionally paste your resume text and we'll convert it
+                Optionally paste your resume text and we will convert it
               </li>
               <li className="flex items-center gap-2">
                 <ArrowRight size={16} className="text-purple-500" />

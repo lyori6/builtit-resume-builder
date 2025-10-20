@@ -75,11 +75,9 @@ export const storage = {
 
   removeGeminiApiKey() {
     const data = readStorage()
-    const { geminiApiKey, ...rest } = data
-    writeStorage({
-      ...rest,
-      geminiApiKey: undefined
-    })
+    const nextData = { ...data }
+    delete nextData.geminiApiKey
+    writeStorage(nextData)
   },
 
   getResume(id: string): string | null {

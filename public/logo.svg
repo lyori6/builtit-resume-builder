@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">BuiltIt Logo</title>
+  <desc id="desc">Rounded blue square with a white document featuring the letter B and a sparkle icon</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#2563eb" />
+      <stop offset="100%" stop-color="#1d4ed8" />
+    </linearGradient>
+    <linearGradient id="page" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="100%" stop-color="#f1f5f9" />
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="16" fill="url(#bg)" />
+  <path d="M22 14h20a4 4 0 0 1 4 4v28a4 4 0 0 1-4 4H22a4 4 0 0 1-4-4V18a4 4 0 0 1 4-4z" fill="url(#page)" />
+  <path d="M26 22h10c4.418 0 8 2.582 8 7 0 3.19-1.61 5.4-4.134 6.39C41.832 36.09 43 38.57 43 41c0 4.26-3.424 7-8.75 7H26V22zm6.75 5h-2.75v6h2.75c2.047 0 3.25-.98 3.25-3 0-2.02-1.203-3-3.25-3zm.25 11h-3v7h3.5c2.382 0 3.75-1.02 3.75-3.5 0-2.48-1.562-3.5-4.25-3.5z" fill="#2563eb" />
+  <path d="M45.5 16.5l1.2 3.5 3.5 1.2-3.5 1.2-1.2 3.5-1.2-3.5-3.5-1.2 3.5-1.2z" fill="#fde68a" />
+</svg>

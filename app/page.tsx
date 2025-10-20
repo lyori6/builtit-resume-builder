@@ -2,20 +2,9 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react'
 import DOMPurify from 'dompurify'
-import {
-  Download,
-  ChevronDown,
-  ChevronUp,
-  Upload,
-  Check,
-  AlertCircle,
-  Sparkles,
-  Loader2,
-  X
-} from 'lucide-react'
-import { validateResumeJSON, ResumeData } from '@/lib/resume-types'
+import { Download, ChevronDown, ChevronUp, Upload, Check, AlertCircle, Sparkles, Loader2, X } from 'lucide-react'
+import { validateResumeJSON, ResumeData, isValidResumeData, normalizeResumeJSON } from '@/lib/resume-types'
 import KeySetupPanel from '@/components/KeySetupPanel'
-import PromptSettingsModal from '@/components/PromptSettingsModal'
 import ResumeIntake from '@/components/ResumeIntake'
 import WorkspaceActions from '@/components/WorkspaceActions'
 import ResumePreview from '@/components/ResumePreview'
@@ -123,7 +112,12 @@ const toDisplayString = (value: unknown) => {
 const isPlainObject = (value: unknown): value is Record<string, unknown> =>
   !!value && typeof value === 'object' && !Array.isArray(value)
 
-const collectDiffs = (before: any, after: any, path: string[] = [], diffs: DiffItem[] = []) => {
+const collectDiffs = (
+  before: unknown,
+  after: unknown,
+  path: string[] = [],
+  diffs: DiffItem[] = []
+): DiffItem[] => {
   if (before === undefined && after === undefined) {
     return diffs
   }
@@ -145,9 +139,11 @@ const collectDiffs = (before: any, after: any, path: string[] = [], diffs: DiffI
   }
 
   if (Array.isArray(before) && Array.isArray(after)) {
-    const primitives = before.every(isPrimitiveValue) && after.every(isPrimitiveValue)
+    const beforeArray = before as unknown[]
+    const afterArray = after as unknown[]
+    const primitives = beforeArray.every(isPrimitiveValue) && afterArray.every(isPrimitiveValue)
     if (primitives) {
-      if (!primitiveArraysEqual(before, after)) {
+      if (!primitiveArraysEqual(beforeArray, afterArray)) {
         diffs.push({ path, before: toDisplayString(before), after: toDisplayString(after) })
       }
       return diffs
@@ -155,11 +151,11 @@ const collectDiffs = (before: any, after: any, path: string[] = [], diffs: DiffI
 
     const arrayKey = path[path.length - 1] || 'items'
     const parentPath = path.slice(0, -1)
-    const maxLength = Math.max(before.length, after.length)
+    const maxLength = Math.max(beforeArray.length, afterArray.length)
 
     for (let i = 0; i < maxLength; i += 1) {
-      const beforeItem = before[i]
-      const afterItem = after[i]
+      const beforeItem = beforeArray[i]
+      const afterItem = afterArray[i]
       const elementPath = [...parentPath, `${arrayKey}[${i}]`]
 
       if (beforeItem === undefined || afterItem === undefined) {
@@ -178,9 +174,11 @@ const collectDiffs = (before: any, after: any, path: string[] = [], diffs: DiffI
   }
 
   if (isPlainObject(before) && isPlainObject(after)) {
-    const keys = new Set([...Object.keys(before), ...Object.keys(after)])
+    const beforeRecord = before as Record<string, unknown>
+    const afterRecord = after as Record<string, unknown>
+    const keys = new Set([...Object.keys(beforeRecord), ...Object.keys(afterRecord)])
     keys.forEach((key) => {
-      collectDiffs((before as any)[key], (after as any)[key], [...path, key], diffs)
+      collectDiffs(beforeRecord[key], afterRecord[key], [...path, key], diffs)
     })
     return diffs
   }
@@ -198,13 +196,13 @@ const buildResumeDiff = (before: ResumeData | null, after: ResumeData | null): D
 }
 
 const cloneResumeData = (data: ResumeData): ResumeData =>
-  JSON.parse(JSON.stringify(data))
+  JSON.parse(JSON.stringify(data)) as ResumeData
 
 const MAX_DIFF_ITEMS = 50
 const GEMINI_KEY_HELP_URL = 'https://aistudio.google.com/app/apikey'
 
 const ResumeGenerator = () => {
-  const [resumeData, setResumeData] = useState<any>(null)
+  const [resumeData, setResumeData] = useState<ResumeData | null>(null)
   const [availableResumes, setAvailableResumes] = useState<ResumeOption[]>([])
   const [selectedResume, setSelectedResume] = useState<string>('')
   const [loading, setLoading] = useState(true)
@@ -269,10 +267,7 @@ const ResumeGenerator = () => {
     }
   }
 
-  const diffItems = useMemo(
-    () => buildResumeDiff(originalResume, (resumeData as ResumeData | null) ?? null),
-    [originalResume, resumeData]
-  )
+  const diffItems = useMemo(() => buildResumeDiff(originalResume, resumeData), [originalResume, resumeData])
 
   useEffect(() => {
     if (diffItems.length === 0) {
@@ -380,10 +375,15 @@ const ResumeGenerator = () => {
       setAdjustmentSuccess(false)
       const response = await fetch(`/api/resume?filename=${filename}`)
       const data = await response.json()
-      setResumeData(data)
+      const normalized = normalizeResumeJSON(data)
+      if (!isValidResumeData(normalized)) {
+        throw new Error('Received resume data is not valid.')
+      }
+      setResumeData(normalized)
       setCustomResumeLoaded(false)
     } catch (error) {
       console.error('Error fetching resume data:', error)
+      setResumeData(null)
     } finally {
       setLoading(false)
     }
@@ -591,12 +591,12 @@ const ResumeGenerator = () => {
     }
     
     try {
-      const parsed = JSON.parse(value)
+      const parsed = normalizeResumeJSON(JSON.parse(value))
       const validation = validateResumeJSON(parsed)
       
       setIsJSONValid(validation.isValid)
       setJsonErrors(validation.errors)
-    } catch (error) {
+    } catch {
       setIsJSONValid(false)
       setJsonErrors(['Invalid JSON format. Please check your syntax.'])
     }
@@ -607,8 +607,15 @@ const ResumeGenerator = () => {
     if (!isJSONValid || !pastedJSON) return
     
     try {
-      const parsed = JSON.parse(pastedJSON)
-      setResumeData(parsed)
+      const parsed = normalizeResumeJSON(JSON.parse(pastedJSON))
+      const validation = validateResumeJSON(parsed)
+      if (!validation.isValid) {
+        setIsJSONValid(false)
+        setJsonErrors(validation.errors)
+        return
+      }
+
+      setResumeData(parsed as ResumeData)
       setSelectedResume('custom')
       setCustomResumeLoaded(true)
       customResumeLoadedRef.current = true
@@ -643,13 +650,13 @@ const ResumeGenerator = () => {
       setPastedJSON(text)
 
       try {
-        const parsed = JSON.parse(text)
+        const parsed = normalizeResumeJSON(JSON.parse(text))
         const validation = validateResumeJSON(parsed)
         setIsJSONValid(validation.isValid)
         setJsonErrors(validation.errors)
 
         if (validation.isValid) {
-          setResumeData(parsed)
+          setResumeData(parsed as ResumeData)
           setSelectedResume('custom')
           setCustomResumeLoaded(true)
           customResumeLoadedRef.current = true
@@ -745,16 +752,17 @@ const ResumeGenerator = () => {
       }
 
       if (result.success && result.resume) {
-        const serialized = JSON.stringify(result.resume, null, 2)
+        const normalizedResume = normalizeResumeJSON(result.resume)
+        const serialized = JSON.stringify(normalizedResume, null, 2)
 
-        const validation = validateResumeJSON(result.resume)
+        const validation = validateResumeJSON(normalizedResume)
         if (!validation.isValid) {
           throw new Error(
             `Converted resume is missing required fields:\n${validation.errors.join('\n')}`
           )
         }
 
-        setResumeData(result.resume)
+        setResumeData(normalizedResume as ResumeData)
         setPastedJSON(serialized)
         setIsJSONValid(true)
         setJsonErrors([])
@@ -786,7 +794,7 @@ const ResumeGenerator = () => {
       return
     }
 
-    const validation = validateResumeJSON(resumeData as ResumeData)
+    const validation = validateResumeJSON(resumeData)
     if (!validation.isValid) {
       console.warn('Client-side resume validation failed:', validation.errors)
       setOptimizationError('Resume JSON is not valid. Check required fields before optimizing.')
@@ -800,7 +808,7 @@ const ResumeGenerator = () => {
       
       // Store original resume for comparison
       if (!originalResume && resumeData) {
-        setOriginalResume(cloneResumeData(resumeData as ResumeData))
+        setOriginalResume(cloneResumeData(resumeData))
       }
       
       const response = await fetch('/api/optimize-resume', {
@@ -826,12 +834,20 @@ const ResumeGenerator = () => {
       }
       
       if (result.success && result.optimizedResume) {
+        const normalizedOptimized = normalizeResumeJSON(result.optimizedResume)
+        const optimizedValidation = validateResumeJSON(normalizedOptimized)
+        if (!optimizedValidation.isValid) {
+          throw new Error(
+            `Optimized resume is missing required fields:\n${optimizedValidation.errors.join('\n')}`
+          )
+        }
+
         // Update resume data with optimized version
-        setResumeData(result.optimizedResume)
+        setResumeData(normalizedOptimized as ResumeData)
 
         // Update session storage if this was a custom resume
         if (customResumeLoadedRef.current || selectedResume === 'custom') {
-          storage.saveResume('custom', JSON.stringify(result.optimizedResume, null, 2))
+          storage.saveResume('custom', JSON.stringify(normalizedOptimized, null, 2))
         }
 
         // Set success state
@@ -880,7 +896,7 @@ const ResumeGenerator = () => {
 
       // Store original resume if not already stored
       if (!originalResume && resumeData) {
-        setOriginalResume(cloneResumeData(resumeData as ResumeData))
+        setOriginalResume(cloneResumeData(resumeData))
       }
 
       const response = await fetch('/api/adjust-resume', {
@@ -906,12 +922,20 @@ const ResumeGenerator = () => {
       }
 
       if (result.success && result.adjustedResume) {
+        const normalizedAdjusted = normalizeResumeJSON(result.adjustedResume)
+        const adjustedValidation = validateResumeJSON(normalizedAdjusted)
+        if (!adjustedValidation.isValid) {
+          throw new Error(
+            `Adjusted resume is missing required fields:\n${adjustedValidation.errors.join('\n')}`
+          )
+        }
+
         // Update resume data with adjusted version
-        setResumeData(result.adjustedResume)
+        setResumeData(normalizedAdjusted as ResumeData)
 
         // Update session storage if this was a custom resume
         if (customResumeLoadedRef.current || selectedResume === 'custom') {
-          storage.saveResume('custom', JSON.stringify(result.adjustedResume, null, 2))
+          storage.saveResume('custom', JSON.stringify(normalizedAdjusted, null, 2))
         }
 
         // Set success state
@@ -1002,7 +1026,6 @@ const ResumeGenerator = () => {
             textConversionError={textConversionError}
             hasStoredKey={!!storedGeminiKey}
             onOpenOnboarding={handleOpenOnboarding}
-            showModeToggle={false}
             onBackToDecision={handleBackToDecision}
             geminiKeyInput={geminiKeyInput}
             geminiKeyStatus={geminiKeyStatus}
@@ -1156,35 +1179,19 @@ const ResumeGenerator = () => {
           />
 
           {/* Top Row - Title and Actions */}
-          <div className="flex justify-between items-center mb-4">
-            <div className="flex items-center gap-4">
-              <h1 className="text-xl font-bold text-gray-900">Resume Generator</h1>
-              
-              {/* Resume Version Selector */}
-              <div className="relative">
-                <select
-                  value={selectedResume}
-                  onChange={(e) => setSelectedResume(e.target.value)}
-                  className="appearance-none bg-white border border-gray-300 rounded px-3 py-1.5 pr-8 text-sm font-medium text-gray-700 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="" disabled>
-                    {availableResumes.length > 0 ? 'Load sample resume…' : 'No saved resumes'}
-                  </option>
-                  {customResumeLoaded && (
-                    <option value="custom">📋 Custom Resume</option>
-                  )}
-                  {availableResumes.map((resume) => (
-                    <option key={resume.id} value={resume.filename}>
-                      {resume.name}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown size={16} className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
-              </div>
-            </div>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
+            <h1 className="text-xl font-bold text-gray-900">Resume Generator</h1>
             
             {/* Action Buttons */}
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
+              {availableResumes.length > 0 && (
+                <button
+                  onClick={() => setSelectedResume(availableResumes[0].filename)}
+                  className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-white text-gray-700 border border-gray-300 rounded hover:border-gray-400 hover:text-gray-900 transition-colors shadow-sm"
+                >
+                  <Upload size={14} /> Load sample resume
+                </button>
+              )}
               <button
                 onClick={() => setShowPromptSettings(true)}
                 className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-purple-100 text-purple-700 rounded hover:bg-purple-200 transition-colors shadow-sm"
@@ -1212,6 +1219,8 @@ const ResumeGenerator = () => {
             <div className="flex items-center justify-between mb-3">
               <button
                 onClick={() => setJsonPasteCollapsed(!jsonPasteCollapsed)}
+                data-testid="json-panel-toggle"
+                aria-expanded={!jsonPasteCollapsed}
                 className="flex items-center gap-2 text-sm font-semibold text-gray-700 hover:text-gray-900 transition-colors"
               >
                 <Upload size={16} />
@@ -1234,6 +1243,7 @@ const ResumeGenerator = () => {
                 value={pastedJSON}
                 onChange={(e) => handleJSONPaste(e.target.value)}
                 placeholder="Paste your resume JSON here..."
+                data-testid="json-textarea"
                 className="w-full h-32 px-3 py-2 text-xs font-mono border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                 spellCheck={false}
               />
@@ -1266,6 +1276,7 @@ const ResumeGenerator = () => {
                   {isJSONValid === true && !customResumeLoaded && (
                     <button
                       onClick={loadCustomResume}
+                      data-testid="load-resume-button"
                       className="px-3 py-1.5 text-xs font-medium bg-green-600 text-white rounded hover:bg-green-700 transition-colors shadow-sm"
                     >
                       Load Resume
@@ -1295,18 +1306,16 @@ const ResumeGenerator = () => {
             originalResume={originalResume}
             revertToOriginal={revertToOriginal}
             showDiff={showDiff}
-          setShowDiff={setShowDiff}
-          diffItems={diffItems}
-          maxDiffItems={MAX_DIFF_ITEMS}
-          renderDiffValue={renderDiffValue}
-          formatDiffPath={createPathLabel}
-        />
-
-
+            setShowDiff={setShowDiff}
+            diffItems={diffItems}
+            maxDiffItems={MAX_DIFF_ITEMS}
+            renderDiffValue={renderDiffValue}
+            formatDiffPath={createPathLabel}
+          />
         </div>
       </div>
 
-      <ResumePreview resumeData={resumeData as ResumeData} />
+      {resumeData && <ResumePreview resumeData={resumeData} />}
     </div>
     </>
   )

@@ -1,9 +1,9 @@
 "use client"
 
+import Image from 'next/image'
 import { FC, useEffect, useState } from 'react'
 import {
   Code,
-  FileText,
   Check,
   AlertCircle,
   Info,
@@ -17,7 +17,8 @@ import {
   ExternalLink,
   ArrowLeft,
   UploadCloud,
-  KeyRound
+  KeyRound,
+  Download
 } from 'lucide-react'
 
 type IntakeMode = 'json' | 'text'
@@ -40,7 +41,6 @@ interface ResumeIntakeProps {
   textConversionError: string | null
   hasStoredKey: boolean
   onOpenOnboarding: () => void
-  showModeToggle?: boolean
   onBackToDecision?: () => void
   geminiKeyInput: string
   geminiKeyStatus: 'idle' | 'success' | 'error'
@@ -118,7 +118,7 @@ const JSON_TEMPLATE = `{
       ]
     }
   }
-}`;
+}`
 
 const JSON_PROMPT_SNIPPET = `You are converting my resume into JSON for the BuiltIt resume builder.
 
@@ -134,16 +134,14 @@ Rules:
 - Return only valid JSON with no comments, explanations, or markdown fences.
 
 Here is my resume text:
-[paste your resume here]`;
+[paste your resume here]`
 
-const SAMPLE_JSON_SNIPPET = JSON_TEMPLATE;
+const SAMPLE_JSON_SNIPPET = JSON_TEMPLATE
 
 const JSONDropZone: FC<{
   onFileSelected: (file: File) => void
   isUploading: boolean
-  pastedJSON: string
-  onJSONChange: (value: string) => void
-}> = ({ onFileSelected, isUploading, pastedJSON, onJSONChange }) => {
+}> = ({ onFileSelected, isUploading }) => {
   const [isDragging, setIsDragging] = useState(false)
   const [fileError, setFileError] = useState<string | null>(null)
 
@@ -183,15 +181,14 @@ const JSONDropZone: FC<{
     setFileError(null)
     onFileSelected(file)
   }
-
   return (
-    <div className="space-y-3">
+    <div className="rounded-lg border border-slate-200 bg-white px-4 py-4">
       <label
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
-        className={`flex flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed px-6 py-8 text-center transition-colors ${
-          isDragging ? 'border-blue-500 bg-blue-50/60' : 'border-gray-300 bg-white'
+        className={`flex flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed px-6 py-6 text-center transition-colors ${
+          isDragging ? 'border-blue-500 bg-blue-50/60' : 'border-slate-200 bg-white'
         }`}
       >
         <input
@@ -202,32 +199,23 @@ const JSONDropZone: FC<{
           className="hidden"
         />
         <UploadCloud size={28} className="text-blue-500" />
-        <div>
-          <p className="text-sm font-semibold text-gray-900">
-            Drag & drop your JSON file here
-          </p>
-          <p className="text-xs text-gray-500">or click to browse from your computer</p>
-        </div>
+        <div className="text-base font-semibold text-slate-800">Drag and drop your JSON file</div>
+        <div className="text-sm text-slate-500">or click to browse from your computer</div>
         {isUploading && (
           <div className="flex items-center gap-2 text-xs text-blue-600">
-            <Loader2 size={14} className="animate-spin" />
-            Uploading...
+            <Loader2 size={14} className="animate-spin" /> Uploading...
           </div>
         )}
       </label>
       {fileError && (
-        <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-600">
+        <div className="mt-3 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-600">
           <AlertCircle size={14} />
           {fileError}
         </div>
       )}
-      <textarea
-        value={pastedJSON}
-        onChange={(event) => onJSONChange(event.target.value)}
-        placeholder="Or paste your resume JSON here..."
-        className="w-full h-48 px-4 py-3 text-sm font-mono border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-        spellCheck={false}
-      />
+      <p className="mt-3 text-sm text-slate-500">
+        We keep the latest JSON you load on this device so you can pick up where you left off.
+      </p>
     </div>
   )
 }
@@ -250,7 +238,6 @@ const ResumeIntake: FC<ResumeIntakeProps> = ({
   textConversionError,
   hasStoredKey,
   onOpenOnboarding,
-  showModeToggle = true,
   onBackToDecision,
   geminiKeyInput,
   geminiKeyStatus,
@@ -289,11 +276,11 @@ const ResumeIntake: FC<ResumeIntakeProps> = ({
       console.error('Failed to copy prompt', error)
       setCopyError('Copy failed - highlight and copy the text manually.')
     }
-  };
+  }
 
   const toggleSampleJSON = () => {
-    setShowSampleJSON((value) => !value);
-  };
+    setShowSampleJSON((value) => !value)
+  }
 
   const PromptHelper = (
     title: string,
@@ -303,11 +290,11 @@ const ResumeIntake: FC<ResumeIntakeProps> = ({
     <div className="space-y-3 rounded-lg border border-blue-100 bg-white p-4 shadow-sm">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="flex items-center gap-2 text-sm font-semibold text-gray-800">
+          <p className="flex items-center gap-2 text-sm font-semibold text-slate-800">
             <Sparkles size={16} className="text-blue-600" />
             {title}
           </p>
-          <p className="text-xs text-gray-600">{description}</p>
+          <p className="text-xs text-slate-600">{description}</p>
           {highlightText && <p className="mt-1 text-xs font-medium text-blue-600">{highlightText}</p>}
         </div>
         <div className="flex items-center gap-2">
@@ -322,7 +309,7 @@ const ResumeIntake: FC<ResumeIntakeProps> = ({
             href="https://rxresu.me/"
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-1 rounded-md border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 transition-colors hover:border-gray-300 hover:text-gray-900"
+            className="inline-flex items-center gap-1 rounded-md border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:border-slate-300 hover:text-slate-900"
           >
             <ExternalLink size={14} />
             Try Rx Resume
@@ -335,13 +322,13 @@ const ResumeIntake: FC<ResumeIntakeProps> = ({
           {copyError}
         </p>
       )}
-      <pre className="max-h-48 overflow-y-auto rounded-md bg-gray-900/90 px-3 py-3 text-xs font-mono text-gray-100 whitespace-pre-wrap">
+      <pre className="max-h-48 overflow-y-auto rounded-md bg-slate-900/90 px-3 py-3 text-xs font-mono text-slate-100 whitespace-pre-wrap">
         {JSON_PROMPT_SNIPPET}
       </pre>
-      <div className="flex flex-wrap items-center gap-3 text-xs text-gray-600">
+      <div className="flex flex-wrap items-center gap-3 text-xs text-slate-600">
         <button
           onClick={toggleSampleJSON}
-          className="inline-flex items-center gap-2 rounded-md border border-gray-200 px-3 py-1.5 font-semibold transition-colors hover:border-gray-300 hover:text-gray-800"
+          className="inline-flex items-center gap-2 rounded-md border border-slate-200 px-3 py-1.5 font-semibold transition-colors hover:border-slate-300 hover:text-slate-800"
         >
           {showSampleJSON ? <EyeOff size={14} /> : <Eye size={14} />}
           {showSampleJSON ? 'Hide sample JSON' : 'Show sample JSON'}
@@ -357,200 +344,205 @@ const ResumeIntake: FC<ResumeIntakeProps> = ({
         </a>
       </div>
       {showSampleJSON && (
-        <pre className="max-h-64 overflow-auto rounded-md border border-gray-200 bg-gray-900/80 px-3 py-3 text-xs font-mono text-gray-100">
+        <pre className="max-h-64 overflow-auto rounded-md border border-slate-200 bg-slate-900/80 px-3 py-3 text-xs font-mono text-slate-100">
           {SAMPLE_JSON_SNIPPET}
         </pre>
       )}
     </div>
   )
 
+  const handleJsonMode = () => onIntakeModeChange('json')
+  const handleTextMode = () => onIntakeModeChange('text')
+  const jsonActive = intakeMode === 'json'
+  const textActive = intakeMode === 'text'
+
+  const jsonCardClasses = `flex h-full flex-col rounded-2xl border p-6 transition-all duration-200 cursor-pointer ${
+    jsonActive
+      ? 'border-blue-600 bg-white shadow-xl'
+      : 'border-slate-200 bg-slate-100 hover:border-blue-400 hover:bg-blue-50 hover:shadow-lg'
+  }`
+  const textCardClasses = `flex h-full flex-col rounded-2xl border p-6 transition-all duration-200 cursor-pointer ${
+    textActive
+      ? 'border-purple-600 bg-white shadow-xl'
+      : 'border-slate-200 bg-slate-100 hover:border-purple-400 hover:bg-purple-50 hover:shadow-lg'
+  }`
+  const canLoadResume = Boolean(isJSONValid && pastedJSON.trim())
+  const canConvertText = Boolean(hasStoredKey && rawResumeText.trim())
+
+  const jsonBadgeClasses = jsonActive
+    ? 'inline-flex items-center gap-2 text-sm font-semibold text-blue-600'
+    : 'inline-flex items-center gap-2 text-sm font-semibold text-slate-400'
+  const jsonTitleClasses = jsonActive ? 'text-3xl font-bold text-slate-900' : 'text-3xl font-bold text-slate-500'
+  const jsonBodyTextClasses = jsonActive ? 'text-base text-slate-600' : 'text-base text-slate-500'
+
+  const textBadgeClasses = textActive
+    ? 'inline-flex items-center gap-2 text-sm font-semibold text-purple-600'
+    : 'inline-flex items-center gap-2 text-sm font-semibold text-slate-400'
+  const textTitleClasses = textActive ? 'text-3xl font-bold text-slate-900' : 'text-3xl font-bold text-slate-500'
+  const textBodyTextClasses = textActive ? 'text-base text-slate-600' : 'text-base text-slate-500'
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="print:hidden p-4 bg-white shadow-sm border-b">
-        <div className="max-w-4xl mx-auto">
-          <div className="py-8 space-y-6">
+    <div className="min-h-screen bg-slate-50">
+      <div className="print:hidden border-b bg-white">
+        <div className="mx-auto max-w-5xl px-4 py-10">
+          <div className="space-y-6">
             {onBackToDecision && (
               <div>
                 <button
                   onClick={onBackToDecision}
-                  className="inline-flex items-center gap-2 text-xs font-semibold text-gray-600 hover:text-gray-900"
+                  className="inline-flex items-center gap-2 text-xs font-semibold text-slate-600 hover:text-slate-900"
                 >
                   <ArrowLeft size={14} />
                   Back
                 </button>
               </div>
             )}
-            <div className="text-center space-y-3">
-              <h1 className="text-2xl font-bold text-gray-900 mb-3">BuiltIt Resume Builder</h1>
-              <p className="text-gray-600">
-                Bring your resume as JSON or plain text, connect your Gemini key, and start tailoring it for new roles.
-              </p>
-              <p className="text-xs text-gray-500">
-                MVP keeps things simple: load one resume at a time, tweak it, and download it with no history to manage.
-              </p>
-              <div className="flex flex-col items-center gap-2 sm:flex-row sm:justify-center sm:gap-3">
-                <div className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-4 py-1 text-xs font-medium text-blue-700">
-                  <Shield size={14} />
-                  Free to use · Everything stays in your browser
-                </div>
-                <button
-                  onClick={onOpenOnboarding}
-                  className="inline-flex items-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-1.5 text-xs font-semibold text-gray-700 hover:text-gray-900 hover:border-gray-400 transition-colors"
-                >
-                  <Sparkles size={14} className="text-blue-500" />
-                  Open guided setup
-                </button>
-              </div>
-          </div>
 
-          {showModeToggle && (
-            <div className="flex justify-center mb-6">
-              <div className="inline-flex items-stretch rounded-lg border border-gray-200 bg-white shadow-sm">
-                <div className="relative group">
-                  <button
-                    onClick={() => onIntakeModeChange('json')}
-                    className={`flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors rounded-l-lg ${
-                      intakeMode === 'json' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:text-gray-900'
-                    }`}
-                  >
-                    <Code size={16} />
-                    Paste JSON
-                  </button>
-                  <div className="pointer-events-none absolute left-1/2 top-full z-10 hidden w-72 -translate-x-1/2 translate-y-2 rounded-md border border-gray-200 bg-white p-3 text-xs text-gray-600 shadow-lg group-hover:flex group-focus-within:flex">
-                    <p className="mb-1 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-blue-600">
-                      <Info size={12} />
-                      Quick tip
-                    </p>
-                    <p className="leading-relaxed">
-                      Ask Gemini, ChatGPT, or Claude to convert your resume with the helper below or grab an export from Rx Resume.
-                    </p>
-                  </div>
-                </div>
+            <div className="text-center space-y-5">
+              <div className="flex justify-center">
+                <Image src="/logo.svg" alt="BuiltIt logo" width={56} height={56} priority />
+              </div>
+              <h1 className="text-4xl font-bold text-slate-900">BuiltIt Resume Builder</h1>
+              <p className="text-lg text-slate-600">BuiltIt runs entirely in your browser with your own free Gemini API key.</p>
+              <div className="mx-auto max-w-xl space-y-2 text-left text-base text-slate-600 sm:text-center">
+                <p className="font-semibold text-slate-700">You only need two things:</p>
+                <ol className="list-decimal list-inside space-y-2">
+                  <li>Create a free Gemini API key at Google AI Studio so the experience stays private and self-sufficient.</li>
+                  <li>Provide your resume JSON or paste plain text and let BuiltIt convert it instantly.</li>
+                </ol>
+              </div>
+              <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
+                <span className="inline-flex items-center gap-3 rounded-full bg-blue-50 px-5 py-2 text-sm font-medium text-blue-700">
+                  <Shield size={16} /> Secure &amp; private · Nothing leaves your browser
+                </span>
                 <button
-                  onClick={() => onIntakeModeChange('text')}
-                  className={`flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors rounded-r-lg ${
-                    intakeMode === 'text' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:text-gray-900'
-                  }`}
+                  type="button"
+                  onClick={onOpenOnboarding}
+                  className="inline-flex items-center gap-3 rounded-full border border-slate-200 bg-white px-5 py-2 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-300 hover:text-slate-900"
                 >
-                  <FileText size={16} />
-                  Paste Text
+                  <Sparkles size={16} className="text-blue-500" /> Gemini setup guide
                 </button>
               </div>
             </div>
-          )}
 
-          <div className="max-w-2xl mx-auto bg-gray-50 rounded-lg p-6 border border-gray-200 space-y-4 text-left">
-            {intakeMode === 'json' ? (
-              <>
-                <p className="text-sm text-gray-600">
-                  Already have a resume in JSON? Drop the file or paste it below. Need a refresher on the schema? Grab the prompt and template first.
-                </p>
-                {PromptHelper(
-                  'Generate JSON with your AI',
-                  'Copy these instructions for Gemini, ChatGPT, or Claude, then paste the JSON back here once it looks good.'
-                )}
-                <JSONDropZone
-                  onFileSelected={onJSONFileDrop}
-                  isUploading={isUploadingJSON}
-                  pastedJSON={pastedJSON}
-                  onJSONChange={onJSONChange}
-                />
+            <div className="mt-10 grid gap-6 md:grid-cols-2">
+              <section className={jsonCardClasses} onClick={handleJsonMode}>
+                <header className="space-y-3">
+                  <span className={jsonBadgeClasses}>
+                    <span className={jsonActive ? 'rounded-full bg-blue-100 p-3 text-blue-600' : 'rounded-full bg-slate-200 p-3 text-slate-400'}>
+                      <Code size={16} />
+                    </span>
+                    I already have JSON
+                  </span>
+                  <h2 className={jsonTitleClasses}>Paste or upload your JSON</h2>
+                  <p className={jsonBodyTextClasses}>Paste your JSON or drag in a file below. BuiltIt validates it as you go so you can load the workspace instantly.</p>
+                </header>
 
-                {pastedJSON && (
-                  <div className="text-left">
-                    {isJSONValid === true && (
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <div className="flex items-center gap-2 text-green-600 text-sm">
-                          <Check size={16} />
-                          <span>Valid JSON format</span>
-                        </div>
-                        <div className="flex gap-2">
-                          <button
-                            onClick={onDownloadJSON}
-                            className="px-4 py-2 text-sm font-medium bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors shadow-sm"
-                          >
-                            Download JSON
-                          </button>
-                          <button
-                            onClick={onLoadJSON}
-                            className="px-4 py-2 text-sm font-medium bg-green-600 text-white rounded hover:bg-green-700 transition-colors shadow-sm"
-                          >
-                            Load Resume
-                          </button>
-                        </div>
+                <div className="mt-4 space-y-2">
+                  <label className="text-sm font-semibold uppercase tracking-wide text-slate-500" htmlFor="resume-json-input">
+                    Resume JSON
+                  </label>
+                  <textarea
+                    id="resume-json-input"
+                    value={pastedJSON}
+                    onChange={(event) => onJSONChange(event.target.value)}
+                    onFocus={handleJsonMode}
+                    placeholder="Paste your resume JSON here..."
+                    data-testid="json-textarea"
+                    className="h-48 w-full rounded-lg border border-slate-200 px-4 py-3 text-base font-mono text-slate-800 shadow-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                    spellCheck={false}
+                  />
+                </div>
+
+                <div className="mt-4 space-y-3 text-base">
+                  {pastedJSON ? (
+                    isJSONValid === true ? (
+                      <div className="inline-flex items-center gap-2 rounded-full bg-green-50 px-4 py-1.5 text-green-700">
+                        <Check size={18} /> Valid JSON detected
                       </div>
-                    )}
-                    {isJSONValid === false && (
-                      <div className="flex items-start gap-2 text-red-600 text-sm">
-                        <AlertCircle size={16} className="mt-0.5 flex-shrink-0" />
-                        <div>
-                          <div className="font-medium mb-1">Invalid JSON:</div>
-                          <ul className="list-disc list-inside space-y-1">
-                            {jsonErrors.map((error, index) => (
-                              <li key={index}>{error}</li>
-                            ))}
-                          </ul>
+                    ) : isJSONValid === false ? (
+                      <div className="space-y-1 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-red-600">
+                        <div className="inline-flex items-center gap-2 font-semibold">
+                          <AlertCircle size={18} /> Needs updates
                         </div>
+                        <ul className="list-disc pl-6 text-sm">
+                          {jsonErrors.map((error, index) => (
+                            <li key={index}>{error}</li>
+                          ))}
+                        </ul>
                       </div>
+                    ) : null
+                  ) : (
+                    <p className={jsonBodyTextClasses}>Paste your JSON above or drag a file into the drop zone below. We keep your latest resume on this device.</p>
+                  )}
+
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={onLoadJSON}
+                      disabled={!canLoadResume}
+                      className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-base font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      <UploadCloud size={18} /> Load resume
+                    </button>
+                    <button
+                      type="button"
+                      onClick={onDownloadJSON}
+                      disabled={!pastedJSON}
+                      className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-5 py-2.5 text-base font-semibold text-slate-700 transition-colors hover:border-slate-300 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      <Download size={18} /> Download JSON
+                    </button>
+                  </div>
+                </div>
+
+                <div className="mt-6 space-y-4">
+                  <JSONDropZone onFileSelected={onJSONFileDrop} isUploading={isUploadingJSON} />
+                </div>
+              </section>
+
+              <section className={textCardClasses} onClick={handleTextMode}>
+                <header className="space-y-3">
+                  <span className={textBadgeClasses}>
+                    <span className={textActive ? 'rounded-full bg-purple-100 p-3 text-purple-600' : 'rounded-full bg-slate-200 p-3 text-slate-400'}>
+                      <Sparkles size={16} />
+                    </span>
+                    Help me create JSON
+                  </span>
+                  <h2 className={textTitleClasses}>Convert resume text with your Gemini key</h2>
+                  <p className={textBodyTextClasses}>Copy a prompt for your AI or let BuiltIt convert plain text in one step.</p>
+                </header>
+
+                <details className="mt-4 rounded-lg border border-purple-100 bg-white">
+                  <summary className="cursor-pointer px-4 py-2 text-sm font-semibold text-purple-700">
+                    Copy a prompt for your AI
+                  </summary>
+                  <div className="space-y-3 border-t border-purple-100 px-4 py-4">
+                    {PromptHelper(
+                      'Ask your AI to output JSON',
+                      'Share this schema with Gemini, ChatGPT, or Claude and paste the result back here if you prefer DIY.'
                     )}
                   </div>
-                )}
+                </details>
 
-                {!pastedJSON && (
-                  <div className="text-xs text-gray-500">
-                    Tip: Use the prompt helper above to generate valid JSON, then load it. Only the most recent resume stays saved for quick edits.
-                  </div>
-                )}
-              </>
-            ) : (
-              <>
-                {PromptHelper(
-                  'Ask your AI to create a JSON resume',
-                  'Use this prompt to generate a valid JSON export. Once you have it, switch back to the JSON tab to upload or paste it.',
-                  'Prefer not to switch tabs? Let BuiltIt convert your resume text below.'
-                )}
-
-                <div className="space-y-3 rounded-lg border border-purple-200 bg-white p-4 shadow-sm">
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                    <div>
-                      <p className="flex items-center gap-2 text-sm font-semibold text-gray-800">
-                        <Sparkles size={16} className="text-purple-600" />
-                        Let BuiltIt convert your resume text
-                      </p>
-                      <p className="text-xs text-gray-600">
-                        Works with Google AI Studio on the free tier. Your key stays in this browser; we never send it to our servers.
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => window.open(geminiKeyHelpUrl, '_blank', 'noopener')}
-                        className="inline-flex items-center gap-2 rounded-md border border-purple-200 bg-purple-50 px-3 py-1.5 text-xs font-semibold text-purple-700 transition-colors hover:border-purple-300 hover:bg-purple-100"
-                      >
-                        <ExternalLink size={14} />
-                        Get a free key
-                      </button>
-                      <button
-                        type="button"
-                        onClick={onOpenOnboarding}
-                        className="inline-flex items-center gap-2 rounded-md border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 transition-colors hover:border-gray-300 hover:text-gray-900"
-                      >
-                        How it works
-                      </button>
-                    </div>
+                <div className="mt-4 space-y-4">
+                  <div className="flex flex-col gap-2 rounded-lg border border-purple-100 bg-purple-50 px-4 py-3 text-sm text-purple-700 sm:flex-row sm:items-center sm:justify-between">
+                    <span>
+                      {hasStoredKey
+                        ? 'Gemini key saved locally and ready to convert.'
+                        : 'Use your own free Gemini key so conversions stay private on this device.'}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => window.open(geminiKeyHelpUrl, '_blank', 'noopener')}
+                      className="inline-flex items-center gap-2 rounded-md border border-purple-200 bg-white px-4 py-2 text-sm font-semibold text-purple-700 transition-colors hover:border-purple-300 hover:text-purple-800"
+                    >
+                      <ExternalLink size={16} /> Get a free key
+                    </button>
                   </div>
 
-                  <div className="space-y-1 text-xs text-gray-600">
-                    <p className="font-semibold text-gray-700">Quick steps</p>
-                    <p>1. Copy your resume text (Google Docs, Notion, LinkedIn, etc.).</p>
-                    <p>
-                      2. Sign in to Google AI Studio to grab your free Gemini key. We store it locally so you can remove it anytime.
-                    </p>
-                    <p>3. Paste your resume text below and tap convert. We will produce JSON you can download or keep for tailoring.</p>
-                  </div>
-
-                  <div className="space-y-2 text-xs text-gray-600">
-                    <label className="font-semibold text-gray-700" htmlFor="gemini-key-helper">
+                  <div className="space-y-2 text-sm text-slate-600">
+                    <label className="font-semibold text-slate-600" htmlFor="gemini-key-helper">
                       Gemini API key
                     </label>
                     <div className="flex flex-col gap-2 sm:flex-row sm:items-stretch">
@@ -559,97 +551,89 @@ const ResumeIntake: FC<ResumeIntakeProps> = ({
                         type="password"
                         value={geminiKeyInput}
                         onChange={(event) => onGeminiKeyInputChange(event.target.value)}
+                        onFocus={handleTextMode}
                         placeholder={hasStoredKey ? 'Key saved. Paste a new key to update.' : 'Paste your Gemini API key'}
-                        className="flex-1 rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        className="flex-1 rounded border border-slate-200 px-3 py-2 text-base focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-200"
                         spellCheck={false}
                       />
                       <button
                         type="button"
                         onClick={() => { void onSaveGeminiKey() }}
                         disabled={isValidatingGeminiKey || (!geminiKeyInput.trim() && !hasStoredKey)}
-                        className="inline-flex items-center justify-center gap-2 rounded-md bg-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-purple-700 disabled:cursor-not-allowed disabled:opacity-50"
+                        className="inline-flex items-center justify-center gap-2 rounded-md bg-purple-600 px-5 py-2.5 text-base font-semibold text-white shadow-sm transition-colors hover:bg-purple-700 disabled:cursor-not-allowed disabled:opacity-40"
                       >
-                        {isValidatingGeminiKey ? <Loader2 size={16} className="animate-spin" /> : <KeyRound size={16} />}
+                        {isValidatingGeminiKey ? <Loader2 size={18} className="animate-spin" /> : <KeyRound size={18} />}
                         Save key
                       </button>
                     </div>
                     {geminiKeyStatus === 'success' && (
-                      <div className="flex items-center gap-2 text-xs text-green-600">
-                        <Check size={14} />
-                        Key saved locally.
+                      <div className="inline-flex items-center gap-2 text-sm text-green-600">
+                        <Check size={16} /> Key saved locally.
                       </div>
                     )}
                     {geminiKeyStatus === 'error' && geminiKeyError && (
-                      <div className="flex items-center gap-2 text-xs text-red-600">
-                        <AlertCircle size={14} />
-                        {geminiKeyError}
+                      <div className="inline-flex items-center gap-2 text-sm text-red-600">
+                        <AlertCircle size={16} /> {geminiKeyError}
                       </div>
                     )}
                   </div>
 
-                  <div className="rounded-md bg-purple-50 px-3 py-2 text-xs text-purple-700">
-                    {hasStoredKey
-                      ? "Gemini key saved locally - you're ready to convert."
-                      : "No key saved yet. You'll need one to run the conversion (free, stored only in this browser)."}
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold uppercase tracking-wide text-slate-500" htmlFor="resume-text-input">
+                      Resume text
+                    </label>
+                    <textarea
+                      id="resume-text-input"
+                      value={rawResumeText}
+                      onChange={(event) => onRawTextChange(event.target.value)}
+                      onFocus={handleTextMode}
+                      placeholder="Paste the plain-text version of your resume..."
+                      className="h-48 w-full rounded-lg border border-slate-200 px-4 py-3 text-base text-slate-800 shadow-sm focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-200"
+                      spellCheck={false}
+                    />
                   </div>
 
-                  <textarea
-                    value={rawResumeText}
-                    onChange={(event) => onRawTextChange(event.target.value)}
-                    placeholder="Paste the plain-text version of your resume..."
-                    className="w-full h-48 px-4 py-3 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
-                    spellCheck={false}
-                  />
-
                   {textConversionError && (
-                    <div className="flex items-start gap-2 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-600">
-                      <AlertCircle size={14} className="mt-0.5 flex-shrink-0" />
-                      <div>
-                        <p className="font-semibold">Conversion failed</p>
-                        <p>{textConversionError}</p>
+                    <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
+                      <div className="inline-flex items-center gap-2 font-semibold">
+                        <AlertCircle size={16} /> Conversion failed
                       </div>
+                      <p className="mt-1 text-xs">{textConversionError}</p>
                     </div>
                   )}
 
                   {!hasStoredKey && (
-                    <div className="flex items-start gap-2 text-xs text-blue-700">
-                      <Info size={14} className="mt-0.5 flex-shrink-0" />
-                      <span>
-                        Add your Gemini key to enable conversion. Use the buttons above if you need a quick walkthrough.
-                      </span>
+                    <div className="inline-flex items-center gap-2 text-sm text-blue-700">
+                      <Info size={16} /> Paste your key above to enable conversion. Grabbing one from Google AI Studio takes about a minute.
                     </div>
                   )}
 
-                  <div className="flex items-center justify-between gap-3">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <button
+                      type="button"
                       onClick={onConvertText}
-                      disabled={isConvertingText || !rawResumeText.trim() || !hasStoredKey}
-                      className="inline-flex items-center gap-2 rounded-md bg-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-purple-700 disabled:cursor-not-allowed disabled:opacity-50"
+                      disabled={isConvertingText || !canConvertText}
+                      className="inline-flex items-center justify-center gap-2 rounded-lg bg-purple-600 px-5 py-2.5 text-base font-semibold text-white shadow-sm transition-colors hover:bg-purple-700 disabled:cursor-not-allowed disabled:opacity-40"
                     >
                       {isConvertingText ? (
                         <>
-                          <Loader2 size={16} className="animate-spin" />
-                          Converting...
+                          <Loader2 size={18} className="animate-spin" /> Converting...
                         </>
                       ) : (
                         <>
-                          <Sparkles size={16} />
-                          Convert to JSON
+                          <Sparkles size={18} /> Convert to JSON
                         </>
                       )}
                     </button>
-                    <p className="text-xs text-gray-500">
-                      We keep only the latest converted resume in this browser. Download anytime from the workspace.
-                    </p>
+                    <p className="text-sm text-slate-500">Converted resumes stay local; download anytime from the workspace.</p>
                   </div>
                 </div>
-              </>
-            )}
+              </section>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
   )
 }
 

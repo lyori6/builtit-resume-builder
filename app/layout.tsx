@@ -5,8 +5,12 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Resume Generator',
-  description: 'Modern resume generator with dynamic JSON data',
+  title: 'BuiltIt Resume Builder',
+  description: 'Bring your resume JSON or let BuiltIt convert plain text with your own Gemini key.',
+  icons: {
+    icon: '/favicon.svg',
+    shortcut: '/favicon.svg'
+  }
 }
 
 export default function RootLayout({

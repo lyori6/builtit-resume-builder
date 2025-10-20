@@ -38,7 +38,7 @@ const KeySetupPanel: FC<KeySetupPanelProps> = ({
           <h2 className="text-sm font-semibold text-gray-900">Bring your Gemini API key</h2>
           <div className="space-y-1 text-xs text-gray-600">
             <p>
-              Grab a key from Google AI Studio's free tier. We only store it in your browser, so you can remove it whenever you like.
+              Grab a key from the free tier on Google AI Studio. We only store it in your browser, so you can remove it whenever you like.
             </p>
             <ul className="space-y-1">
               <li className="flex items-center gap-2 text-gray-600">

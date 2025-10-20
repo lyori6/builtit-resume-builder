@@ -4,9 +4,10 @@ import { FC } from 'react'
 import { Sparkles, Loader2, Check, AlertCircle, Info } from 'lucide-react'
 import ResumeDiffTable from '@/components/ResumeDiffTable'
 import ResumeDiffSummary from '@/components/ResumeDiffSummary'
+import { ResumeData } from '@/lib/resume-types'
 
 interface WorkspaceActionsProps {
-  resumeData: any
+  resumeData: ResumeData | null
   jobDescription: string
   onJobDescriptionChange: (value: string) => void
   optimizeResume: () => void
@@ -20,7 +21,7 @@ interface WorkspaceActionsProps {
   isAdjusting: boolean
   adjustmentError: string | null
   adjustmentSuccess: boolean
-  originalResume: any
+  originalResume: ResumeData | null
   revertToOriginal: () => void
   showDiff: boolean
   setShowDiff: (value: boolean) => void

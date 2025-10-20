@@ -110,7 +110,7 @@ export interface EducationSection extends SectionBase {
 }
 
 export interface GenericSection extends SectionBase {
-  items: any[]
+  items: Array<Record<string, unknown>>
 }
 
 export interface ResumeSections {
@@ -133,8 +133,34 @@ export interface ResumeData {
   sections: ResumeSections
 }
 
+export function normalizeResumeJSON<T extends { sections?: unknown }>(json: T): T {
+  if (!json || typeof json !== 'object') {
+    return json
+  }
+
+  const clone: T = JSON.parse(JSON.stringify(json))
+
+  if (clone.sections && typeof clone.sections === 'object' && !Array.isArray(clone.sections)) {
+    Object.entries(clone.sections as Record<string, unknown>).forEach(([sectionKey, sectionValue]) => {
+      if (
+        sectionValue &&
+        typeof sectionValue === 'object' &&
+        !Array.isArray(sectionValue) &&
+        !('name' in sectionValue)
+      ) {
+        const nestedValues = Object.values(sectionValue as Record<string, unknown>)
+        if (nestedValues.length === 1 && typeof nestedValues[0] === 'object' && nestedValues[0] !== null) {
+          clone.sections[sectionKey] = nestedValues[0]
+        }
+      }
+    })
+  }
+
+  return clone
+}
+
 // Validation function
-export function validateResumeJSON(json: any): { isValid: boolean; errors: string[] } {
+export function validateResumeJSON(json: unknown): { isValid: boolean; errors: string[] } {
   const errors: string[] = []
 
   const isObject = (value: unknown): value is Record<string, unknown> =>
@@ -320,13 +346,13 @@ export function validateResumeJSON(json: any): { isValid: boolean; errors: strin
   if (!isObject(sections)) {
     errors.push('Missing or invalid field: sections')
   } else {
-    Object.entries(sections).forEach(([key, value]) => {
+    Object.entries(sections as Record<string, unknown>).forEach(([key, value]) => {
       if (!isObject(value)) {
         errors.push(`sections.${key} must be an object.`)
         return
       }
 
-      const section = value
+      const section = value as Record<string, unknown>
       const sectionPath = `sections.${key}`
 
       ensureStringField(section.name, `${sectionPath}.name`)
@@ -341,7 +367,7 @@ export function validateResumeJSON(json: any): { isValid: boolean; errors: strin
       }
 
       if (key === 'summary') {
-        ensureStringField((section as SummarySection).content, `${sectionPath}.content`)
+        ensureStringField(section.content, `${sectionPath}.content`)
         return
       }
 
@@ -436,7 +462,7 @@ export function validateResumeJSON(json: any): { isValid: boolean; errors: strin
 }
 
 // Type guard
-export function isValidResumeData(json: any): json is ResumeData {
+export function isValidResumeData(json: unknown): json is ResumeData {
   const validation = validateResumeJSON(json)
   return validation.isValid
 }
