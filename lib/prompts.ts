@@ -4,6 +4,7 @@ export const DEFAULT_TEXT_CONVERSION_SYSTEM_PROMPT = `System: You convert plain-
 
 Constraints:
 - Follow the JSON schema exactly. All keys must match.
+- Populate required fields for every item. If you cannot infer a value (for example a project name), derive a short descriptive title from the available text or exclude that item entirely.
 - If information is missing (e.g., phone, location), use an empty string.
 - Remove optional sections (projects, certifications, etc.) if they have no content, or set "visible": false with an empty "items" array.
 - Produce valid JSON only - no markdown, commentary, or backticks.

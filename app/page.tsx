@@ -4,12 +4,11 @@ import React, { useState, useEffect, useMemo, useRef } from 'react'
 import DOMPurify from 'dompurify'
 import { Download, ChevronDown, ChevronUp, Upload, Check, AlertCircle, Sparkles, Loader2, X } from 'lucide-react'
 import { validateResumeJSON, ResumeData, isValidResumeData, normalizeResumeJSON } from '@/lib/resume-types'
-import KeySetupPanel from '@/components/KeySetupPanel'
 import ResumeIntake from '@/components/ResumeIntake'
 import WorkspaceActions from '@/components/WorkspaceActions'
 import ResumePreview from '@/components/ResumePreview'
 import OnboardingWizard from '@/components/OnboardingWizard'
-import IntakeDecision from '@/components/IntakeDecision'
+import GeminiKeyModal from '@/components/GeminiKeyModal'
 import { storage } from '@/lib/local-storage'
 import {
   DEFAULT_OPTIMIZATION_SYSTEM_PROMPT,
@@ -200,6 +199,7 @@ const cloneResumeData = (data: ResumeData): ResumeData =>
 
 const MAX_DIFF_ITEMS = 50
 const GEMINI_KEY_HELP_URL = 'https://aistudio.google.com/app/apikey'
+const GEMINI_INSTRUCTIONS_URL = 'https://github.com/lyor/builtit-resume-builder/blob/main/docs/gemini-key-setup.md'
 
 const ResumeGenerator = () => {
   const [resumeData, setResumeData] = useState<ResumeData | null>(null)
@@ -213,8 +213,7 @@ const ResumeGenerator = () => {
   const [jsonErrors, setJsonErrors] = useState<string[]>([])
   const [customResumeLoaded, setCustomResumeLoaded] = useState(false)
   const customResumeLoadedRef = useRef(false)
-  const [intakeFlow, setIntakeFlow] = useState<'decision' | 'json' | 'helper'>('decision')
-  const [intakeMode, setIntakeMode] = useState<'json' | 'text'>('json')
+  const [intakeMode, setIntakeMode] = useState<'json' | 'text'>('text')
   const [rawResumeText, setRawResumeText] = useState('')
   const [isConvertingText, setIsConvertingText] = useState(false)
   const [textConversionError, setTextConversionError] = useState<string | null>(null)
@@ -250,6 +249,8 @@ const ResumeGenerator = () => {
   const [promptSaveState, setPromptSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [promptError, setPromptError] = useState<string | null>(null)
   const [isOnboardingOpen, setIsOnboardingOpen] = useState(false)
+  const [toast, setToast] = useState<{ message: string; tone: 'success' | 'error' } | null>(null)
+  const [showGeminiKeyModal, setShowGeminiKeyModal] = useState(false)
 
   const downloadJSONFile = (jsonString: string, filename: string) => {
     try {
@@ -326,7 +327,10 @@ const ResumeGenerator = () => {
         customResumeLoadedRef.current = true
         setSelectedResume('custom')
         setLoading(false)
-        setIntakeFlow('json')
+        setIntakeMode('json')
+        if (!storage.getGeminiApiKey()) {
+          setShowGeminiKeyModal(true)
+        }
       } catch (error) {
         console.error('Failed to parse saved custom resume:', error)
         setIsJSONValid(false)
@@ -346,6 +350,14 @@ const ResumeGenerator = () => {
       setSelectedResume('custom')
     }
   }, [customResumeLoaded])
+
+  useEffect(() => {
+    if (!toast) {
+      return undefined
+    }
+    const timer = window.setTimeout(() => setToast(null), 3200)
+    return () => window.clearTimeout(timer)
+  }, [toast])
 
   useEffect(() => {
     // Load selected resume data when selection changes
@@ -389,32 +401,8 @@ const ResumeGenerator = () => {
     }
   }
 
-  const handleSelectJSONPath = () => {
-    setIntakeFlow('json')
-    setIntakeMode('json')
-  }
-
-  const handleSelectHelperPath = () => {
-    setIntakeFlow('helper')
-    setIntakeMode('text')
-  }
-
-  const handleBackToDecision = () => {
-    setIntakeFlow('decision')
-    setPastedJSON('')
-    setIsJSONValid(null)
-    setJsonErrors([])
-    setRawResumeText('')
-    setTextConversionError(null)
-  }
-
   const handleIntakeModeChange = (mode: 'json' | 'text') => {
     setIntakeMode(mode)
-    if (mode === 'json') {
-      setIntakeFlow('json')
-    } else {
-      setIntakeFlow('helper')
-    }
   }
 
   const handleOpenOnboarding = () => {
@@ -497,7 +485,7 @@ const ResumeGenerator = () => {
   }
 
   const handleSaveGeminiKeyClick = () => {
-    void handleSaveGeminiKey()
+    return handleSaveGeminiKey()
   }
 
   const handleDeleteGeminiKey = () => {
@@ -506,6 +494,24 @@ const ResumeGenerator = () => {
     setGeminiKeyInput('')
     setGeminiKeyStatus('idle')
     setGeminiKeyError(null)
+  }
+
+  const closeGeminiKeyModal = () => {
+    setShowGeminiKeyModal(false)
+    setGeminiKeyInput('')
+    if (!storedGeminiKey) {
+      setGeminiKeyStatus('idle')
+      setGeminiKeyError(null)
+    }
+  }
+
+  const handleGeminiModalSave = async () => {
+    const success = await handleSaveGeminiKey()
+    if (success) {
+      setShowGeminiKeyModal(false)
+      setToast({ message: 'Gemini key saved locally.', tone: 'success' })
+    }
+    return success
   }
 
   const handleSavePrompts = () => {
@@ -549,11 +555,11 @@ const ResumeGenerator = () => {
   const clearWorkspace = () => {
     storage.clearAll()
     handleDeleteGeminiKey()
+    setShowGeminiKeyModal(false)
 
     setRawResumeText('')
     setTextConversionError(null)
-    setIntakeFlow('decision')
-    setIntakeMode('json')
+    setIntakeMode('text')
     setPastedJSON('')
     setIsJSONValid(null)
     setJsonErrors([])
@@ -626,7 +632,9 @@ const ResumeGenerator = () => {
       setAdjustmentSuccess(false)
       storage.saveResume('custom', JSON.stringify(parsed, null, 2))
       setIntakeMode('json')
-      setIntakeFlow('json')
+      if (!storedGeminiKey) {
+        setShowGeminiKeyModal(true)
+      }
     } catch (error) {
       console.error('Error loading custom resume:', error)
     }
@@ -662,11 +670,14 @@ const ResumeGenerator = () => {
           customResumeLoadedRef.current = true
           storage.saveResume('custom', JSON.stringify(parsed, null, 2))
           setLoading(false)
-          setIntakeFlow('json')
           setOptimizationSuccess(false)
           setAdjustmentSuccess(false)
           setOriginalResume(null)
           setShowDiff(false)
+          setIntakeMode('json')
+          if (!storedGeminiKey) {
+            setShowGeminiKeyModal(true)
+          }
         }
       } catch (error) {
         console.error('Failed to parse uploaded JSON:', error)
@@ -775,16 +786,18 @@ const ResumeGenerator = () => {
         setOptimizationSuccess(false)
         setAdjustmentSuccess(false)
         storage.saveResume('custom', serialized)
+        setIntakeMode('json')
+        setToast({ message: 'Your JSON resume is ready to optimize.', tone: 'success' })
       }
     } catch (error) {
       console.error('Text conversion error:', error)
       setTextConversionError(
         error instanceof Error ? error.message : 'Unable to convert resume text.'
       )
-    } finally {
-      setIsConvertingText(false)
-    }
+  } finally {
+    setIsConvertingText(false)
   }
+}
 
   // Optimize resume with Gemini
   const optimizeResume = async () => {
@@ -1002,40 +1015,65 @@ const ResumeGenerator = () => {
           onComplete={handleCompleteOnboarding}
           geminiKeyHelpUrl={GEMINI_KEY_HELP_URL}
         />
-        {intakeFlow === 'decision' ? (
-          <IntakeDecision
-            onSelectJSONPath={handleSelectJSONPath}
-            onSelectHelperPath={handleSelectHelperPath}
-          />
-        ) : (
-          <ResumeIntake
-            intakeMode={intakeMode}
-            onIntakeModeChange={handleIntakeModeChange}
-            pastedJSON={pastedJSON}
-            onJSONChange={handleJSONPaste}
-            isJSONValid={isJSONValid}
-            jsonErrors={jsonErrors}
-            onLoadJSON={loadCustomResume}
-            onDownloadJSON={downloadPastedJSON}
-            onJSONFileDrop={handleJSONFileDrop}
-            isUploadingJSON={false}
-            rawResumeText={rawResumeText}
-            onRawTextChange={setRawResumeText}
-            onConvertText={convertTextToResume}
-            isConvertingText={isConvertingText}
-            textConversionError={textConversionError}
-            hasStoredKey={!!storedGeminiKey}
-            onOpenOnboarding={handleOpenOnboarding}
-            onBackToDecision={handleBackToDecision}
-            geminiKeyInput={geminiKeyInput}
-            geminiKeyStatus={geminiKeyStatus}
-            geminiKeyError={geminiKeyError}
-            isValidatingGeminiKey={isValidatingKey}
-            onGeminiKeyInputChange={handleGeminiKeyInputChange}
-            onSaveGeminiKey={handleSaveGeminiKeyClick}
-            geminiKeyHelpUrl={GEMINI_KEY_HELP_URL}
-          />
-        )}
+        <GeminiKeyModal
+          isOpen={showGeminiKeyModal && !storedGeminiKey}
+          onClose={closeGeminiKeyModal}
+          geminiKeyInput={geminiKeyInput}
+          onInputChange={handleGeminiKeyInputChange}
+          onSave={handleGeminiModalSave}
+          isSaving={isValidatingKey}
+          status={geminiKeyStatus}
+          error={geminiKeyError}
+          geminiKeyHelpUrl={GEMINI_KEY_HELP_URL}
+          instructionsUrl={GEMINI_INSTRUCTIONS_URL}
+        />
+        <ResumeIntake
+          intakeMode={intakeMode}
+          onIntakeModeChange={handleIntakeModeChange}
+          pastedJSON={pastedJSON}
+          onJSONChange={handleJSONPaste}
+          isJSONValid={isJSONValid}
+          jsonErrors={jsonErrors}
+          onLoadJSON={loadCustomResume}
+          onDownloadJSON={downloadPastedJSON}
+          onJSONFileDrop={handleJSONFileDrop}
+          isUploadingJSON={false}
+          rawResumeText={rawResumeText}
+          onRawTextChange={setRawResumeText}
+          onConvertText={convertTextToResume}
+          isConvertingText={isConvertingText}
+          textConversionError={textConversionError}
+          hasStoredKey={!!storedGeminiKey}
+          onOpenOnboarding={handleOpenOnboarding}
+          onDeleteGeminiKey={handleDeleteGeminiKey}
+          geminiKeyInput={geminiKeyInput}
+          geminiKeyStatus={geminiKeyStatus}
+          geminiKeyError={geminiKeyError}
+          isValidatingGeminiKey={isValidatingKey}
+          onGeminiKeyInputChange={handleGeminiKeyInputChange}
+          onSaveGeminiKey={handleSaveGeminiKeyClick}
+          geminiKeyHelpUrl={GEMINI_KEY_HELP_URL}
+        />
+        {toast && (
+          <div
+            className={`fixed inset-x-0 top-6 z-50 flex justify-center pointer-events-none`}
+          >
+          <div
+            className={`inline-flex items-center gap-3 rounded-2xl px-5 py-3 shadow-xl border pointer-events-auto ${
+              toast.tone === 'success'
+                ? 'border-emerald-200 bg-emerald-600 text-white'
+                : 'border-red-200 bg-red-600 text-white'
+            }`}
+          >
+            {toast.tone === 'success' ? (
+              <Check size={18} className="flex-shrink-0" />
+            ) : (
+              <AlertCircle size={18} className="flex-shrink-0" />
+            )}
+            <span className="text-sm font-semibold">{toast.message}</span>
+          </div>
+        </div>
+      )}
       </>
     )
   }
@@ -1049,6 +1087,36 @@ const ResumeGenerator = () => {
         onComplete={handleCompleteOnboarding}
         geminiKeyHelpUrl={GEMINI_KEY_HELP_URL}
       />
+      <GeminiKeyModal
+        isOpen={showGeminiKeyModal && !storedGeminiKey}
+        onClose={closeGeminiKeyModal}
+        geminiKeyInput={geminiKeyInput}
+        onInputChange={handleGeminiKeyInputChange}
+        onSave={handleGeminiModalSave}
+        isSaving={isValidatingKey}
+        status={geminiKeyStatus}
+        error={geminiKeyError}
+        geminiKeyHelpUrl={GEMINI_KEY_HELP_URL}
+        instructionsUrl={GEMINI_INSTRUCTIONS_URL}
+      />
+      {toast && (
+        <div className="fixed inset-x-0 top-6 z-50 flex justify-center pointer-events-none">
+          <div
+            className={`inline-flex items-center gap-3 rounded-2xl px-5 py-3 shadow-xl border pointer-events-auto ${
+              toast.tone === 'success'
+                ? 'border-emerald-200 bg-emerald-600 text-white'
+                : 'border-red-200 bg-red-600 text-white'
+            }`}
+          >
+            {toast.tone === 'success' ? (
+              <Check size={18} className="flex-shrink-0" />
+            ) : (
+              <AlertCircle size={18} className="flex-shrink-0" />
+            )}
+            <span className="text-sm font-semibold">{toast.message}</span>
+          </div>
+        </div>
+      )}
       {showPromptSettings && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
           <div className="w-full max-w-3xl rounded-lg bg-white shadow-xl p-6 max-h-[90vh] overflow-y-auto">
@@ -1165,19 +1233,6 @@ const ResumeGenerator = () => {
       {/* Control Panel - hidden when printing */}
       <div className="print:hidden p-4 bg-white shadow-sm border-b">
         <div className="max-w-4xl mx-auto">
-          <KeySetupPanel
-            geminiKeyHelpUrl={GEMINI_KEY_HELP_URL}
-            storedGeminiKey={storedGeminiKey}
-            geminiKeyInput={geminiKeyInput}
-            isValidatingKey={isValidatingKey}
-            geminiKeyStatus={geminiKeyStatus}
-            geminiKeyError={geminiKeyError}
-            onKeyInputChange={handleGeminiKeyInputChange}
-            onSaveKey={handleSaveGeminiKeyClick}
-            onDeleteKey={handleDeleteGeminiKey}
-            onClearWorkspace={clearWorkspace}
-          />
-
           {/* Top Row - Title and Actions */}
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
             <h1 className="text-xl font-bold text-gray-900">Resume Generator</h1>

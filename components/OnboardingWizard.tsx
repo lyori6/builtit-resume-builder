@@ -1,19 +1,7 @@
 "use client"
 
-import { FC, useMemo, useState, useEffect } from 'react'
-import {
-  X,
-  ArrowLeft,
-  ArrowRight,
-  Sparkles,
-  KeyRound,
-  ShieldCheck,
-  FileCode,
-  FileText,
-  ExternalLink,
-  Download,
-  CheckCircle2
-} from 'lucide-react'
+import { FC, useState } from 'react'
+import { X, Sparkles, ShieldCheck, ArrowRight, ChevronDown, ChevronUp } from 'lucide-react'
 
 interface OnboardingWizardProps {
   isOpen: boolean
@@ -22,204 +10,119 @@ interface OnboardingWizardProps {
   geminiKeyHelpUrl: string
 }
 
-interface StepContent {
-  title: string
-  description: string
-  bullets: Array<{
-    icon: JSX.Element
-    text: string
-  }>
-  footer?: {
-    label: string
-    href: string
-  }
-}
-
-const steps: StepContent[] = [
-  {
-    title: 'Grab your free Gemini API key',
-    description:
-      "You will use Google's Gemini 1.5 Pro free tier. The key never leaves your browser and you can delete it anytime.",
-    bullets: [
-      {
-        icon: <KeyRound size={16} className="text-blue-600" />,
-        text: 'Sign in to Google AI Studio and create a new API key.'
-      },
-      {
-        icon: <ShieldCheck size={16} className="text-blue-600" />,
-        text: 'Paste it into the key panel on the main screen so the app stores it locally only.'
-      },
-      {
-        icon: <Sparkles size={16} className="text-blue-600" />,
-        text: 'Once saved, you can update or remove the key in one click.'
-      }
-    ],
-    footer: {
-      label: 'Open Gemini API key instructions',
-      href: 'GEMINI_HELP'
-    }
-  },
-  {
-    title: 'Bring in your resume',
-    description:
-      'Work with whichever format you already have. The intake tabs let you paste JSON or raw text and convert it on the fly.',
-    bullets: [
-      {
-        icon: <FileCode size={16} className="text-blue-600" />,
-        text: 'Have structured data? Paste resume JSON and validate it instantly before loading.'
-      },
-      {
-        icon: <FileText size={16} className="text-blue-600" />,
-        text: 'Only have a document? Drop the plain text and let Gemini convert it into the right schema.'
-      },
-      {
-        icon: <Sparkles size={16} className="text-blue-600" />,
-        text: 'Need a starting point? Ask your favorite AI with the provided prompt or try Rx Resume to export JSON quickly.'
-      }
-    ],
-    footer: {
-      label: 'Visit Rx Resume (external)',
-      href: 'https://rxresu.me/'
-    }
-  },
-  {
-    title: 'Tailor, compare, and export',
-    description:
-      "After loading your resume, use the workspace to target a job description and review Gemini's suggestions safely.",
-    bullets: [
-      {
-        icon: <Sparkles size={16} className="text-blue-600" />,
-        text: 'Paste the job description, run optimization, and capture adjustments in the diff view.'
-      },
-      {
-        icon: <CheckCircle2 size={16} className="text-blue-600" />,
-        text: 'Review the summary of changes, revert if something looks off, and iterate with adjustment prompts.'
-      },
-      {
-        icon: <Download size={16} className="text-blue-600" />,
-        text: 'Download the optimized JSON or print a polished PDF without sending data to any server.'
-      }
-    ]
-  }
-]
-
 const OnboardingWizard: FC<OnboardingWizardProps> = ({ isOpen, onClose, onComplete, geminiKeyHelpUrl }) => {
-  const [stepIndex, setStepIndex] = useState(0)
-
-  useEffect(() => {
-    if (isOpen) {
-      setStepIndex(0)
-    }
-  }, [isOpen])
-
-  const activeStep = useMemo(() => steps[stepIndex], [stepIndex])
+  const [showDetails, setShowDetails] = useState(false)
 
   if (!isOpen) {
     return null
   }
 
-  const handleNext = () => {
-    if (stepIndex < steps.length - 1) {
-      setStepIndex((current) => current + 1)
-      return
-    }
-
-    onComplete()
-  }
-
-  const handleBack = () => {
-    if (stepIndex === 0) {
-      return
-    }
-    setStepIndex((current) => current - 1)
-  }
-
-  const resolveFooterLink = (href: string) => {
-    if (href === 'GEMINI_HELP') {
-      return geminiKeyHelpUrl
-    }
-    return href
-  }
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4">
-      <div className="relative w-full max-w-2xl rounded-2xl bg-white shadow-xl border border-gray-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 backdrop-blur-sm p-4">
+      <div className="relative w-full max-w-lg rounded-3xl border border-slate-200 bg-white shadow-2xl">
         <button
           onClick={onClose}
-          className="absolute right-4 top-4 text-gray-500 hover:text-gray-900 transition-colors"
+          className="absolute right-4 top-4 text-slate-400 hover:text-slate-700 transition-colors"
           aria-label="Close onboarding wizard"
         >
           <X size={20} />
         </button>
-        <div className="p-6 sm:p-8">
-          <div className="mb-6 flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-blue-600">
-              <Sparkles size={20} />
-            </div>
-            <div>
-              <div className="text-xs uppercase tracking-wide text-blue-600 font-semibold">
-                Quick Start
-              </div>
-              <h2 className="text-xl font-bold text-gray-900">{activeStep.title}</h2>
+        <div className="space-y-6 p-8">
+          <div className="flex flex-col items-center gap-4 text-center">
+            <span className="flex h-16 w-16 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg shadow-blue-600/30">
+              <Sparkles size={32} />
+            </span>
+            <div className="space-y-2">
+              <p className="text-xs font-semibold uppercase tracking-wide text-blue-700">Two-minute setup</p>
+              <h1 className="text-2xl font-bold text-slate-900">Unlock resume tailoring with a free Gemini key</h1>
+              <p className="text-sm text-slate-600">
+                This resume optimizer runs entirely in your browser. Grab a free Gemini key so you can tailor resumes securely without subscriptions.
+              </p>
             </div>
           </div>
-          <p className="text-sm text-gray-600 mb-5">{activeStep.description}</p>
-          <div className="space-y-4">
-            {activeStep.bullets.map((bullet, index) => (
-              <div key={index} className="flex items-start gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3">
-                <div className="mt-1">{bullet.icon}</div>
-                <p className="text-sm text-gray-700">{bullet.text}</p>
+          <ol className="space-y-4 rounded-2xl border border-slate-200 bg-slate-50 p-5 text-left">
+            <li className="flex gap-4">
+              <span className="mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-blue-600 text-white text-sm font-semibold">
+                1
+              </span>
+              <div className="space-y-1">
+                <p className="text-sm font-semibold text-slate-800">Open Google AI Studio</p>
+                <p className="text-sm text-slate-600">Sign in with a Google account to access Gemini.</p>
               </div>
-            ))}
+            </li>
+            <li className="flex gap-4">
+              <span className="mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-blue-600 text-white text-sm font-semibold">
+                2
+              </span>
+              <div className="space-y-1">
+                <p className="text-sm font-semibold text-slate-800">Generate a free API key</p>
+                <p className="text-sm text-slate-600">Create or select a project, then choose to create a key. Google provides generous free daily usage.</p>
+              </div>
+            </li>
+            <li className="flex gap-4">
+              <span className="mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-blue-600 text-white text-sm font-semibold">
+                3
+              </span>
+              <div className="space-y-1">
+                <p className="text-sm font-semibold text-slate-800">Paste it back in BuiltIt</p>
+                <p className="text-sm text-slate-600">Save the key in the Gemini panel on the main screen. All conversions run locally and you can delete or update it anytime.</p>
+              </div>
+            </li>
+          </ol>
+          <div className="overflow-hidden rounded-2xl border border-slate-200">
+            <button
+              onClick={() => setShowDetails((value) => !value)}
+              className="flex w-full items-center justify-between bg-white px-5 py-3 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+            >
+              <span className="inline-flex items-center gap-2">
+                {showDetails ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                Need step-by-step details?
+              </span>
+            </button>
+            {showDetails && (
+              <div className="space-y-3 border-t border-slate-200 bg-slate-50 px-5 py-4 text-sm text-slate-600">
+                <p>Here is the detailed flow if you want it:</p>
+                <ol className="space-y-2 pl-5 text-left text-sm text-slate-600 list-decimal">
+                  <li>Go to Google AI Studio and sign in. If prompted, accept the Gemini terms.</li>
+                  <li>Select the project dropdown, choose <strong>+ New project</strong>, and give it a name.</li>
+                  <li>Open the API Keys page and click <strong>Create API key</strong>. Copy the value that appears.</li>
+                  <li>Return to BuiltIt and paste the key into the Gemini key panel. Click <strong>Save key</strong>.</li>
+                  <li>You can revoke the key later inside AI Studio or clear it from BuiltIt with one click.</li>
+                </ol>
+              </div>
+            )}
           </div>
-          {activeStep.footer && (
+          <div className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+            <div className="flex items-start gap-3">
+              <ShieldCheck size={20} className="text-blue-600" />
+              <p>
+                This resume optimizer never sends your key or your resume to a server. Everything stays on this device so you can work privately and for free.
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-center">
             <a
-              href={resolveFooterLink(activeStep.footer.href)}
+              href={geminiKeyHelpUrl}
               target="_blank"
               rel="noreferrer"
-              className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700"
+              className="inline-flex items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-blue-700 px-8 py-3.5 text-sm font-semibold text-white shadow-lg transition hover:from-blue-500 hover:to-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-200"
             >
-              <ExternalLink size={16} />
-              {activeStep.footer.label}
+              Get Gemini key
             </a>
-          )}
-        </div>
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-t border-gray-200 bg-gray-50 px-6 py-4 rounded-b-2xl">
-          <div className="flex items-center gap-2 text-xs text-gray-500">
-            Step {stepIndex + 1} of {steps.length}
-          </div>
-          <div className="flex items-center gap-3">
             <button
-              onClick={handleBack}
-              disabled={stepIndex === 0}
-              className="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              onClick={onComplete}
+              className="inline-flex items-center justify-center rounded-full border border-slate-300 px-8 py-3.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-400 hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus:ring-4 focus:ring-slate-200"
             >
-              <ArrowLeft size={16} />
-              Back
-            </button>
-            <button
-              onClick={handleNext}
-              className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 transition-colors"
-            >
-              {stepIndex < steps.length - 1 ? (
-                <>
-                  Next
-                  <ArrowRight size={16} />
-                </>
-              ) : (
-                <>
-                  Finish
-                  <CheckCircle2 size={16} className="text-white" />
-                </>
-              )}
+              I already have a key
             </button>
           </div>
         </div>
         <button
           onClick={onClose}
-          className="absolute -bottom-10 left-1/2 -translate-x-1/2 text-xs text-gray-400 hover:text-gray-600 transition-colors"
+          className="absolute -bottom-10 left-1/2 -translate-x-1/2 text-xs text-slate-400 hover:text-slate-600 transition-colors"
         >
-          Skip for now
+          I’ll do this later
+          <ArrowRight size={12} className="ml-1 inline" />
         </button>
       </div>
     </div>

@@ -154,6 +154,27 @@ export function normalizeResumeJSON<T extends { sections?: unknown }>(json: T): 
         }
       }
     })
+
+    const sectionsRecord = clone.sections as Record<string, unknown>
+    const projectsSection = sectionsRecord.projects as Record<string, unknown> | undefined
+    if (projectsSection) {
+      const items = projectsSection.items
+      if (Array.isArray(items)) {
+        const filtered = items.filter((item) => {
+          if (!item || typeof item !== 'object') {
+            return false
+          }
+          const name = (item as Record<string, unknown>).name
+          return typeof name === 'string' && name.trim() !== ''
+        })
+
+        ;(projectsSection as Record<string, unknown>).items = filtered
+
+        if (filtered.length === 0) {
+          (projectsSection as Record<string, unknown>).visible = false
+        }
+      }
+    }
   }
 
   return clone
