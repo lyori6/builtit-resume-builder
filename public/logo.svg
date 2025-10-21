@@ -1,18 +1,25 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
   <title id="title">BuiltIt Logo</title>
-  <desc id="desc">Rounded blue square with a white document featuring the letter B and a sparkle icon</desc>
+  <desc id="desc">Rounded blue square containing a simple resume icon with bullet points and headings</desc>
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+    <linearGradient id="logo-bg" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0%" stop-color="#2563eb" />
       <stop offset="100%" stop-color="#1d4ed8" />
     </linearGradient>
-    <linearGradient id="page" x1="0" y1="0" x2="0" y2="1">
+    <linearGradient id="page-fill" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#ffffff" />
-      <stop offset="100%" stop-color="#f1f5f9" />
+      <stop offset="100%" stop-color="#e2e8f0" />
     </linearGradient>
   </defs>
-  <rect width="64" height="64" rx="16" fill="url(#bg)" />
-  <path d="M22 14h20a4 4 0 0 1 4 4v28a4 4 0 0 1-4 4H22a4 4 0 0 1-4-4V18a4 4 0 0 1 4-4z" fill="url(#page)" />
-  <path d="M26 22h10c4.418 0 8 2.582 8 7 0 3.19-1.61 5.4-4.134 6.39C41.832 36.09 43 38.57 43 41c0 4.26-3.424 7-8.75 7H26V22zm6.75 5h-2.75v6h2.75c2.047 0 3.25-.98 3.25-3 0-2.02-1.203-3-3.25-3zm.25 11h-3v7h3.5c2.382 0 3.75-1.02 3.75-3.5 0-2.48-1.562-3.5-4.25-3.5z" fill="#2563eb" />
-  <path d="M45.5 16.5l1.2 3.5 3.5 1.2-3.5 1.2-1.2 3.5-1.2-3.5-3.5-1.2 3.5-1.2z" fill="#fde68a" />
+  <rect width="64" height="64" rx="16" fill="url(#logo-bg)" />
+  <path d="M22 14h18a4 4 0 0 1 2.83 1.17l6 6A4 4 0 0 1 50 24v24a6 6 0 0 1-6 6H22a6 6 0 0 1-6-6V20a6 6 0 0 1 6-6z" fill="url(#page-fill)" />
+  <path d="M40 14v8h8" fill="none" stroke="#cbd5f5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+  <rect x="24" y="24" width="16" height="3" rx="1.5" fill="#2563eb" opacity="0.9" />
+  <circle cx="28" cy="32" r="1.6" fill="#2563eb" opacity="0.95" />
+  <circle cx="28" cy="38" r="1.6" fill="#2563eb" opacity="0.85" />
+  <circle cx="28" cy="44" r="1.6" fill="#2563eb" opacity="0.75" />
+  <rect x="32" y="30.75" width="14" height="2.5" rx="1.25" fill="#94a3b8" />
+  <rect x="32" y="36.75" width="14" height="2.5" rx="1.25" fill="#94a3b8" />
+  <rect x="32" y="42.75" width="12" height="2.5" rx="1.25" fill="#94a3b8" />
+  <rect x="24" y="49" width="16" height="2.5" rx="1.25" fill="#a5b4fc" />
 </svg>
