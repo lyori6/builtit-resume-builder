@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react'
 import DOMPurify from 'dompurify'
-import { Download, ChevronDown, ChevronUp, Upload, Check, AlertCircle, Sparkles, Loader2, X } from 'lucide-react'
+import { Download, Check, AlertCircle, Loader2, X, Sparkles, RotateCcw } from 'lucide-react'
 import { validateResumeJSON, ResumeData, isValidResumeData, normalizeResumeJSON } from '@/lib/resume-types'
 import ResumeIntake from '@/components/ResumeIntake'
 import WorkspaceActions from '@/components/WorkspaceActions'
@@ -15,12 +15,6 @@ import {
   DEFAULT_ADJUSTMENT_SYSTEM_PROMPT,
   DEFAULT_TEXT_CONVERSION_SYSTEM_PROMPT
 } from '@/lib/prompts'
-
-interface ResumeOption {
-  id: string
-  name: string
-  filename: string
-}
 
 interface DiffItem {
   path: string[]
@@ -203,7 +197,6 @@ const GEMINI_INSTRUCTIONS_URL = 'https://github.com/lyor/builtit-resume-builder/
 
 const ResumeGenerator = () => {
   const [resumeData, setResumeData] = useState<ResumeData | null>(null)
-  const [availableResumes, setAvailableResumes] = useState<ResumeOption[]>([])
   const [selectedResume, setSelectedResume] = useState<string>('')
   const [loading, setLoading] = useState(true)
   
@@ -226,7 +219,6 @@ const ResumeGenerator = () => {
   const [optimizationSuccess, setOptimizationSuccess] = useState(false)
 
   // JSON paste section collapsible state
-  const [jsonPasteCollapsed, setJsonPasteCollapsed] = useState<boolean>(true)
 
   // Final adjustments functionality
   const [finalAdjustments, setFinalAdjustments] = useState<string>('')
@@ -251,6 +243,7 @@ const ResumeGenerator = () => {
   const [isOnboardingOpen, setIsOnboardingOpen] = useState(false)
   const [toast, setToast] = useState<{ message: string; tone: 'success' | 'error' } | null>(null)
   const [showGeminiKeyModal, setShowGeminiKeyModal] = useState(false)
+  const [isGeminiKeyRequired, setIsGeminiKeyRequired] = useState(false)
 
   const downloadJSONFile = (jsonString: string, filename: string) => {
     try {
@@ -269,6 +262,7 @@ const ResumeGenerator = () => {
   }
 
   const diffItems = useMemo(() => buildResumeDiff(originalResume, resumeData), [originalResume, resumeData])
+  const hasLoadedResume = Boolean(resumeData)
 
   useEffect(() => {
     if (diffItems.length === 0) {
@@ -315,6 +309,12 @@ const ResumeGenerator = () => {
   }, [showPromptSettings, systemPrompt, adjustmentPrompt, conversionPrompt])
 
   useEffect(() => {
+    if (storedGeminiKey) {
+      setIsGeminiKeyRequired(false)
+    }
+  }, [storedGeminiKey])
+
+  useEffect(() => {
     const savedResumeJSON = storage.getResume('custom')
     if (savedResumeJSON) {
       setPastedJSON(savedResumeJSON)
@@ -329,6 +329,7 @@ const ResumeGenerator = () => {
         setLoading(false)
         setIntakeMode('json')
         if (!storage.getGeminiApiKey()) {
+          setIsGeminiKeyRequired(true)
           setShowGeminiKeyModal(true)
         }
       } catch (error) {
@@ -338,11 +339,6 @@ const ResumeGenerator = () => {
         setLoading(false)
       }
     }
-  }, [])
-
-  useEffect(() => {
-    // Load available resumes on component mount
-    fetchAvailableResumes()
   }, [])
 
   useEffect(() => {
@@ -367,16 +363,6 @@ const ResumeGenerator = () => {
       customResumeLoadedRef.current = false
     }
   }, [selectedResume])
-
-  const fetchAvailableResumes = async () => {
-    try {
-      const response = await fetch('/api/resume')
-      const resumes = await response.json()
-      setAvailableResumes(resumes)
-    } catch (error) {
-      console.error('Error fetching available resumes:', error)
-    }
-  }
 
   const fetchResumeData = async (filename: string) => {
     try {
@@ -497,8 +483,12 @@ const ResumeGenerator = () => {
   }
 
   const closeGeminiKeyModal = () => {
+    if (isGeminiKeyRequired) {
+      return
+    }
     setShowGeminiKeyModal(false)
     setGeminiKeyInput('')
+    setIsGeminiKeyRequired(false)
     if (!storedGeminiKey) {
       setGeminiKeyStatus('idle')
       setGeminiKeyError(null)
@@ -508,6 +498,7 @@ const ResumeGenerator = () => {
   const handleGeminiModalSave = async () => {
     const success = await handleSaveGeminiKey()
     if (success) {
+      setIsGeminiKeyRequired(false)
       setShowGeminiKeyModal(false)
       setToast({ message: 'Gemini key saved locally.', tone: 'success' })
     }
@@ -550,40 +541,6 @@ const ResumeGenerator = () => {
     setPromptSaveState('saved')
     setPromptError(null)
     setTimeout(() => setPromptSaveState('idle'), 2000)
-  }
-
-  const clearWorkspace = () => {
-    storage.clearAll()
-    handleDeleteGeminiKey()
-    setShowGeminiKeyModal(false)
-
-    setRawResumeText('')
-    setTextConversionError(null)
-    setIntakeMode('text')
-    setPastedJSON('')
-    setIsJSONValid(null)
-    setJsonErrors([])
-    setCustomResumeLoaded(false)
-    customResumeLoadedRef.current = false
-    setResumeData(null)
-    setOriginalResume(null)
-    setOptimizationSuccess(false)
-    setAdjustmentSuccess(false)
-    setFinalAdjustments('')
-    setShowDiff(false)
-    setSystemPrompt(DEFAULT_OPTIMIZATION_SYSTEM_PROMPT)
-    setAdjustmentPrompt(DEFAULT_ADJUSTMENT_SYSTEM_PROMPT)
-    setConversionPrompt(DEFAULT_TEXT_CONVERSION_SYSTEM_PROMPT)
-    setDraftSystemPrompt(DEFAULT_OPTIMIZATION_SYSTEM_PROMPT)
-    setDraftAdjustmentPrompt(DEFAULT_ADJUSTMENT_SYSTEM_PROMPT)
-    setDraftConversionPrompt(DEFAULT_TEXT_CONVERSION_SYSTEM_PROMPT)
-    setPromptSaveState('idle')
-    setPromptError(null)
-    setShowPromptSettings(false)
-    setSelectedResume('')
-    setLoading(true)
-
-    void fetchAvailableResumes()
   }
 
   // Handle paste JSON validation
@@ -633,6 +590,7 @@ const ResumeGenerator = () => {
       storage.saveResume('custom', JSON.stringify(parsed, null, 2))
       setIntakeMode('json')
       if (!storedGeminiKey) {
+        setIsGeminiKeyRequired(true)
         setShowGeminiKeyModal(true)
       }
     } catch (error) {
@@ -676,6 +634,7 @@ const ResumeGenerator = () => {
           setShowDiff(false)
           setIntakeMode('json')
           if (!storedGeminiKey) {
+            setIsGeminiKeyRequired(true)
             setShowGeminiKeyModal(true)
           }
         }
@@ -695,33 +654,47 @@ const ResumeGenerator = () => {
     reader.readAsText(file)
   }
 
-  // Clear custom resume
-  const clearCustomResume = () => {
-    setPastedJSON('')
-    setIsJSONValid(null)
-    setJsonErrors([])
+  const handleClearWorkspace = () => {
+    storage.clearAll()
     setResumeData(null)
     setCustomResumeLoaded(false)
     customResumeLoadedRef.current = false
-    setOptimizationSuccess(false)
-    setAdjustmentSuccess(false)
-    setFinalAdjustments('')
-    setOriginalResume(null)
-    setShowDiff(false)
-    storage.removeResume('custom')
-    setLoading(true)
-    setIntakeMode('json')
+    setSelectedResume('')
+    setLoading(false)
+    setPastedJSON('')
+    setIsJSONValid(null)
+    setJsonErrors([])
     setRawResumeText('')
     setTextConversionError(null)
-
-    // Revert to first available resume
-    if (availableResumes.length > 0) {
-      const defaultResume = availableResumes.find((r: ResumeOption) => r.id === 'current') || availableResumes[0]
-      if (defaultResume) {
-        setSelectedResume(defaultResume.filename)
-        // This will trigger fetchResumeData via useEffect
-      }
-    }
+    setIsConvertingText(false)
+    setJobDescription('')
+    setIsOptimizing(false)
+    setOptimizationError(null)
+    setOriginalResume(null)
+    setOptimizationSuccess(false)
+    setFinalAdjustments('')
+    setIsAdjusting(false)
+    setAdjustmentError(null)
+    setAdjustmentSuccess(false)
+    setShowDiff(false)
+    setStoredGeminiKey(null)
+    setGeminiKeyInput('')
+    setIsValidatingKey(false)
+    setGeminiKeyStatus('idle')
+    setGeminiKeyError(null)
+    setSystemPrompt(DEFAULT_OPTIMIZATION_SYSTEM_PROMPT)
+    setAdjustmentPrompt(DEFAULT_ADJUSTMENT_SYSTEM_PROMPT)
+    setConversionPrompt(DEFAULT_TEXT_CONVERSION_SYSTEM_PROMPT)
+    setDraftSystemPrompt(DEFAULT_OPTIMIZATION_SYSTEM_PROMPT)
+    setDraftAdjustmentPrompt(DEFAULT_ADJUSTMENT_SYSTEM_PROMPT)
+    setDraftConversionPrompt(DEFAULT_TEXT_CONVERSION_SYSTEM_PROMPT)
+    setShowPromptSettings(false)
+    setPromptSaveState('idle')
+    setPromptError(null)
+    setShowGeminiKeyModal(false)
+    setIsGeminiKeyRequired(false)
+    setIntakeMode('text')
+    setToast({ message: 'Workspace cleared. Start fresh with a new resume.', tone: 'success' })
   }
 
   const convertTextToResume = async () => {
@@ -730,7 +703,7 @@ const ResumeGenerator = () => {
       return
     }
     if (!storedGeminiKey) {
-      setTextConversionError('Add your Gemini API key to convert resume text.')
+      setTextConversionError('Add your API key to convert resume text.')
       return
     }
 
@@ -803,7 +776,7 @@ const ResumeGenerator = () => {
   const optimizeResume = async () => {
     if (!resumeData || !jobDescription.trim()) return
     if (!storedGeminiKey) {
-      setOptimizationError('Add your Gemini API key to run optimization.')
+      setOptimizationError('Add your API key to run optimization.')
       return
     }
 
@@ -898,7 +871,7 @@ const ResumeGenerator = () => {
   const applyFinalAdjustments = async () => {
     if (!resumeData || !finalAdjustments.trim()) return
     if (!storedGeminiKey) {
-      setAdjustmentError('Add your Gemini API key to apply adjustments.')
+      setAdjustmentError('Add your API key to apply adjustments.')
       return
     }
 
@@ -1026,6 +999,7 @@ const ResumeGenerator = () => {
           error={geminiKeyError}
           geminiKeyHelpUrl={GEMINI_KEY_HELP_URL}
           instructionsUrl={GEMINI_INSTRUCTIONS_URL}
+          requireKey={isGeminiKeyRequired}
         />
         <ResumeIntake
           intakeMode={intakeMode}
@@ -1098,6 +1072,7 @@ const ResumeGenerator = () => {
         error={geminiKeyError}
         geminiKeyHelpUrl={GEMINI_KEY_HELP_URL}
         instructionsUrl={GEMINI_INSTRUCTIONS_URL}
+        requireKey={isGeminiKeyRequired}
       />
       {toast && (
         <div className="fixed inset-x-0 top-6 z-50 flex justify-center pointer-events-none">
@@ -1229,149 +1204,113 @@ const ResumeGenerator = () => {
         </div>
       )}
 
-      <div className="min-h-screen bg-gray-50">
-      {/* Control Panel - hidden when printing */}
-      <div className="print:hidden p-4 bg-white shadow-sm border-b">
-        <div className="max-w-4xl mx-auto">
-          {/* Top Row - Title and Actions */}
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
-            <h1 className="text-xl font-bold text-gray-900">Resume Generator</h1>
-            
-            {/* Action Buttons */}
-            <div className="flex flex-wrap gap-2">
-              {availableResumes.length > 0 && (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/70 to-indigo-50/50">
+        <div className="print:hidden">
+          <div className="mx-auto w-full max-w-6xl px-6 py-14 space-y-10">
+            <header className="rounded-[28px] border border-blue-100 bg-white/85 p-8 shadow-lg shadow-blue-100/60">
+              <div className="space-y-6 md:space-y-5">
+                <span className="inline-flex items-center gap-2 rounded-full bg-blue-600/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-blue-700">
+                  <Sparkles size={16} className="text-blue-600" />
+                  Optimize workspace
+                </span>
+                <div className="space-y-3">
+                  <h1 className="text-3xl font-bold leading-snug text-slate-900">
+                    Tune your resume for each role
+                  </h1>
+                  <p className="text-base text-slate-600 max-w-2xl">
+                    Load your JSON resume, target a job description, and approve every change before you export.
+                  </p>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="flex items-start gap-3 rounded-2xl border border-blue-100 bg-blue-50/70 p-3 text-sm text-blue-900">
+                    <Check size={16} className="mt-0.5 flex-shrink-0" />
+                    Focused suggestions keep your achievements in your voice while matching each job post.
+                  </div>
+                  <div className="flex items-start gap-3 rounded-2xl border border-blue-100 bg-blue-50/70 p-3 text-sm text-blue-900">
+                    <Check size={16} className="mt-0.5 flex-shrink-0" />
+                    Review the diff, apply quick tweaks, and export when it’s ready.
+                  </div>
+                </div>
+              </div>
+            </header>
+
+            <div className="flex flex-col gap-3 rounded-3xl border border-blue-100 bg-white/85 p-4 shadow-sm shadow-blue-100/50 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center gap-2 text-sm font-medium text-slate-700">
+                <Sparkles size={16} className="text-blue-600" />
+                <span>
+                  {hasLoadedResume
+                    ? 'Export the tailored resume whenever it feels ready.'
+                    : 'Load a resume to unlock export and reset controls.'}
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-2">
                 <button
-                  onClick={() => setSelectedResume(availableResumes[0].filename)}
-                  className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-white text-gray-700 border border-gray-300 rounded hover:border-gray-400 hover:text-gray-900 transition-colors shadow-sm"
+                  type="button"
+                  onClick={generatePDF}
+                  disabled={!hasLoadedResume}
+                  className="inline-flex items-center gap-2 rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  <Upload size={14} /> Load sample resume
+                  <Download size={16} /> Download PDF
                 </button>
-              )}
-              <button
-                onClick={() => setShowPromptSettings(true)}
-                className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-purple-100 text-purple-700 rounded hover:bg-purple-200 transition-colors shadow-sm"
-              >
-                <Sparkles size={14} /> Prompt settings
-              </button>
-              <button
-                onClick={generatePDF}
-                className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors shadow-sm"
-              >
-                <Download size={14} /> Download PDF
-              </button>
-              <button
-                onClick={exportJSON}
-                className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors shadow-sm"
-                title="Export JSON"
-              >
-                <Download size={14} /> Export JSON
-              </button>
-            </div>
-          </div>
-          
-          {/* Paste JSON Section */}
-          <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-            <div className="flex items-center justify-between mb-3">
-              <button
-                onClick={() => setJsonPasteCollapsed(!jsonPasteCollapsed)}
-                data-testid="json-panel-toggle"
-                aria-expanded={!jsonPasteCollapsed}
-                className="flex items-center gap-2 text-sm font-semibold text-gray-700 hover:text-gray-900 transition-colors"
-              >
-                <Upload size={16} />
-                Paste Resume JSON
-                {jsonPasteCollapsed ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
-              </button>
-              {customResumeLoaded && (
                 <button
-                  onClick={clearCustomResume}
-                  className="text-xs text-red-600 hover:text-red-800 transition-colors"
+                  type="button"
+                  onClick={exportJSON}
+                  disabled={!hasLoadedResume}
+                  className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white px-4 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60"
+                  title="Export JSON"
                 >
-                  Clear Custom Resume
+                  <Download size={16} /> Export JSON
                 </button>
-              )}
+                <button
+                  type="button"
+                  onClick={handleClearWorkspace}
+                  className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:text-slate-900"
+                >
+                  <RotateCcw size={16} /> Clear workspace + key
+                </button>
+              </div>
             </div>
 
-            {!jsonPasteCollapsed && (
-              <div className="space-y-3">
-              <textarea
-                value={pastedJSON}
-                onChange={(e) => handleJSONPaste(e.target.value)}
-                placeholder="Paste your resume JSON here..."
-                data-testid="json-textarea"
-                className="w-full h-32 px-3 py-2 text-xs font-mono border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                spellCheck={false}
-              />
-              
-              {/* Validation Status */}
-              {pastedJSON && (
-                <div className="flex items-start justify-between">
-                  <div className="flex items-start gap-2">
-                    {isJSONValid === true && (
-                      <div className="flex items-center gap-1 text-green-600 text-xs">
-                        <Check size={14} />
-                        <span>Valid JSON format</span>
-                      </div>
-                    )}
-                    {isJSONValid === false && (
-                      <div className="flex items-start gap-1 text-red-600 text-xs">
-                        <AlertCircle size={14} className="mt-0.5 flex-shrink-0" />
-                        <div>
-                          <div className="font-medium">Invalid JSON:</div>
-                          <ul className="list-disc list-inside mt-1 space-y-0.5">
-                            {jsonErrors.map((error, index) => (
-                              <li key={index}>{error}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                  
-                  {isJSONValid === true && !customResumeLoaded && (
-                    <button
-                      onClick={loadCustomResume}
-                      data-testid="load-resume-button"
-                      className="px-3 py-1.5 text-xs font-medium bg-green-600 text-white rounded hover:bg-green-700 transition-colors shadow-sm"
-                    >
-                      Load Resume
-                    </button>
-                  )}
-                </div>
-              )}
+            <WorkspaceActions
+              resumeData={resumeData}
+              jobDescription={jobDescription}
+              onJobDescriptionChange={setJobDescription}
+              optimizeResume={optimizeResume}
+              isOptimizing={isOptimizing}
+              optimizationError={optimizationError}
+              optimizationSuccess={optimizationSuccess}
+              storedGeminiKey={storedGeminiKey}
+              finalAdjustments={finalAdjustments}
+              onFinalAdjustmentsChange={setFinalAdjustments}
+              applyFinalAdjustments={applyFinalAdjustments}
+              isAdjusting={isAdjusting}
+              adjustmentError={adjustmentError}
+              adjustmentSuccess={adjustmentSuccess}
+              originalResume={originalResume}
+              revertToOriginal={revertToOriginal}
+              showDiff={showDiff}
+              setShowDiff={setShowDiff}
+              diffItems={diffItems}
+              maxDiffItems={MAX_DIFF_ITEMS}
+              renderDiffValue={renderDiffValue}
+              formatDiffPath={createPathLabel}
+            />
+
+            <section className="space-y-4 lg:space-y-5">
+              <div className="space-y-1.5">
+                <h2 className="text-lg font-semibold text-slate-900">Resume preview</h2>
+                <p className="text-sm text-slate-600">
+                  Make sure every update lands the way you expect before sharing.
+                </p>
               </div>
-            )}
+
+              <div className="overflow-hidden rounded-[24px] border border-slate-200/70 bg-white shadow-lg shadow-slate-200/60">
+                {resumeData && <ResumePreview resumeData={resumeData} />}
+              </div>
+            </section>
           </div>
-          
-          <WorkspaceActions
-            resumeData={resumeData}
-            jobDescription={jobDescription}
-            onJobDescriptionChange={setJobDescription}
-            optimizeResume={optimizeResume}
-            isOptimizing={isOptimizing}
-            optimizationError={optimizationError}
-            optimizationSuccess={optimizationSuccess}
-            storedGeminiKey={storedGeminiKey}
-            finalAdjustments={finalAdjustments}
-            onFinalAdjustmentsChange={setFinalAdjustments}
-            applyFinalAdjustments={applyFinalAdjustments}
-            isAdjusting={isAdjusting}
-            adjustmentError={adjustmentError}
-            adjustmentSuccess={adjustmentSuccess}
-            originalResume={originalResume}
-            revertToOriginal={revertToOriginal}
-            showDiff={showDiff}
-            setShowDiff={setShowDiff}
-            diffItems={diffItems}
-            maxDiffItems={MAX_DIFF_ITEMS}
-            renderDiffValue={renderDiffValue}
-            formatDiffPath={createPathLabel}
-          />
         </div>
       </div>
-
-      {resumeData && <ResumePreview resumeData={resumeData} />}
-    </div>
     </>
   )
 }

@@ -16,12 +16,18 @@ Tech-lead view of everything required to open the resume builder to the public w
 ---
 
 ### Latest Engineering Updates (2025-10-19)
+- Intake cards no longer auto-scroll when switching modes, so returning after clearing the workspace leaves you at the top of the page.
+- Gemini key modal now blocks dismissal when no key is stored and the export toolbar lives above the job card, keeping downloads visible during optimization.
+- Trimmed the workspace hero and job description card copy so the new rounded layout stays light while matching the refreshed intake styling.
+- Rebuilt the optimize workspace to mirror the refreshed intake: hero block, pill-style toolbar (Download PDF / Export JSON / Clear workspace + key), rounded action cards, and default-collapsed adjustments.
+- Prompt settings stay tucked behind the hidden modal; documented the control so future UI changes stay aligned without surfacing Gemini copy.
 - Restored the lint baseline by upgrading `eslint-config-next` to match Next 14.2 and tightening TypeScript coverage across `app/page.tsx`, `WorkspaceActions`, and storage helpers.
 - Confirmed the production build succeeds (Next.js type checks) after refining `lib/resume-types.ts` summary handling.
 - Unblocked UX polish work by documenting progressive disclosure and workspace status header refinements under the intake/workspace follow-up sections.
 - Added deterministic `data-testid` hooks and shared Playwright helpers so the intake flow is scriptable without depending on visible copy.
 - Introduced a lightweight `tsx --test` unit suite covering `validateResumeJSON` edge cases and local-storage behavior; prompt builder coverage remains on deck.
 - Replaced the full Playwright regression pack with a single smoke flow that verifies JSON intake + workspace load, keeping the suite fast and reliable.
+- Added an inline Gemini key capture modal for imported resumes so the workspace stays clean; prompt settings remain available behind a hidden modal and are documented for power users.
 
 ## Phase 0 · Discovery & Alignment
 - [ ] Confirm target personas (ordinary job seeker, founder/advanced) and primary success metrics for public launch.
@@ -61,7 +67,7 @@ Tech-lead view of everything required to open the resume builder to the public w
 - [ ] Display resume preview using sanitized content with clear section headers and download button.
 - [ ] Surface concise summary-of-changes (bullet list) above expandable detailed diff.
 - [ ] Add “Download optimized JSON” call-to-action adjacent to the diff summary for quick export.
-- [x] Add “Clear workspace” action wiping stored key, resumes, prompts. _(Button added beside API key controls.)_
+- [x] Add “Clear workspace” action wiping stored key, resumes, prompts. _(Action now lives with the export toolbar above the preview.)_
 
 ## Phase 4 · AI Flow Integration
 - [x] Update optimization endpoint to read Gemini key from request payload and default to Gemini 2.5 Pro (user free tier).
@@ -88,6 +94,7 @@ Tech-lead view of everything required to open the resume builder to the public w
 - Normalized incoming resumes so legacy custom sections load cleanly; smoke reports removed from the repo for a clean handoff.
 - Explore condensing the decision screen into a reversible intake toggle to reduce hesitation and keep the flow feeling lightweight.
 - Reinforce the one-resume-at-a-time constraint in success states/download dialog so expectations stay clear.
+- Removed the auto-scroll jump when switching between intake cards so clearing or reloading keeps the user at the top.
 
 ### Workspace Follow-ups
 - Neutral sample resume replaces personal data (Jensen Huang demo); prompt copy polish still open.
@@ -98,6 +105,7 @@ Tech-lead view of everything required to open the resume builder to the public w
   2. ✅ `components/ResumeDiffTable.tsx` + `ResumeDiffSummary.tsx` power the diff UI; summary copy still needs launch-ready language + download CTA hook.
   3. 🔜 Keep prop surface minimal while tightening prompt copy/tooltips and styling the summary for launch polish.
 - Simplified workspace header by removing the legacy sample selector so primary actions stay the focus.
+- Hero block + pill toolbar now match the intake palette and sit above the job card for constant visibility; keep iterating on diff summary/export CTA alignment next.
 
 ## Phase 6 · Testing & Validation
 - [x] Restore lint baseline (upgrade `eslint-config-next`, remove implicit `any` usage, tighten storage/diff typing).

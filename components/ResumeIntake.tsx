@@ -252,7 +252,6 @@ const ResumeIntake: FC<ResumeIntakeProps> = ({
   const [showManualJSON, setShowManualJSON] = useState(() => Boolean(pastedJSON))
   const jsonSectionRef = useRef<HTMLDivElement | null>(null)
   const textSectionRef = useRef<HTMLDivElement | null>(null)
-  const hasMounted = useRef(false)
 
   useEffect(() => {
     if (!copiedPrompt) return undefined
@@ -271,18 +270,6 @@ const ResumeIntake: FC<ResumeIntakeProps> = ({
       setShowManualJSON(true)
     }
   }, [pastedJSON, showManualJSON])
-  useEffect(() => {
-    if (!hasMounted.current) {
-      hasMounted.current = true
-      return
-    }
-    const target = intakeMode === 'json' ? jsonSectionRef.current : textSectionRef.current
-    if (!target) return
-    window.requestAnimationFrame(() => {
-      target.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    })
-  }, [intakeMode])
-
   const handleCopyPrompt = async () => {
     try {
       if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {

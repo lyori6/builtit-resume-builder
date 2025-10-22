@@ -14,6 +14,7 @@ interface GeminiKeyModalProps {
   error: string | null
   geminiKeyHelpUrl: string
   instructionsUrl: string
+  requireKey?: boolean
 }
 
 const GeminiKeyModal: FC<GeminiKeyModalProps> = ({
@@ -26,7 +27,8 @@ const GeminiKeyModal: FC<GeminiKeyModalProps> = ({
   status,
   error,
   geminiKeyHelpUrl,
-  instructionsUrl
+  instructionsUrl,
+  requireKey = false
 }) => {
   const inputRef = useRef<HTMLInputElement | null>(null)
 
@@ -51,13 +53,15 @@ const GeminiKeyModal: FC<GeminiKeyModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 px-4 backdrop-blur-sm">
       <div className="relative w-full max-w-lg rounded-3xl border border-slate-200 bg-white shadow-2xl">
-        <button
-          onClick={onClose}
-          className="absolute right-4 top-4 text-slate-400 transition hover:text-slate-700"
-          aria-label="Close Gemini key prompt"
-        >
-          <X size={20} />
-        </button>
+        {!requireKey && (
+          <button
+            onClick={onClose}
+            className="absolute right-4 top-4 text-slate-400 transition hover:text-slate-700"
+            aria-label="Close Gemini key prompt"
+          >
+            <X size={20} />
+          </button>
+        )}
         <div className="space-y-6 px-8 py-10">
           <div className="flex flex-col items-center gap-4 text-center">
             <span className="flex h-14 w-14 items-center justify-center rounded-full bg-purple-600 text-white shadow-lg shadow-purple-500/30">
@@ -66,7 +70,9 @@ const GeminiKeyModal: FC<GeminiKeyModalProps> = ({
             <div className="space-y-2">
               <h2 className="text-2xl font-bold text-slate-900">Add your Gemini API key</h2>
               <p className="text-sm text-slate-600">
-                Store the key locally so this resume optimizer can convert text and tailor content without leaving your browser.
+                {requireKey
+                  ? 'Paste your key to continue. Tailoring runs locally and you can revoke the key anytime from AI Studio.'
+                  : 'Store the key locally so this resume optimizer can convert text and tailor content without leaving your browser.'}
               </p>
             </div>
           </div>
@@ -106,13 +112,15 @@ const GeminiKeyModal: FC<GeminiKeyModalProps> = ({
                 </>
               )}
             </button>
-            <button
-              type="button"
-              onClick={onClose}
-              className="w-full rounded-full border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-600 transition hover:border-slate-300 hover:text-slate-900"
-            >
-              I’ll add it later
-            </button>
+            {!requireKey && (
+              <button
+                type="button"
+                onClick={onClose}
+                className="w-full rounded-full border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-600 transition hover:border-slate-300 hover:text-slate-900"
+              >
+                I’ll add it later
+              </button>
+            )}
           </form>
 
           <div className="flex flex-col gap-2 text-sm text-slate-600 sm:flex-row sm:items-center sm:justify-center">
