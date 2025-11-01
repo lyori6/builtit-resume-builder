@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
     console.log('Received response from Gemini, length:', optimizedContent.length)
 
     // Extract JSON from response (handle potential markdown formatting)
-    let optimizedResume
+    let optimizedResume: unknown
     try {
       // Try to extract JSON from markdown code blocks or plain text
       const jsonMatch = optimizedContent.match(/```(?:json)?\s*(\{[\s\S]*\})\s*```/)
@@ -70,8 +70,71 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    let metadata: Record<string, unknown> | null = null
+
+    const extractResumeFromOptimizedPayload = (payload: unknown) => {
+      if (!payload || typeof payload !== 'object') {
+        return payload
+      }
+
+      const optimizedPayload = payload as Record<string, unknown>
+
+      if ('optimized_resume' in optimizedPayload) {
+        const maybeResume = optimizedPayload.optimized_resume
+        let parsedResume: unknown = maybeResume
+
+        if (typeof maybeResume === 'string') {
+          try {
+            parsedResume = JSON.parse(maybeResume)
+          } catch (error) {
+            console.warn('Failed to parse optimized_resume string; returning original payload.', error)
+            parsedResume = maybeResume
+          }
+        }
+
+        metadata = {
+          changes: Array.isArray(optimizedPayload.changes) ? optimizedPayload.changes : undefined,
+          improvementsCount:
+            typeof optimizedPayload.improvements_count === 'number'
+              ? optimizedPayload.improvements_count
+              : undefined,
+          keywordsMatched: Array.isArray(optimizedPayload.keywords_matched)
+            ? optimizedPayload.keywords_matched
+            : undefined,
+          wordCount:
+            typeof optimizedPayload.word_count === 'number'
+              ? optimizedPayload.word_count
+              : undefined
+        }
+
+        return parsedResume
+      }
+
+      if ('resume' in optimizedPayload && typeof optimizedPayload.resume === 'object') {
+        metadata = {
+          changes: Array.isArray(optimizedPayload.changes) ? optimizedPayload.changes : undefined,
+          improvementsCount:
+            typeof optimizedPayload.improvements_count === 'number'
+              ? optimizedPayload.improvements_count
+              : undefined,
+          keywordsMatched: Array.isArray(optimizedPayload.keywords_matched)
+            ? optimizedPayload.keywords_matched
+            : undefined,
+          wordCount:
+            typeof optimizedPayload.word_count === 'number'
+              ? optimizedPayload.word_count
+              : undefined
+        }
+        return optimizedPayload.resume
+      }
+
+      return payload
+    }
+
+    const extractedResume = extractResumeFromOptimizedPayload(optimizedResume)
+
     // Validate optimized resume structure
-    const optimizedValidation = validateResumeJSON(optimizedResume)
+    const optimizedValidation = validateResumeJSON(extractedResume)
     if (!optimizedValidation.isValid) {
       console.error('Optimized resume validation failed:', optimizedValidation.errors)
       return NextResponse.json(
@@ -82,7 +145,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      optimizedResume,
+      optimizedResume: extractedResume,
+      metadata,
       original: resumeData
     })
 

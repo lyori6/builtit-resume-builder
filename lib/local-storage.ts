@@ -1,7 +1,7 @@
 const STORAGE_KEY = 'builtit:resume-builder'
 const STORAGE_VERSION = '1'
 
-type StoredData = {
+export type StoredData = {
   version: string
   geminiApiKey?: string
   resumes?: Record<string, string>
@@ -11,6 +11,21 @@ type StoredData = {
     conversionPrompt?: string
   }
   onboardingCompleted?: boolean
+  resumeState?: {
+    originalText?: string
+    optimizedText?: string
+    optimizedJson?: string
+    workspaceJson?: string
+    loadedSource?: {
+      type: 'none' | 'custom' | 'example'
+      id: string | null
+    }
+  }
+  jobState?: {
+    text?: string
+    lastUpdated?: string
+  }
+  optimizationMetadata?: string
 }
 
 const defaultData: StoredData = {
@@ -20,7 +35,7 @@ const defaultData: StoredData = {
 const isBrowser = () => typeof window !== 'undefined' && typeof window.localStorage !== 'undefined'
 
 const readStorage = (): StoredData => {
-  if (!isBrowser()) return defaultData
+  if (!isBrowser()) return { ...defaultData }
 
   const raw = window.localStorage.getItem(STORAGE_KEY)
   if (!raw) {
@@ -59,7 +74,28 @@ const writeStorage = (data: StoredData) => {
   }
 }
 
+const maskEmptyObject = <T extends Record<string, unknown> | undefined>(value: T) =>
+  value && Object.keys(value).length === 0 ? undefined : value
+
 export const storage = {
+  read(): StoredData {
+    return readStorage()
+  },
+
+  write(partial: Partial<StoredData>) {
+    const current = readStorage()
+    writeStorage({
+      ...current,
+      ...partial,
+      version: STORAGE_VERSION
+    })
+  },
+
+  clear() {
+    if (!isBrowser()) return
+    writeStorage({ ...defaultData })
+  },
+
   getGeminiApiKey(): string | null {
     const data = readStorage()
     return data.geminiApiKey ?? null
@@ -107,7 +143,7 @@ export const storage = {
     delete resumes[id]
     writeStorage({
       ...data,
-      resumes
+      resumes: maskEmptyObject(resumes)
     })
   },
 
@@ -127,9 +163,52 @@ export const storage = {
     })
   },
 
-  clearAll() {
-    if (!isBrowser()) return
-    writeStorage({ ...defaultData })
+  getResumeState(): StoredData['resumeState'] {
+    const data = readStorage()
+    return data.resumeState ?? {}
+  },
+
+  saveResumeState(resumeState: StoredData['resumeState']) {
+    const data = readStorage()
+    writeStorage({
+      ...data,
+      resumeState: maskEmptyObject({
+        ...(data.resumeState ?? {}),
+        ...(resumeState ?? {})
+      })
+    })
+  },
+
+  getJobState(): StoredData['jobState'] {
+    const data = readStorage()
+    return data.jobState ?? {}
+  },
+
+  saveJobState(jobState: StoredData['jobState']) {
+    const data = readStorage()
+    writeStorage({
+      ...data,
+      jobState: maskEmptyObject({
+        ...(data.jobState ?? {}),
+        ...(jobState ?? {})
+      })
+    })
+  },
+
+  getOptimizationMetadata(): string | undefined {
+    const data = readStorage()
+    return data.optimizationMetadata
+  },
+
+  saveOptimizationMetadata(metadata: string | null) {
+    const data = readStorage()
+    const nextData = { ...data }
+    if (metadata) {
+      nextData.optimizationMetadata = metadata
+    } else {
+      delete nextData.optimizationMetadata
+    }
+    writeStorage(nextData)
   },
 
   isOnboardingCompleted(): boolean {

@@ -46,7 +46,47 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const validation = validateResumeJSON(convertedJSON)
+    const ensureBasicsPresence = (json: unknown) => {
+      if (!json || typeof json !== 'object') {
+        return json
+      }
+
+      const clone = JSON.parse(JSON.stringify(json)) as {
+        basics?: Record<string, unknown>
+        [key: string]: unknown
+      }
+      const basics: Record<string, unknown> =
+        clone.basics && typeof clone.basics === 'object' ? { ...clone.basics } : {}
+
+      if (!basics.name || typeof basics.name !== 'string' || basics.name.trim().length === 0) {
+        const lines = resumeText
+          .split(/\r?\n/)
+          .map((line) => line.trim())
+          .filter((line) => line.length > 0)
+        const candidate = lines.find((line) => {
+          if (line.length > 60) return false
+          if (line.includes('@')) return false
+          if (line.match(/\d/)) return false
+          return line.split(/\s+/).length <= 6
+        })
+        if (candidate) {
+          basics.name = candidate
+        }
+      }
+
+      if (!basics.email || typeof basics.email !== 'string' || basics.email.trim().length === 0) {
+        const emailMatch = resumeText.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i)
+        if (emailMatch) {
+          basics.email = emailMatch[0]
+        }
+      }
+
+      clone.basics = basics
+      return clone
+    }
+
+    const patchedJSON = ensureBasicsPresence(convertedJSON)
+    const validation = validateResumeJSON(patchedJSON)
     if (!validation.isValid) {
       console.error('Converted resume failed validation:', validation.errors)
       return NextResponse.json(
@@ -57,7 +97,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      resume: convertedJSON
+      resume: patchedJSON
     })
   } catch (error) {
     console.error('Resume conversion error:', error)

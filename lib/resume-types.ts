@@ -160,17 +160,31 @@ export function normalizeResumeJSON<T extends { sections?: unknown }>(json: T): 
     if (projectsSection) {
       const items = projectsSection.items
       if (Array.isArray(items)) {
-        const filtered = items.filter((item) => {
+        const normalizedItems = items.reduce<unknown[]>((acc, item) => {
           if (!item || typeof item !== 'object') {
-            return false
+            return acc
           }
-          const name = (item as Record<string, unknown>).name
-          return typeof name === 'string' && name.trim() !== ''
-        })
 
-        ;(projectsSection as Record<string, unknown>).items = filtered
+          const record = { ...(item as Record<string, unknown>) }
+          const name = record.name
 
-        if (filtered.length === 0) {
+          if (typeof name !== 'string' || name.trim() === '') {
+            return acc
+          }
+
+          if (typeof record.url === 'string' && record.url.trim().length > 0) {
+            record.url = {
+              href: record.url.trim()
+            }
+          }
+
+          acc.push(record)
+          return acc
+        }, [])
+
+        ;(projectsSection as Record<string, unknown>).items = normalizedItems
+
+        if (normalizedItems.length === 0) {
           (projectsSection as Record<string, unknown>).visible = false
         }
       }
