@@ -1,0 +1,31 @@
+:root {
+  /* Primary - Actions & Brand */
+  --color-primary: #4f46e5;
+  --color-primary-hover: #4338ca;
+  --color-primary-light: #eef2ff;
+
+  /* Success - Positive metrics & completion */
+  --color-success: #10b981;
+  --color-success-light: #d1fae5;
+
+  /* Warning - API key & important info */
+  --color-warning: #f59e0b;
+  --color-warning-light: #fef3c7;
+
+  /* Accent - Highlights & engagement */
+  --color-accent: #f97316;
+  --color-accent-light: #ffedd5;
+
+  /* Neutral - Text & backgrounds */
+  --color-neutral-50: #f9fafb;
+  --color-neutral-100: #f3f4f6;
+  --color-neutral-200: #e5e7eb;
+  --color-neutral-600: #4b5563;
+  --color-neutral-900: #111827;
+
+  /* Gradients */
+  --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  --gradient-hero: linear-gradient(180deg, #0a1126 0%, #0f1833 60%, #0b1428 100%);
+  --gradient-highlight: linear-gradient(135deg, #3b82f6 0%, #6366f1 60%, #8b5cf6 100%);
+}

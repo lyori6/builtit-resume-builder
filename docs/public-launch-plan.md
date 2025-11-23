@@ -140,7 +140,10 @@ AppShell
 > Update – 2025-10-22: Added optimized resume selectors so preview/export pull from shared context, paving the way to drop local workspace state.
 > Update – 2025-10-23: Job targeting screen now mounts `WorkspaceActions`, restoring the optional final adjustments prompt, revert-to-original control, and aligning pre-optimization metrics with the results summary design.
 > Update – 2025-10-23: API key controls now conditionally render—saved keys hide the “Need an API key?” CTA and the clear action returns users to the intake step, keeping the optimization workspace focused.
-> Update – 2025-10-23: Resume normalization now coerces string-based project URLs into `{ href }` objects so converted resumes no longer fail validation when Gemini returns legacy formats.
+> Update – 2025-10-23: Resume normalization now coerces non-object project/experience URLs into `{ href }` objects and synthesizes fallback project names/ids when Gemini omits them, keeping conversion validation happy.
+> Update – 2025-10-23: `/api/convert-resume` now normalizes Gemini output before validation so messy inputs (e.g., PDF dumps) no longer trip server-side schema errors.
+> Update – 2025-10-23: Auto-open the Quick Setup modal whenever an optimization is triggered without a saved key so users don’t hit a dead-end inline error.
+> Next – 2025-10-23: Migrate optimization/adjust/convert flows to call Gemini directly from the browser with the stored key, leaving server routes as compatibility shims.
 > Update – 2025-10-22: Workspace preview and exports now read from `SET_WORKSPACE_RESUME`; legacy local resume state removed in favor of reducer-backed data.
 > Update – 2025-10-22: Reducer tracks resume origin (`none/custom/example`), replacing bespoke flags and keeping export filenames + future navigation in sync.
 > Update – 2025-10-22: Added “Load sample resume” control wired to context-based example loading for fast demos.

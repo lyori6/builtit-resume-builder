@@ -6,6 +6,9 @@ A dynamic, modern resume generator built with Next.js that supports multiple res
 
 - **Multi-Resume Support**: Store and switch between multiple resume versions
 - **Dynamic Loading**: Select and load different resumes on-the-fly
+- **Auto-Load**: Automatically resumes your session if you have a saved API key and resume history
+- **In-Place AI Editing**: Rapidly iterate on your resume content using Gemini 2.5 Flash without page reloads
+- **Demo Mode**: Experience the full power of the app with a pre-loaded example before adding your own key
 - **PDF Generation**: Print-optimized PDF output with proper formatting
 - **JSON Export**: Export any resume version as JSON
 - **Prompt Overrides**: Customize Gemini system prompts locally to fine-tune AI behavior
@@ -20,6 +23,9 @@ A dynamic, modern resume generator built with Next.js that supports multiple res
 - **Styling**: Tailwind CSS
 - **Language**: TypeScript
 - **Icons**: Lucide React
+- **AI Models**: 
+  - **Gemini 2.5 Pro**: For high-fidelity resume conversion and creative optimization
+  - **Gemini 2.5 Flash**: For rapid, in-place resume adjustments
 
 ### Project Structure
 ```

@@ -1,7 +1,18 @@
 "use client"
 
 import { FC, useMemo, useState, useCallback } from 'react'
-import { Sparkles, Loader2, Check, AlertCircle, Info, ChevronDown, ChevronUp } from 'lucide-react'
+import {
+  Sparkles,
+  Loader2,
+  Check,
+  AlertCircle,
+  Info,
+  ChevronDown,
+  ChevronUp,
+  Target,
+  Settings,
+  FileText
+} from 'lucide-react'
 import ResumeDiffTable from '@/components/ResumeDiffTable'
 import { ResumeData } from '@/lib/resume-types'
 import { useOptimizerContext } from '@/src/state/optimizer-context'
@@ -60,8 +71,23 @@ const WorkspaceActions: FC<WorkspaceActionsProps> = ({
   const handleToggleDiff = useCallback(() => {
     dispatch({ type: 'SET_SHOW_DIFF', value: !showDiff })
   }, [dispatch, showDiff])
+  const handleViewFullResume = useCallback(() => {
+    if (typeof document !== 'undefined') {
+      const previewEl = document.getElementById('resume-preview-panel')
+      if (previewEl) {
+        previewEl.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        return
+      }
+    }
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }, [])
 
   const [showAdjustments, setShowAdjustments] = useState(false)
+  const [showJobOptions, setShowJobOptions] = useState(false)
+  const showJobFilterHelpers = false
+  const showResumeSnapshot = false
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({})
 
   const keyMissing = !storedGeminiKey || storedGeminiKey.trim() === ''
@@ -107,6 +133,40 @@ const WorkspaceActions: FC<WorkspaceActionsProps> = ({
 
     return metrics
   }, [improvementsCount, keywordCount, processingTime, wordCount])
+
+  const resumeSnapshot = useMemo(() => {
+    if (!resumeData) return []
+    const snapshot: string[] = []
+    const basics: any = (resumeData as any).basics ?? {}
+    const sections: any = (resumeData as any).sections ?? {}
+
+    const contactParts = [basics.email, basics.location?.text || basics.location]
+      .filter(Boolean)
+      .join(' • ')
+
+    if (basics.name || contactParts || basics.headline || basics.label) {
+      snapshot.push(
+        [basics.name, basics.headline || basics.label, contactParts].filter(Boolean).join(' | ')
+      )
+    }
+
+    if (basics.summary || basics.summaryText) {
+      snapshot.push((basics.summaryText || basics.summary || '').replace(/<[^>]+>/g, ''))
+    }
+
+    const experienceItems: any[] = Array.isArray(sections?.experience?.items)
+      ? sections.experience.items
+      : []
+
+    experienceItems.slice(0, 2).forEach((item) => {
+      snapshot.push(
+        `${item.company || 'Company'} — ${item.position || item.name || 'Role'}${item.date ? ` (${item.date})` : ''
+        }`
+      )
+    })
+
+    return snapshot.filter(Boolean).slice(0, 5)
+  }, [resumeData])
 
   type ChangeEntry = NonNullable<OptimizationMetadata['changes']>[number]
 
@@ -205,18 +265,83 @@ const WorkspaceActions: FC<WorkspaceActionsProps> = ({
         </header>
 
         <div className="mt-5 space-y-4">
-          <div>
-            <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-blue-500">
-              Job description
+          <div className="space-y-2">
+            <label htmlFor="job-description-input" className="block">
+              <div className="mb-2 flex items-center gap-2">
+                <Target size={20} className="text-warning" />
+                <span className="text-lg font-semibold text-slate-900">Job description</span>
+              </div>
             </label>
             <textarea
+              id="job-description-input"
               value={jobDescription}
               onChange={(event) => handleJobDescriptionChange(event.target.value)}
-              placeholder="Paste the job description you want to target..."
-              className="h-28 w-full resize-none rounded-3xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-900 shadow-inner focus:border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-200"
+              placeholder={`Product Manager\n\nSunnyvale, CA • Full Time\nMeta\nProduct Management\n\nWe're looking for an experienced Product Manager to lead our core product initiatives...\n\nRequirements:\n• 5+ years in product management\n• Experience with AI/ML products\n• Strong analytical skills...`}
+              className="min-h-[240px] w-full resize-none rounded-2xl border-2 border-neutral-200 bg-white px-5 py-4 text-sm text-slate-900 shadow-sm focus:border-neutral-500 focus:outline-none focus:ring-2 focus:ring-neutral-200"
               spellCheck={false}
             />
           </div>
+
+          {showJobFilterHelpers && (
+            <div className="rounded-2xl border border-neutral-200">
+              <button
+                type="button"
+                onClick={() => setShowJobOptions((value) => !value)}
+                className="flex w-full items-center justify-between px-5 py-3 text-left text-sm font-semibold text-neutral-800 transition hover:bg-neutral-50"
+              >
+                <span className="inline-flex items-center gap-2">
+                  <Settings size={18} className="text-neutral-500" />
+                  Optional adjustments
+                </span>
+                {showJobOptions ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+              </button>
+              {showJobOptions && (
+                <div className="border-t border-neutral-200 px-5 py-4 text-sm text-neutral-600">
+                  <div className="space-y-3">
+                    <div className="flex items-start gap-3">
+                      <span className="rounded-full bg-primary-light px-2 py-1 text-xs font-semibold text-primary">Filters</span>
+                      <p>Call out specific skills, industries, or levels you want the optimizer to emphasize.</p>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <span className="rounded-full bg-warning-light px-2 py-1 text-xs font-semibold text-warning">Tone</span>
+                      <p>Keep it leadership-focused, concise, or more technical depending on the role.</p>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <span className="rounded-full bg-success-light px-2 py-1 text-xs font-semibold text-success">Keywords</span>
+                      <p>Paste priority keywords so we double-check they’re woven into the updates.</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {showResumeSnapshot && (
+            <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-5">
+              <div className="mb-4 flex items-center justify-between">
+                <div className="flex items-center gap-2 text-neutral-900">
+                  <FileText size={18} />
+                  <h3 className="text-base font-semibold">Current resume snapshot</h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleViewFullResume}
+                  className="text-sm font-semibold text-primary underline-offset-4 transition hover:text-primary-hover hover:underline"
+                >
+                  View full →
+                </button>
+              </div>
+              <div className="max-h-[200px] space-y-2 overflow-y-auto rounded-xl border border-white bg-white px-4 py-3 text-sm text-neutral-700 shadow-inner">
+                {resumeSnapshot.length > 0 ? (
+                  resumeSnapshot.map((line, index) => <p key={index}>{line}</p>)
+                ) : (
+                  <p className="text-xs text-neutral-500">
+                    Paste your resume on the previous step to see a quick preview here.
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
 
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex-1 space-y-2 text-xs text-slate-600">
@@ -247,7 +372,7 @@ const WorkspaceActions: FC<WorkspaceActionsProps> = ({
             <button
               type="button"
               onClick={optimizeResume}
-              disabled={isOptimizing || !jobDescription.trim() || keyMissing}
+              disabled={isOptimizing || !jobDescription.trim()}
               className="inline-flex items-center justify-center gap-2 rounded-full bg-blue-600 px-5 py-2 text-sm font-semibold text-white shadow-md shadow-blue-300/40 transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isOptimizing ? (
@@ -264,26 +389,30 @@ const WorkspaceActions: FC<WorkspaceActionsProps> = ({
         </div>
       </section>
 
-      <section className="rounded-[26px] border border-purple-100 bg-purple-50/70 p-7 shadow-lg shadow-purple-100/60">
-        <header className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <h2 className="text-base font-semibold text-purple-900">Optional final adjustments</h2>
-          <button
-            type="button"
-            onClick={() => setShowAdjustments((value) => !value)}
-            className="inline-flex items-center gap-2 rounded-full border border-purple-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-purple-700 transition hover:bg-purple-50"
-            aria-expanded={showAdjustments}
-          >
-            {showAdjustments ? <ChevronUp size={16} /> : <ChevronDown size={16} />} 
-            {showAdjustments ? 'Hide adjustments' : 'Show adjustments'}
-          </button>
-        </header>
+      <section
+        className={`rounded-[26px] border border-purple-100 bg-purple-50/70 shadow-lg shadow-purple-100/60 transition ${showAdjustments ? '' : 'hover:shadow-purple-200/80 hover:ring-2 hover:ring-purple-100'
+          }`}
+      >
+        <button
+          type="button"
+          onClick={() => setShowAdjustments((value) => !value)}
+          className="flex w-full items-center justify-between rounded-[26px] px-6 py-4 text-left"
+          aria-expanded={showAdjustments}
+        >
+          <div>
+            <p className="text-sm font-semibold text-purple-900">Edit my resume with AI</p>
+            {!showAdjustments && (
+              <p className="text-xs text-purple-600">Click to make custom changes to your resume using AI.</p>
+            )}
+          </div>
+          <div className="inline-flex items-center gap-2 text-sm font-semibold text-purple-700">
+            {showAdjustments ? 'Hide' : 'Show'} <span>{showAdjustments ? <ChevronUp size={16} /> : <ChevronDown size={16} />}</span>
+          </div>
+        </button>
 
         {showAdjustments && (
-        <div className="mt-4 space-y-4">
-          <div>
-            <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-purple-500">
-              Quick instructions
-            </label>
+          <div className="space-y-4 border-t border-purple-100 px-6 py-6">
+            <div>
               <textarea
                 value={finalAdjustments}
                 onChange={(event) => onFinalAdjustmentsChange(event.target.value)}
@@ -314,17 +443,17 @@ const WorkspaceActions: FC<WorkspaceActionsProps> = ({
                     <span>Add your API key on the intake screen before applying adjustments.</span>
                   </div>
                 )}
-            </div>
-            <button
-              type="button"
-              onClick={applyFinalAdjustments}
-              disabled={isAdjusting || !finalAdjustments.trim() || keyMissing}
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-purple-600 px-5 py-2 text-sm font-semibold text-white shadow-md shadow-purple-300/40 transition hover:bg-purple-700 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {isAdjusting ? (
-                <>
-                  <Loader2 size={16} className="animate-spin" /> Applying...
-                </>
+              </div>
+              <button
+                type="button"
+                onClick={applyFinalAdjustments}
+                disabled={isAdjusting || !finalAdjustments.trim() || keyMissing}
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-purple-600 px-5 py-2 text-sm font-semibold text-white shadow-md shadow-purple-300/40 transition hover:bg-purple-700 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {isAdjusting ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" /> Applying...
+                  </>
                 ) : (
                   <>
                     <Sparkles size={16} /> Apply adjustments
@@ -335,110 +464,6 @@ const WorkspaceActions: FC<WorkspaceActionsProps> = ({
           </div>
         )}
       </section>
-
-      {optimizationSuccess && (summaryMetrics.length > 0 || diffItems.length > 0) && (
-        <section className="rounded-[28px] border border-slate-200/80 bg-white/90 p-8 shadow-lg shadow-slate-200/60">
-          <div className="flex flex-col gap-6">
-            <header className="flex flex-col gap-3 text-center sm:flex-row sm:items-center sm:justify-between sm:text-left">
-              <div className="space-y-1.5">
-                <h2 className="text-lg font-semibold text-slate-900">Results summary</h2>
-                <p className="text-sm text-slate-600">Review the highlights before you export.</p>
-              </div>
-              <button
-                type="button"
-                onClick={handleToggleDiff}
-                className="inline-flex items-center justify-center rounded-full border border-blue-200 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-blue-700 transition hover:bg-blue-50"
-              >
-                {showDiff ? 'Hide all changes' : 'Show all changes'}
-              </button>
-            </header>
-
-            <div className="flex flex-wrap justify-center gap-3">
-              {summaryMetrics.map((metric) => (
-                <div
-                  key={metric.id}
-                  className="inline-flex items-center gap-3 rounded-xl border border-[#bfdbfe] bg-[#f0f7ff] px-5 py-3 shadow-sm shadow-blue-100/60"
-                >
-                  <span className="text-2xl font-bold leading-none text-[#2563eb]">{metric.value}</span>
-                  <span className="text-xs font-semibold uppercase tracking-wide text-[#64748b]">
-                    {metric.label}
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            {showDiff && (
-              <div className="max-h-[400px] overflow-y-auto rounded-2xl border border-slate-200 bg-slate-50 p-6 shadow-inner transition-all duration-200">
-                {metadata?.keywordsMatched && metadata.keywordsMatched.length > 0 && (
-                  <div className="mb-6 flex flex-wrap gap-2">
-                    {metadata.keywordsMatched.map((keyword) => (
-                      <span
-                        key={keyword}
-                        className="inline-flex items-center rounded-full bg-[#dbeafe] px-3 py-1 text-xs font-semibold text-[#1e40af]"
-                      >
-                        {keyword}
-                      </span>
-                    ))}
-                  </div>
-                )}
-
-                {groupedChanges ? (
-                  <div className="space-y-6">
-                    {Object.entries(groupedChanges).map(([type, changes]) => {
-                      const meta = changeTypeMeta[type] ?? {
-                        icon: '✨',
-                        label: type.charAt(0).toUpperCase() + type.slice(1)
-                      }
-                      const expanded = expandedGroups[type] ?? false
-                      const visibleChanges = expanded ? changes : changes.slice(0, 3)
-                      const remaining = changes.length - visibleChanges.length
-
-                      return (
-                        <div key={type} className="space-y-3">
-                          <div className="flex items-center gap-2 text-sm font-semibold text-slate-700">
-                            <span>{meta.icon}</span>
-                            <span>{meta.label}</span>
-                            <span className="text-xs font-medium text-slate-400">({changes.length})</span>
-                          </div>
-                          <ul className="space-y-2 pl-1">
-                            {visibleChanges.map((change, index) => (
-                              <li key={`${type}-${index}`} className="flex items-start gap-2 text-sm text-slate-700">
-                                <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-blue-400" />
-                                <div className="space-y-1">
-                                  <p className="text-sm font-semibold text-slate-900">{change.section || 'General'}</p>
-                                  <p className="text-sm text-slate-600">
-                                    {mapChangeSummary(change) || 'Detailed change available in the export.'}
-                                  </p>
-                                </div>
-                              </li>
-                            ))}
-                          </ul>
-                          {remaining > 0 && (
-                            <button
-                              type="button"
-                              onClick={() => handleToggleGroup(type)}
-                              className="text-xs font-semibold uppercase tracking-wide text-blue-600 hover:underline"
-                            >
-                              {expanded ? 'Show fewer...' : `[${remaining} more...]`}
-                            </button>
-                          )}
-                        </div>
-                      )
-                    })}
-                  </div>
-                ) : (
-                  <ResumeDiffTable
-                    diffs={diffItems}
-                    renderValue={renderDiffValue}
-                    formatPath={formatDiffPath}
-                    maxVisible={maxDiffItems}
-                  />
-                )}
-              </div>
-            )}
-          </div>
-        </section>
-      )}
     </div>
   )
 }

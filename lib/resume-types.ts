@@ -125,7 +125,7 @@ export interface ResumeSections {
   interests?: GenericSection
   languages?: GenericSection
   profiles?: GenericSection
-  [key: string]: SectionBase | undefined
+  [key: string]: any
 }
 
 export interface ResumeData {
@@ -139,6 +139,22 @@ export function normalizeResumeJSON<T extends { sections?: unknown }>(json: T): 
   }
 
   const clone: T = JSON.parse(JSON.stringify(json))
+
+  const coerceUrlValue = (value: unknown) => {
+    if (!value) return undefined
+    if (typeof value === 'object' && !Array.isArray(value)) {
+      return value as Record<string, unknown>
+    }
+    if (typeof value === 'string') {
+      const trimmed = value.trim()
+      return trimmed.length > 0 ? { href: trimmed } : undefined
+    }
+    if (Array.isArray(value)) {
+      const firstString = value.find((entry) => typeof entry === 'string' && entry.trim().length > 0)
+      return typeof firstString === 'string' ? { href: firstString.trim() } : undefined
+    }
+    return undefined
+  }
 
   if (clone.sections && typeof clone.sections === 'object' && !Array.isArray(clone.sections)) {
     Object.entries(clone.sections as Record<string, unknown>).forEach(([sectionKey, sectionValue]) => {
@@ -156,6 +172,29 @@ export function normalizeResumeJSON<T extends { sections?: unknown }>(json: T): 
     })
 
     const sectionsRecord = clone.sections as Record<string, unknown>
+    const experienceSection = sectionsRecord.experience as Record<string, unknown> | undefined
+    if (experienceSection) {
+      const items = experienceSection.items
+      if (Array.isArray(items)) {
+        const normalized = items.map((item) => {
+          if (!item || typeof item !== 'object') {
+            return item
+          }
+          const record = { ...(item as Record<string, unknown>) }
+          if ('url' in record) {
+            const coerced = coerceUrlValue(record.url)
+            if (coerced) {
+              record.url = coerced
+            } else {
+              delete record.url
+            }
+          }
+          return record
+        })
+          ; (experienceSection as Record<string, unknown>).items = normalized
+      }
+    }
+
     const projectsSection = sectionsRecord.projects as Record<string, unknown> | undefined
     if (projectsSection) {
       const items = projectsSection.items
@@ -166,15 +205,68 @@ export function normalizeResumeJSON<T extends { sections?: unknown }>(json: T): 
           }
 
           const record = { ...(item as Record<string, unknown>) }
-          const name = record.name
+          let name = typeof record.name === 'string' ? record.name.trim() : ''
 
-          if (typeof name !== 'string' || name.trim() === '') {
-            return acc
+          const candidateFields = ['title', 'project', 'projectName']
+          for (const field of candidateFields) {
+            if (!name && typeof record[field] === 'string') {
+              name = (record[field] as string).trim()
+            }
           }
 
-          if (typeof record.url === 'string' && record.url.trim().length > 0) {
-            record.url = {
-              href: record.url.trim()
+          const stripHtml = (value: string) =>
+            value
+              .replace(/<[^>]*>/g, ' ')
+              .replace(/\s+/g, ' ')
+              .trim()
+
+          if (!name && typeof record.summary === 'string') {
+            const stripped = stripHtml(record.summary)
+            if (stripped) {
+              name = stripped.slice(0, 80)
+            }
+          }
+
+          if (!name && typeof record.description === 'string') {
+            const stripped = stripHtml(record.description)
+            if (stripped) {
+              name = stripped.slice(0, 80)
+            }
+          }
+
+          if (!name && Array.isArray(record.keywords) && record.keywords.length > 0) {
+            const firstKeyword = record.keywords.find(
+              (keyword) => typeof keyword === 'string' && keyword.trim().length > 0
+            )
+            if (typeof firstKeyword === 'string') {
+              name = `${firstKeyword.trim()} project`
+            }
+          }
+
+          if (!name) {
+            name = `Project ${acc.length + 1}`
+          }
+
+          record.name = name
+
+          if (typeof record.id !== 'string' || record.id.trim() === '') {
+            const slug = name
+              .toLowerCase()
+              .replace(/[^a-z0-9]+/g, '-')
+              .replace(/^-+|-+$/g, '')
+            record.id = slug ? `proj-${slug}` : `proj-${acc.length + 1}`
+          }
+
+          if (typeof record.visible !== 'boolean') {
+            record.visible = true
+          }
+
+          if ('url' in record) {
+            const coerced = coerceUrlValue(record.url)
+            if (coerced) {
+              record.url = coerced
+            } else {
+              delete record.url
             }
           }
 
@@ -182,7 +274,7 @@ export function normalizeResumeJSON<T extends { sections?: unknown }>(json: T): 
           return acc
         }, [])
 
-        ;(projectsSection as Record<string, unknown>).items = normalizedItems
+          ; (projectsSection as Record<string, unknown>).items = normalizedItems
 
         if (normalizedItems.length === 0) {
           (projectsSection as Record<string, unknown>).visible = false
@@ -501,3 +593,6 @@ export function isValidResumeData(json: unknown): json is ResumeData {
   const validation = validateResumeJSON(json)
   return validation.isValid
 }
+
+export const cloneResumeData = (data: ResumeData): ResumeData =>
+  JSON.parse(JSON.stringify(data)) as ResumeData

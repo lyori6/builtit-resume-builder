@@ -96,17 +96,17 @@ export type OptimizerAction =
   | { type: 'CLEAR_API_KEY' }
   | { type: 'SET_API_KEY_STATUS'; status: ApiKeyStatus; errorMessage?: string | null }
   | {
-      type: 'OPTIMIZE_REQUEST'
-    }
+    type: 'OPTIMIZE_REQUEST'
+  }
   | {
-      type: 'OPTIMIZE_SUCCESS'
-      payload: {
-        optimizedText: string
-        optimizedJson: string | null
-        metadata: OptimizationMetadata | null
-        diffItems: DiffItem[]
-      }
+    type: 'OPTIMIZE_SUCCESS'
+    payload: {
+      optimizedText: string
+      optimizedJson: string | null
+      metadata: OptimizationMetadata | null
+      diffItems: DiffItem[]
     }
+  }
   | { type: 'OPTIMIZE_FAILURE'; errorMessage: string }
   | { type: 'RESET_OPTIMIZATION' }
   | { type: 'SET_SHOW_DIFF'; value: boolean }
@@ -115,6 +115,8 @@ export type OptimizerAction =
   | { type: 'ENQUEUE_TOAST'; toast: ToastMessage }
   | { type: 'DEQUEUE_TOAST'; id: string }
   | { type: 'HYDRATE_STATE'; state: Partial<OptimizerState> }
+  | { type: 'RESET_STATE' }
+  | { type: 'SET_OPTIMIZED_DATA'; json: string }
 
 const maskApiKey = (key: string) => {
   if (key.length <= 12) return key
@@ -378,6 +380,25 @@ const reducer = (state: OptimizerState, action: OptimizerAction): OptimizerState
         optimization: {
           ...state.optimization,
           ...action.state?.optimization
+        }
+      }
+    case 'RESET_STATE':
+      return initialOptimizerState
+    case 'SET_OPTIMIZED_DATA':
+      return {
+        ...state,
+        uiStep: 'results',
+        resume: {
+          ...state.resume,
+          optimizedJson: action.json,
+          workspaceJson: action.json
+        },
+        optimization: {
+          ...state.optimization,
+          status: 'success',
+          // We don't have diffs/metadata when restoring from simple history unless we store them too
+          // For now, we just show the result
+          showDiff: false
         }
       }
     default:

@@ -1,7 +1,7 @@
 "use client"
 
 import { FC, useEffect, useRef, useState } from 'react'
-import { X, ExternalLink, Loader2 } from 'lucide-react'
+import { X, ExternalLink, Loader2, KeyRound, Zap, Lock, DollarSign, ChevronDown } from 'lucide-react'
 import { useOptimizerContext } from '@/src/state/optimizer-context'
 
 interface GeminiKeyModalProps {
@@ -48,10 +48,6 @@ const GeminiKeyModal: FC<GeminiKeyModalProps> = ({
     }
   }, [isOpen, stage])
 
-  if (!isOpen) {
-    return null
-  }
-
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
     const success = await onSave()
@@ -71,160 +67,214 @@ const GeminiKeyModal: FC<GeminiKeyModalProps> = ({
     setStage('input')
   }
 
+  const handleClose = () => {
+    if (!requireKey) {
+      onClose()
+    }
+  }
+
+  const handleBackdropClick = () => {
+    handleClose()
+  }
+
+  if (!isOpen) {
+    return null
+  }
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 px-4 backdrop-blur-sm">
-      <div className="relative w-full max-w-lg rounded-[18px] border border-slate-200 bg-white shadow-[0_25px_50px_rgba(15,23,42,0.25)]">
-        {!requireKey && (
-          <button
-            onClick={onClose}
-            className="absolute right-5 top-5 inline-flex h-8 w-8 items-center justify-center rounded-full text-slate-400 transition hover:text-slate-600"
-            aria-label="Close Gemini key prompt"
-          >
-            <X size={20} />
-          </button>
-        )}
-        <div className="px-10 py-12 text-center">
-          <div className="flex justify-center">
-            <span className="flex h-16 w-16 items-center justify-center rounded-full bg-blue-600 text-3xl shadow-lg shadow-blue-500/30">
-              {stage === 'info' ? '🔑' : '⚡'}
-            </span>
-          </div>
-          {stage === 'info' ? (
-            <div className="mt-6 space-y-6">
-              <div className="space-y-4">
-                <h2 className="text-2xl font-bold text-slate-900">Quick Setup: Get Your Free API Key</h2>
-                <p className="mx-auto max-w-md text-base text-slate-600">
-                  This tool uses your free Google Gemini API key to optimize resumes privately in your browser.
-                </p>
-                <div className="flex flex-wrap items-center justify-center gap-4 text-sm font-medium text-slate-500">
-                  <span>⚡ 2 minutes</span>
-                  <span>•</span>
-                  <span>🔒 Private</span>
-                  <span>•</span>
-                  <span>💰 Free</span>
-                </div>
+    <>
+      <div
+        className={`fixed inset-0 z-40 bg-black/50 backdrop-blur-sm transition-opacity ${
+          isOpen ? 'opacity-100' : 'pointer-events-none opacity-0'
+        }`}
+        onClick={handleBackdropClick}
+        aria-hidden="true"
+      />
+      <aside
+        className={`fixed right-0 top-0 z-50 h-full w-full max-w-md bg-white shadow-2xl transition-transform duration-300 ease-out ${
+          isOpen ? 'translate-x-0' : 'translate-x-full'
+        }`}
+        aria-label="Gemini API key setup panel"
+      >
+        <div className="flex h-full flex-col">
+          <div className="flex items-center justify-between border-b border-neutral-200 px-6 py-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-warning-light text-warning">
+                <KeyRound size={26} />
               </div>
-              <div className="space-y-3">
-                <button
-                  type="button"
-                  onClick={handleOpenKeySite}
-                  className="inline-flex w-full items-center justify-center rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
-                >
-                  Get Free API Key
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setStage('input')}
-                  className="inline-flex w-full items-center justify-center rounded-lg border border-slate-200 px-6 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-                >
-                  I already have a key
-                </button>
-              </div>
-              <div className="space-y-2 text-sm text-slate-500">
-                <p>🔒 Private: Never leaves your browser</p>
-              </div>
-              <div className="text-sm">
-                <button
-                  type="button"
-                  onClick={() => setHelpOpen((value) => !value)}
-                  className="font-semibold text-blue-600 underline-offset-4 hover:underline"
-                >
-                  {helpOpen ? '▲ Hide steps' : '▼ Show me how'}
-                </button>
-                {helpOpen && (
-                  <div className="mt-4 space-y-3 text-left text-sm text-slate-600">
-                    <p className="font-semibold text-slate-800">Getting Your Free API Key:</p>
-                    <ol className="space-y-3">
-                      <li>
-                        1. Open{' '}
-                        <a
-                          href={geminiKeyHelpUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="font-semibold text-blue-600 underline-offset-4 hover:underline"
-                        >
-                          aistudio.google.com/apikey
-                        </a>
-                      </li>
-                      <li>2. Sign in with Google and click “Create API key”.</li>
-                      <li>
-                        3. Copy the key and paste it back here.{' '}
-                        <button
-                          type="button"
-                          onClick={() => setStage('input')}
-                          className="font-semibold text-blue-600 underline-offset-4 hover:underline"
-                        >
-                          I have my key →
-                        </button>
-                      </li>
-                    </ol>
-                  </div>
-                )}
+              <div>
+                <h2 className="text-lg font-semibold text-neutral-900">Gemini API Key</h2>
+                <p className="text-sm text-neutral-500">Two-minute setup, free forever</p>
               </div>
             </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="mt-6 space-y-6 text-left">
-              <div className="space-y-2 text-center">
-                <h2 className="text-2xl font-bold text-slate-900">Paste Your API Key</h2>
-                <p className="text-sm text-slate-600">Store it locally so tailoring can run right in this browser.</p>
-              </div>
-              <div className="space-y-2">
-                <input
-                  ref={inputRef}
-                  id="gemini-key-modal"
-                  type="text"
-                  value={geminiKeyInput}
-                  onChange={(event) => onInputChange(event.target.value)}
-                  placeholder="Paste your Gemini API key (starts with AIza...)"
-                  className={`w-full rounded-lg border-2 px-4 py-3 text-sm font-mono focus:outline-none focus:ring-4 focus:ring-blue-100 ${
-                    showInlineFormatError ? 'border-red-500' : 'border-slate-200 focus:border-blue-500'
-                  }`}
-                  spellCheck={false}
-                />
-                {showInlineFormatError && (
-                  <p className="text-xs font-medium text-red-600">
-                    Invalid key format. Should start with “AIza” and be 39 characters.
-                  </p>
-                )}
-                {status === 'error' && error && (
-                  <p className="text-xs font-medium text-red-600">{error}</p>
-                )}
-                <p className="text-xs text-slate-500">🔒 Stored locally, never shared.</p>
-              </div>
+            {!requireKey && (
               <button
-                type="submit"
-                disabled={isSaving || !isFormatValid}
-                className="inline-flex w-full items-center justify-center rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                type="button"
+                onClick={handleClose}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full text-neutral-500 transition hover:bg-neutral-100 hover:text-neutral-700"
+                aria-label="Close API key panel"
               >
-                {isSaving ? (
-                  <>
-                    <Loader2 size={16} className="animate-spin" /> Saving…
-                  </>
-                ) : (
-                  'Save & Continue'
-                )}
+                <X size={20} />
               </button>
-              <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-blue-600">
-                <button
-                  type="button"
-                  onClick={() => setStage('info')}
-                  className="font-semibold underline-offset-4 hover:underline"
-                >
-                  ← Back
-                </button>
-                <button
-                  type="button"
-                  onClick={handleOpenKeySite}
-                  className="inline-flex items-center gap-1 font-semibold underline-offset-4 hover:underline"
-                >
-                  <ExternalLink size={14} /> Lost your key? Get a new one
-                </button>
+            )}
+          </div>
+
+          <div className="flex-1 overflow-y-auto px-6 py-6">
+            {stage === 'info' ? (
+              <div className="space-y-6">
+                <div className="space-y-3">
+                  <p className="text-sm text-neutral-600">
+                    This tool runs in your browser and uses your own free Google Gemini API key. Nothing is uploaded to a server.
+                  </p>
+                  <div className="grid gap-3 rounded-xl border border-neutral-200 bg-neutral-50 p-4 text-sm text-neutral-700">
+                    <div className="flex items-center gap-3">
+                      <span className="flex h-10 w-10 items-center justify-center rounded-full bg-warning-light text-warning">
+                        <Zap size={18} />
+                      </span>
+                      <div>
+                        <p className="font-semibold text-neutral-900">2 minute setup</p>
+                        <p>Copy + paste from Google AI Studio.</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="flex h-10 w-10 items-center justify-center rounded-full bg-success-light text-success">
+                        <Lock size={18} />
+                      </span>
+                      <div>
+                        <p className="font-semibold text-neutral-900">Private</p>
+                        <p>Key is stored locally — never leaves this browser.</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-light text-primary">
+                        <DollarSign size={18} />
+                      </span>
+                      <div>
+                        <p className="font-semibold text-neutral-900">Free tier</p>
+                        <p>Google covers typical resume usage.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <button
+                    type="button"
+                    onClick={handleOpenKeySite}
+                    className="w-full rounded-lg bg-primary px-6 py-3 text-base font-semibold text-white transition hover:bg-primary-hover"
+                  >
+                    Get Free API Key →
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setStage('input')}
+                    className="w-full rounded-lg border-2 border-neutral-200 px-6 py-3 text-base font-semibold text-neutral-700 transition hover:border-neutral-300 hover:bg-neutral-50"
+                  >
+                    I already have a key
+                  </button>
+                </div>
+
+                <div className="rounded-lg border border-neutral-200">
+                  <button
+                    type="button"
+                    onClick={() => setHelpOpen((value) => !value)}
+                    className="flex w-full items-center justify-between px-4 py-3 text-left text-sm font-semibold text-neutral-800"
+                  >
+                    <span>Show me how</span>
+                    <ChevronDown className={`transition ${helpOpen ? 'rotate-180' : ''}`} size={18} />
+                  </button>
+                  {helpOpen && (
+                    <div className="border-t border-neutral-200 px-4 py-4 text-sm text-neutral-600">
+                      <ol className="list-decimal space-y-3 pl-4">
+                        <li>
+                          Open{' '}
+                          <a
+                            href={geminiKeyHelpUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="font-semibold text-primary underline-offset-4 hover:underline"
+                          >
+                            aistudio.google.com/apikey
+                          </a>{' '}
+                          (requires Google account)
+                        </li>
+                        <li>Click “Create API key” and copy the value Google shows.</li>
+                        <li>
+                          Paste it here.{' '}
+                          <button
+                            type="button"
+                            onClick={() => setStage('input')}
+                            className="font-semibold text-primary underline-offset-4 hover:underline"
+                          >
+                            I have my key →
+                          </button>
+                        </li>
+                      </ol>
+                    </div>
+                  )}
+                </div>
               </div>
-            </form>
-          )}
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-5">
+                <div className="space-y-1">
+                  <h3 className="text-lg font-semibold text-neutral-900">Paste your API key</h3>
+                  <p className="text-sm text-neutral-600">Stored securely in your browser so optimizations stay private.</p>
+                </div>
+                <div className="space-y-2">
+                  <input
+                    ref={inputRef}
+                    id="gemini-key-modal"
+                    type="text"
+                    value={geminiKeyInput}
+                    onChange={(event) => onInputChange(event.target.value)}
+                    placeholder="Paste your Gemini API key (starts with AIza...)"
+                    className={`w-full rounded-lg border-2 px-4 py-3 text-sm font-mono focus:outline-none focus:ring-4 focus:ring-primary/15 ${
+                      showInlineFormatError ? 'border-accent' : 'border-neutral-200 focus:border-primary'
+                    }`}
+                    spellCheck={false}
+                  />
+                  {showInlineFormatError && (
+                    <p className="text-xs font-medium text-accent">Invalid key format. Should start with “AIza” and be 39 characters.</p>
+                  )}
+                  {status === 'error' && error && <p className="text-xs font-medium text-accent">{error}</p>}
+                  <p className="text-xs text-neutral-500">🔒 Stored locally, never shared.</p>
+                </div>
+                <button
+                  type="submit"
+                  disabled={isSaving || !isFormatValid}
+                  className="w-full rounded-lg bg-primary px-6 py-3 text-base font-semibold text-white transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {isSaving ? (
+                    <span className="inline-flex items-center gap-2">
+                      <Loader2 size={18} className="animate-spin" /> Saving…
+                    </span>
+                  ) : (
+                    'Save & continue'
+                  )}
+                </button>
+                <div className="flex flex-wrap items-center gap-3 text-sm text-primary">
+                  <button
+                    type="button"
+                    onClick={() => setStage('info')}
+                    className="font-semibold underline-offset-4 hover:underline"
+                  >
+                    ← Back
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleOpenKeySite}
+                    className="inline-flex items-center gap-1 font-semibold underline-offset-4 hover:underline"
+                  >
+                    <ExternalLink size={14} />
+                    Lost your key? Get a new one
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
         </div>
-      </div>
-    </div>
+      </aside>
+    </>
   )
 }
 

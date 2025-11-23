@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Initialize Gemini Flash latest model
-    const model = genAI.getGenerativeModel({ model: 'gemini-flash-latest' })
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-pro' })
 
     // Create sophisticated optimization prompt
     const prompt = buildOptimizationPrompt(
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
       // Try to extract JSON from markdown code blocks or plain text
       const jsonMatch = optimizedContent.match(/```(?:json)?\s*(\{[\s\S]*\})\s*```/)
       const jsonString = jsonMatch ? jsonMatch[1] : optimizedContent.trim()
-      
+
       optimizedResume = JSON.parse(jsonString)
     } catch (parseError) {
       console.error('Failed to parse Gemini response:', parseError)
@@ -152,11 +152,11 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Resume optimization error:', error)
-    
+
     // More specific error handling
     let errorMessage = 'Failed to optimize resume'
     let statusCode = 500
-    
+
     if (error instanceof Error) {
       if (error.message.includes('API key')) {
         errorMessage = 'Invalid API key or authentication failed'
@@ -169,10 +169,10 @@ export async function POST(request: NextRequest) {
         statusCode = 502
       }
     }
-    
+
     return NextResponse.json(
-      { 
-        error: errorMessage, 
+      {
+        error: errorMessage,
         details: error instanceof Error ? error.message : 'Unknown error',
         timestamp: new Date().toISOString()
       },

@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
     const body = (await request.json()) as RequestBody
     const headerKey = request.headers.get('x-gemini-api-key') ?? undefined
     const apiKey = body.apiKey ?? headerKey
-    const modelId = body.model ?? 'gemini-2.5-pro'
+    const modelId = body.model ?? 'gemini-2.5-flash'
 
     if (!apiKey) {
       return NextResponse.json(
@@ -35,8 +35,14 @@ export async function POST(request: NextRequest) {
     })
 
     return NextResponse.json({ ok: true })
-  } catch (error) {
-    console.error('Gemini key validation failed.')
+  } catch (error: any) {
+    console.error('Gemini key validation failed:', error)
+    console.error('Error details:', {
+      message: error.message,
+      status: error.status,
+      statusText: error.statusText,
+      headers: error.headers
+    })
 
     if (error instanceof Error) {
       return NextResponse.json(

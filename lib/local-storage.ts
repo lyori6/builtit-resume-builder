@@ -1,10 +1,20 @@
+import { ResumeData } from './resume-types'
+
 const STORAGE_KEY = 'builtit:resume-builder'
-const STORAGE_VERSION = '1'
+const STORAGE_VERSION = '2'
+
+export interface SavedResume {
+  id: string
+  name: string
+  data: ResumeData
+  optimizedData?: ResumeData
+  updatedAt: number
+}
 
 export type StoredData = {
   version: string
   geminiApiKey?: string
-  resumes?: Record<string, string>
+  resumes?: Record<string, SavedResume>
   prompts?: {
     systemPrompt?: string
     adjustmentPrompt?: string
@@ -116,24 +126,33 @@ export const storage = {
     writeStorage(nextData)
   },
 
-  getResume(id: string): string | null {
+  getResume(id: string): SavedResume | null {
     const data = readStorage()
     return data.resumes?.[id] ?? null
   },
 
-  saveResume(id: string, resumeJSON: string) {
+  saveResume(id: string, resumeData: ResumeData, name?: string, optimizedData?: ResumeData) {
     const data = readStorage()
     const resumes = { ...(data.resumes ?? {}) }
-    resumes[id] = resumeJSON
+    const existing = resumes[id]
+
+    resumes[id] = {
+      id,
+      name: name || existing?.name || resumeData.basics.name || 'Untitled Resume',
+      data: resumeData,
+      optimizedData: optimizedData || existing?.optimizedData,
+      updatedAt: Date.now()
+    }
+
     writeStorage({
       ...data,
       resumes
     })
   },
 
-  getResumes(): Record<string, string> {
+  getResumes(): SavedResume[] {
     const data = readStorage()
-    return data.resumes ?? {}
+    return Object.values(data.resumes ?? {}).sort((a, b) => b.updatedAt - a.updatedAt)
   },
 
   removeResume(id: string) {

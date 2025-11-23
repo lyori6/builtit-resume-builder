@@ -2,6 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
+@import '../src/styles/colors.css';
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 /* HTML content styling - Compact version */
@@ -27,7 +28,7 @@
 
 .text-gray-700 li::before {
   content: "•";
-  color: #2563eb;
+  color: var(--color-primary);
   font-weight: bold;
   position: absolute;
   left: 0;
@@ -68,7 +69,7 @@
 
 .diff-html li::before {
   content: "•";
-  color: #2563eb;
+  color: var(--color-primary);
   font-weight: 600;
   position: absolute;
   left: 0;
@@ -79,28 +80,228 @@
   .print\\:hidden {
     display: none !important;
   }
-  
+
   body {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
     color-adjust: exact;
   }
-  
+
   .resume-content {
     margin: 0;
     padding: 0;
     box-shadow: none;
   }
-  
+
   @page {
     margin: 0.5in;
     size: letter;
   }
-  
+
   /* Force 3-column grid in print */
   .skills-grid {
     display: grid !important;
     grid-template-columns: repeat(3, 1fr) !important;
     gap: 0.5rem !important;
   }
+}
+
+@media print {
+  @page {
+    margin: 0;
+    size: auto;
+  }
+
+  body {
+    background: white;
+    color: black;
+  }
+
+  /* Hide everything by default */
+  body>*:not(#resume-preview-panel) {
+    display: none !important;
+  }
+
+  /* Ensure the modal and preview are visible and correctly positioned */
+  /* We target the modal container if it exists, or just the resume panel */
+  /* Since we are using a fixed overlay strategy in the modal, we can rely on the modal's print styles */
+
+  /* Hide all UI elements that are not the resume content */
+  .print\:hidden {
+    display: none !important;
+  }
+
+  /* Force the resume preview to be visible and take up the full page */
+  #resume-preview-panel {
+    display: block !important;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    margin: 0;
+    padding: 20px;
+    /* Standard print margin */
+    box-shadow: none !important;
+    border: none !important;
+    background: white !important;
+    z-index: 9999;
+  }
+
+  /* Reset any scroll containers */
+  html,
+  body,
+  #__next,
+  main {
+    height: auto !important;
+    overflow: visible !important;
+  }
+}
+
+/* Page break utilities */
+.break-inside-avoid {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.break-before-auto {
+  break-before: auto;
+  page-break-before: auto;
+}
+
+.break-after-auto {
+  break-after: auto;
+  page-break-after: auto;
+}
+
+/* Quantum Pulse Loader Animations */
+@keyframes generating-loader-letter-anim {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) rotateX(-90deg);
+    text-shadow: 0 0 0px rgba(255, 255, 255, 0);
+  }
+
+  10% {
+    opacity: 1;
+    transform: translateY(0) rotateX(0deg);
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+  }
+
+  30% {
+    opacity: 1;
+    transform: translateY(0) rotateX(0deg);
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+  }
+
+  50% {
+    opacity: 0;
+    transform: translateY(-20px) rotateX(90deg);
+    text-shadow: 0 0 0px rgba(255, 255, 255, 0);
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes generating-loader-bar-anim {
+  0% {
+    left: -100%;
+  }
+
+  50% {
+    left: 100%;
+  }
+
+  100% {
+    left: -100%;
+  }
+}
+
+.generating-loader-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  padding: 2rem;
+}
+
+.generating-loader-text {
+  display: flex;
+  gap: 0.1em;
+  font-family: 'Inter', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #3b82f6;
+  /* blue-500 */
+  perspective: 1000px;
+}
+
+.generating-loader-letter {
+  display: inline-block;
+  animation: generating-loader-letter-anim 3s infinite;
+  transform-origin: center bottom;
+}
+
+.generating-loader-letter:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.generating-loader-letter:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
+.generating-loader-letter:nth-child(3) {
+  animation-delay: 0.2s;
+}
+
+.generating-loader-letter:nth-child(4) {
+  animation-delay: 0.3s;
+}
+
+.generating-loader-letter:nth-child(5) {
+  animation-delay: 0.4s;
+}
+
+.generating-loader-letter:nth-child(6) {
+  animation-delay: 0.5s;
+}
+
+.generating-loader-letter:nth-child(7) {
+  animation-delay: 0.6s;
+}
+
+.generating-loader-letter:nth-child(8) {
+  animation-delay: 0.7s;
+}
+
+.generating-loader-letter:nth-child(9) {
+  animation-delay: 0.8s;
+}
+
+.generating-loader-letter:nth-child(10) {
+  animation-delay: 0.9s;
+}
+
+.generating-loader-bar {
+  position: relative;
+  width: 200px;
+  height: 4px;
+  background: #e2e8f0;
+  /* slate-200 */
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.generating-loader-bar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, #3b82f6, transparent);
+  animation: generating-loader-bar-anim 2s linear infinite;
 }

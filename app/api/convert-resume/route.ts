@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { GoogleGenerativeAI } from '@google/generative-ai'
-import { validateResumeJSON } from '@/lib/resume-types'
+import { validateResumeJSON, normalizeResumeJSON } from '@/lib/resume-types'
 import { buildTextToResumeJsonPrompt } from '@/lib/prompts'
 
 export async function POST(request: NextRequest) {
@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
     }
 
     const genAI = new GoogleGenerativeAI(apiKey)
-    const model = genAI.getGenerativeModel({ model: 'gemini-flash-latest' })
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-pro' })
     const prompt = buildTextToResumeJsonPrompt(resumeText, promptOverrides?.systemPrompt)
 
     console.log('Requesting text-to-JSON conversion via Gemini...')
@@ -86,7 +86,8 @@ export async function POST(request: NextRequest) {
     }
 
     const patchedJSON = ensureBasicsPresence(convertedJSON)
-    const validation = validateResumeJSON(patchedJSON)
+    const normalizedJSON = normalizeResumeJSON(patchedJSON)
+    const validation = validateResumeJSON(normalizedJSON)
     if (!validation.isValid) {
       console.error('Converted resume failed validation:', validation.errors)
       return NextResponse.json(
@@ -97,7 +98,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      resume: patchedJSON
+      resume: normalizedJSON
     })
   } catch (error) {
     console.error('Resume conversion error:', error)

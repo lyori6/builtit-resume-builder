@@ -17,6 +17,8 @@ interface ResumeIntakeProps {
   isConvertingText: boolean
   textConversionError: string | null
   onViewDemo: () => void
+  showPromptHelper: boolean
+  onTogglePromptHelper: () => void
 }
 
 const JSON_TEMPLATE = `{
@@ -156,9 +158,8 @@ const JSONDropZone: FC<{
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
-        className={`flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed px-6 py-6 text-center transition-colors ${
-          isDragging ? 'border-blue-500 bg-blue-50/60' : 'border-slate-200 bg-white'
-        }`}
+        className={`flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed px-6 py-6 text-center transition-colors ${isDragging ? 'border-blue-500 bg-blue-50/60' : 'border-slate-200 bg-white'
+          }`}
       >
         <input
           type="file"
@@ -248,9 +249,10 @@ const ResumeIntake: FC<ResumeIntakeProps> = ({
   }
 
   const canLoadResume = Boolean(isJSONValid && pastedJSON.trim())
-  const canContinue = rawResumeText.trim().length > 0
+  const canContinue = (rawResumeText || '').trim().length > 0
+  const charCount = (rawResumeText || '').length
 
-const renderPromptHelper = () => (
+  const renderPromptHelper = () => (
     <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
       <button
         type="button"
@@ -316,14 +318,14 @@ const renderPromptHelper = () => (
     </div>
   )
 
-  
+
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-white">
       <div className="print:hidden border-b bg-white">
         <div className="mx-auto max-w-3xl px-6 py-12 space-y-8">
           <header className="space-y-4 text-center">
             <h1 className="text-3xl font-bold text-slate-900">Step 1: Add Your Resume</h1>
-            <p className="text-xs text-slate-500">
+            <div className="text-xs text-slate-500">
               Not ready to paste your resume?{' '}
               <button
                 type="button"
@@ -332,21 +334,41 @@ const renderPromptHelper = () => (
               >
                 See the sample optimization →
               </button>
-            </p>
+            </div>
           </header>
 
-          <section className="space-y-2">
+          <section className="space-y-3">
             <label className="text-sm font-semibold text-slate-700" htmlFor="resume-text-input">
               Paste your resume text here
             </label>
-            <textarea
-              id="resume-text-input"
-              value={rawResumeText}
-              onChange={(event) => onRawTextChange(event.target.value)}
-              placeholder="Paste the plain-text version of your resume..."
-              className="h-48 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-800 shadow-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-200"
-              spellCheck={false}
-            />
+            <div className="rounded-xl border border-primary/20 bg-primary-light/60 px-4 py-4">
+              <div className="flex items-start gap-3">
+                <div className="rounded-full bg-white px-2 py-1">
+                  <Info size={18} className="text-primary" />
+                </div>
+                <div className="text-sm text-neutral-700 space-y-1">
+                  <p className="font-semibold text-primary">Tips for best results:</p>
+                  <ul className="space-y-1 list-disc list-inside">
+                    <li>Paste plain text (no formatting needed)</li>
+                    <li>Include sections like experience, education, skills</li>
+                    <li>More detail = better optimization</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <div className="relative">
+              <textarea
+                id="resume-text-input"
+                value={rawResumeText}
+                onChange={(event) => onRawTextChange(event.target.value)}
+                placeholder={`Paste the plain-text version of your resume...\n\nExample:\nAlex Taylor | alex@email.com | San Francisco, CA\nSenior Product Manager\n\nEXPERIENCE\nBuiltIt | Senior Product Manager | 2022-Present\n• Shipped resume optimizer for 1K+ users\n• Led launch with Gemini-powered tailoring`}
+                className="min-h-[320px] w-full rounded-2xl border-2 border-neutral-200 bg-white px-5 py-4 text-sm text-slate-800 shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 font-mono leading-relaxed"
+                spellCheck={false}
+              />
+              <div className="pointer-events-none absolute bottom-4 right-4 rounded-md bg-white/90 px-3 py-1 text-xs font-medium text-neutral-500 shadow">
+                {charCount} characters
+              </div>
+            </div>
           </section>
 
           {textConversionError && (
@@ -363,14 +385,17 @@ const renderPromptHelper = () => (
               type="button"
               onClick={onConvertText}
               disabled={isConvertingText || !canContinue}
-              className="inline-flex items-center justify-center rounded-full bg-blue-600 px-8 py-3 text-sm font-semibold text-white shadow-md transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+              className={`inline-flex items-center justify-center rounded-lg px-8 py-3 text-sm font-semibold transition ${isConvertingText || !canContinue
+                ? 'bg-neutral-200 text-neutral-400 cursor-not-allowed'
+                : 'bg-primary text-white shadow-md hover:bg-primary-hover'
+                }`}
             >
               {isConvertingText ? (
                 <>
                   <Loader2 size={16} className="animate-spin" /> Working...
                 </>
               ) : (
-                <>Continue</>
+                <>Continue →</>
               )}
             </button>
             {!canContinue && (

@@ -280,7 +280,24 @@ What success looks like:
         reason: 'Highlighted GraphQL experience requested in role.'
       }
     ]
-  }
+  },
+  diffItems: [
+    {
+      path: ['sections', 'summary', 'content'],
+      before: 'Experienced full-stack engineer delivering reliable web applications with React, Node.js, and AWS. Passionate about clean architecture and collaborating with cross-functional teams.',
+      after: 'Senior software engineer with 5+ years leading cloud infrastructure and full-stack projects. Blends hands-on React and Node.js development with AWS automation, CI/CD ownership, and team leadership. Trusted partner to product and design for delivering resilient features that serve 50K+ users.'
+    },
+    {
+      path: ['sections', 'experience', 'items', '0', 'summary'],
+      before: '<ul><li>Lead engineer for customer insights dashboard serving 50K monthly users.</li><li>Partner with design and product to prioritize quarterly roadmap.</li><li>Mentor three junior engineers through pairing and code reviews.</li></ul>',
+      after: '<ul><li>Owned React and Node.js platform powering customer analytics dashboard for 50K monthly users; improved page load speed by 40% by tuning GraphQL resolvers and React suspense boundaries.</li><li>Automated AWS infrastructure with Terraform and containerized services with Docker + ECS, increasing deployment consistency across dev/stage/prod.</li><li>Redesigned CI/CD pipeline to enable 20-minute releases and introduced blue/green strategy that cut rollback time by 60%.</li><li>Lead and mentor a team of 3 engineers, defining quarterly OKRs and pairing on complex system designs.</li></ul>'
+    },
+    {
+      path: ['sections', 'skills', 'items', '1', 'keywords'],
+      before: 'Node.js, Express, REST APIs',
+      after: 'Node.js, GraphQL, REST APIs, Microservices'
+    }
+  ]
 }
 
 export type DemoOptimization = typeof DEMO_OPTIMIZATION
