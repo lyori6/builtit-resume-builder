@@ -52,6 +52,7 @@ export interface OptimizerState {
     optimizedText: string
     optimizedJson: string | null
     workspaceJson: string | null
+    coverLetter: string | null
     loadedSource: {
       type: 'none' | 'custom' | 'example'
       id: string | null
@@ -70,6 +71,7 @@ export interface OptimizerState {
   metadata: OptimizationMetadata | null
   ui: {
     isApiKeyModalOpen: boolean
+    isCoverLetterModalOpen: boolean
     activeVideoId: string | null
     isLoading: boolean
     errorMessage: string | null
@@ -92,6 +94,7 @@ export type OptimizerAction =
   | { type: 'SET_LOADED_SOURCE'; source: { type: 'none' | 'custom' | 'example'; id: string | null } }
   | { type: 'SHOW_API_KEY_MODAL' }
   | { type: 'HIDE_API_KEY_MODAL' }
+  | { type: 'SET_COVER_LETTER_MODAL_OPEN'; isOpen: boolean }
   | { type: 'SAVE_API_KEY'; key: string }
   | { type: 'CLEAR_API_KEY' }
   | { type: 'SET_API_KEY_STATUS'; status: ApiKeyStatus; errorMessage?: string | null }
@@ -117,6 +120,7 @@ export type OptimizerAction =
   | { type: 'HYDRATE_STATE'; state: Partial<OptimizerState> }
   | { type: 'RESET_STATE' }
   | { type: 'SET_OPTIMIZED_DATA'; json: string }
+  | { type: 'SET_COVER_LETTER'; text: string }
 
 const maskApiKey = (key: string) => {
   if (key.length <= 12) return key
@@ -132,6 +136,7 @@ export const initialOptimizerState: OptimizerState = {
     optimizedText: '',
     optimizedJson: null,
     workspaceJson: null,
+    coverLetter: null,
     loadedSource: {
       type: 'none',
       id: null
@@ -150,6 +155,7 @@ export const initialOptimizerState: OptimizerState = {
   metadata: null,
   ui: {
     isApiKeyModalOpen: false,
+    isCoverLetterModalOpen: false,
     activeVideoId: null,
     isLoading: false,
     errorMessage: null,
@@ -217,6 +223,14 @@ const reducer = (state: OptimizerState, action: OptimizerAction): OptimizerState
         ui: {
           ...state.ui,
           isApiKeyModalOpen: false
+        }
+      }
+    case 'SET_COVER_LETTER_MODAL_OPEN':
+      return {
+        ...state,
+        ui: {
+          ...state.ui,
+          isCoverLetterModalOpen: action.isOpen
         }
       }
     case 'SAVE_API_KEY':
@@ -399,6 +413,14 @@ const reducer = (state: OptimizerState, action: OptimizerAction): OptimizerState
           // We don't have diffs/metadata when restoring from simple history unless we store them too
           // For now, we just show the result
           showDiff: false
+        }
+      }
+    case 'SET_COVER_LETTER':
+      return {
+        ...state,
+        resume: {
+          ...state.resume,
+          coverLetter: action.text
         }
       }
     default:

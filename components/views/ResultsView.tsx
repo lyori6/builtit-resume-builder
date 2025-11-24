@@ -11,6 +11,7 @@ import { useResumeIO } from '@/src/hooks/useResumeIO'
 import SavedResumesDrawer from '@/components/SavedResumesDrawer'
 import ContentModal from '@/components/ContentModal'
 import { downloadResumePDF } from '@/lib/pdf-generator'
+import CoverLetterGenerator from '@/components/CoverLetterGenerator'
 
 interface ResultsViewProps {
     resumeData: ResumeData | null
@@ -212,6 +213,12 @@ const ResultsView: React.FC<ResultsViewProps> = ({
                             Clear
                         </button>
                     </div>
+
+                    {resumeData && (
+                        <div className="mt-4 pt-4 border-t border-slate-100">
+                            <CoverLetterGenerator resumeData={resumeData} jobDescription={jobDescription || ''} />
+                        </div>
+                    )}
                 </div>
             </div>
 

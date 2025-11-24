@@ -93,14 +93,33 @@ We rely on the browser's native `window.print()`. This often leads to:
 
 ---
 
+## 5. ✍️ Feature: Cover Letter Generator
+**Goal**: Generate a tailored cover letter based on the user's resume and the job description.
+
+### Problem
+Users often struggle to write cover letters that effectively highlight their relevant experience for a specific job.
+
+### Plan
+1.  **UI Integration**:
+    -   Add a "Generate Cover Letter" button in the `ResultsView` or `JobSetupView`.
+2.  **API Integration**:
+    -   Use Gemini to generate the cover letter content.
+    -   Prompt should include: Resume data, Job Description, and Tone preferences.
+3.  **Output**:
+    -   Display the generated cover letter in a modal or new view.
+    -   Allow editing and downloading (PDF/DOCX).
+
+---
+
 ## Prioritization
 
 | Priority | Initiative | Effort | Impact |
 | :--- | :--- | :--- | :--- |
 | **P0** | **Refactor `page.tsx`** | High | High (Maintenance) | **Done** |
 | **P1** | **Print Perfection** | Low | High (Core Value) | **Done** |
-| **P2** | **Resume Themes** | Medium | Medium (Delighter) | **Next** |
-| **P3** | **Session History** | Medium | Medium (Retention) | |
+| **P2** | **Session History** | Medium | Medium (Retention) | **Done** |
+| **P3** | **Cover Letter Generator** | High | High (Value) | **Next** |
+| **P4** | **Resume Themes** | Medium | Medium (Delighter) | **Backlog** |
 
 ## Completed Improvements
 - **API Reliability**: Updated all Gemini API integrations to use `gemini-2.5-flash` (validation/adjustments) and `gemini-2.5-pro` (optimization), resolving authentication and model availability issues.

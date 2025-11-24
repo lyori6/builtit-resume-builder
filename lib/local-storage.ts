@@ -8,6 +8,8 @@ export interface SavedResume {
   name: string
   data: ResumeData
   optimizedData?: ResumeData
+  jobDescription?: string
+  coverLetter?: string
   updatedAt: number
 }
 
@@ -131,7 +133,7 @@ export const storage = {
     return data.resumes?.[id] ?? null
   },
 
-  saveResume(id: string, resumeData: ResumeData, name?: string, optimizedData?: ResumeData) {
+  saveResume(id: string, resumeData: ResumeData, name?: string, optimizedData?: ResumeData, jobDescription?: string, coverLetter?: string) {
     const data = readStorage()
     const resumes = { ...(data.resumes ?? {}) }
     const existing = resumes[id]
@@ -141,6 +143,8 @@ export const storage = {
       name: name || existing?.name || resumeData.basics.name || 'Untitled Resume',
       data: resumeData,
       optimizedData: optimizedData || existing?.optimizedData,
+      jobDescription: jobDescription || existing?.jobDescription,
+      coverLetter: coverLetter || existing?.coverLetter,
       updatedAt: Date.now()
     }
 

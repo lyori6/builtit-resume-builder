@@ -239,7 +239,7 @@ export const useResumeOptimizer = () => {
             // Save optimized state to history
             const sourceId = state.resume.loadedSource.id
             if (sourceId) {
-                storage.saveResume(sourceId, currentResume, undefined, normalizedOptimized)
+                storage.saveResume(sourceId, currentResume, undefined, normalizedOptimized, jobDescription)
             }
 
         } catch (error) {
@@ -313,7 +313,7 @@ export const useResumeOptimizer = () => {
             // Save optimized state to history
             const sourceId = state.resume.loadedSource.id
             if (sourceId) {
-                storage.saveResume(sourceId, currentResume, undefined, normalizedAdjusted)
+                storage.saveResume(sourceId, currentResume, undefined, normalizedAdjusted, state.jobDescription.text)
             }
 
             // Set success state
@@ -413,6 +413,20 @@ export const useResumeOptimizer = () => {
             applyFinalAdjustments,
             applyIntermediateAdjustments,
             revertToOriginal,
+            saveCoverLetter: (text: string) => {
+                dispatch({ type: 'SET_COVER_LETTER', text })
+                const sourceId = state.resume.loadedSource.id
+                if (sourceId && resumeForWorkspace) {
+                    storage.saveResume(
+                        sourceId,
+                        resumeForWorkspace,
+                        undefined,
+                        optimizedResumeData || undefined,
+                        state.jobDescription.text,
+                        text
+                    )
+                }
+            },
             // Expose diff helpers if needed by UI
             renderDiffValue: toDisplayString,
             formatDiffPath: (path: string[]) => path.join(' › ') // Simplified for now

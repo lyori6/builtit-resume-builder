@@ -133,28 +133,34 @@ ${json}
 Return ONLY the optimized JSON.`
 }
 
-export const buildAdjustmentPrompt = (
-  resumeData: ResumeData,
-  instructions: string,
-  override?: string
-) => {
-  const systemPrompt = override && override.trim().length > 0
-    ? override.trim()
-    : DEFAULT_ADJUSTMENT_SYSTEM_PROMPT
+export const buildCoverLetterPrompt = (resumeData: ResumeData, jobDescription: string) => {
+  const currentDate = new Date().toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  })
 
-  const json = JSON.stringify(resumeData, null, 2)
-  return `${systemPrompt}
+  return `
+    You are an expert career coach and professional resume writer.
+    Your task is to write a compelling, professional, and SUCCINCT cover letter based on the provided resume and job description.
 
-Instructions:
-${instructions}
+    Current Date: ${currentDate}
 
-Resume JSON:
-${json}
+    RESUME DATA:
+    ${JSON.stringify(resumeData, null, 2)}
 
-Rules:
-- Maintain exact schema and keys.
-- If removing items, delete them cleanly from arrays.
-- Do not add commentary.
+    JOB DESCRIPTION:
+    ${jobDescription}
 
-Return ONLY the adjusted JSON.`
+    INSTRUCTIONS:
+    1.  **Header**: Include a standard professional header with the candidate's contact info (from resume) and the current date (${currentDate}).
+    2.  **Salutation**: Use a professional salutation. If a hiring manager's name is found in the job description, use it; otherwise, use "Dear Hiring Manager".
+    3.  **Opening**: Write a strong opening paragraph that hooks the reader and states the position applied for.
+    4.  **Body**: Write 1-2 short, punchy paragraphs connecting the candidate's specific skills/experiences (from resume) to the key requirements (from job description). Do NOT simply summarize the resume. Focus on value add.
+    5.  **Closing**: A brief closing paragraph expressing enthusiasm and requesting an interview.
+    6.  **Sign-off**: Professional sign-off (e.g., "Sincerely,") followed by the candidate's name.
+    7.  **Tone**: Professional, confident, and enthusiastic.
+    8.  **Length**: Keep it succinct. No more than 300-400 words. Avoid fluff and filler sentences.
+    9.  **Format**: Return ONLY the plain text of the cover letter. Do not include markdown formatting or explanations.
+  `
 }

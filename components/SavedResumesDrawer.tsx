@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { X, Clock, FileText, Trash2, History } from 'lucide-react'
+import { X, Clock, FileText, Trash2, History, Wand2 } from 'lucide-react'
 import { storage, SavedResume } from '@/lib/local-storage'
 import { useOptimizerContext } from '@/src/state/optimizer-context'
 import ContentModal from '@/components/ContentModal'
@@ -24,6 +24,16 @@ const SavedResumesDrawer: React.FC<SavedResumesDrawerProps> = ({ isOpen, onClose
         if (resume) {
             dispatch({ type: 'SET_WORKSPACE_RESUME', json: JSON.stringify(resume.data) })
             dispatch({ type: 'SET_LOADED_SOURCE', source: { type: 'custom', id } })
+
+            if (resume.jobDescription) {
+                dispatch({ type: 'SET_JOB_DESCRIPTION', text: resume.jobDescription })
+            }
+
+            if (resume.coverLetter) {
+                dispatch({ type: 'SET_COVER_LETTER', text: resume.coverLetter })
+            } else {
+                dispatch({ type: 'SET_COVER_LETTER', text: '' })
+            }
 
             if (resume.optimizedData) {
                 dispatch({ type: 'SET_OPTIMIZED_DATA', json: JSON.stringify(resume.optimizedData) })
@@ -65,23 +75,50 @@ const SavedResumesDrawer: React.FC<SavedResumesDrawerProps> = ({ isOpen, onClose
                             className="group relative flex cursor-pointer items-center justify-between rounded-xl border border-slate-200 bg-white p-4 transition hover:border-blue-300 hover:shadow-md"
                         >
                             <div className="flex items-center gap-4">
-                                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-600 transition group-hover:bg-blue-100 group-hover:text-blue-700">
-                                    <FileText size={20} />
+                                <div className={`flex h-10 w-10 items-center justify-center rounded-lg transition ${resume.optimizedData ? 'bg-purple-50 text-purple-600 group-hover:bg-purple-100 group-hover:text-purple-700' : 'bg-blue-50 text-blue-600 group-hover:bg-blue-100 group-hover:text-blue-700'}`}>
+                                    {resume.optimizedData ? <Wand2 size={20} /> : <FileText size={20} />}
                                 </div>
                                 <div>
-                                    <h4 className="font-medium text-slate-900">{resume.name}</h4>
+                                    <div className="flex items-center gap-2">
+                                        <h4 className="font-medium text-slate-900">{resume.name}</h4>
+                                        {resume.optimizedData ? (
+                                            <span className="rounded-full bg-purple-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-purple-700">
+                                                Optimized
+                                            </span>
+                                        ) : (
+                                            <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-blue-700">
+                                                Original
+                                            </span>
+                                        )}
+                                    </div>
                                     <p className="text-xs text-slate-500">
                                         {new Date(resume.updatedAt).toLocaleDateString()} • {new Date(resume.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                     </p>
                                 </div>
                             </div>
-                            <button
-                                onClick={(e) => handleDelete(resume.id, e)}
-                                className="rounded-lg p-2 text-slate-400 opacity-0 transition hover:bg-red-50 hover:text-red-600 group-hover:opacity-100"
-                                title="Delete resume"
-                            >
-                                <Trash2 size={18} />
-                            </button>
+                            <div className="flex items-center gap-2">
+                                {resume.coverLetter && (
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation()
+                                            handleLoad(resume.id)
+                                            dispatch({ type: 'SET_STEP', step: 'results' })
+                                            dispatch({ type: 'SET_COVER_LETTER_MODAL_OPEN', isOpen: true })
+                                        }}
+                                        className="flex items-center gap-1.5 rounded-md border border-purple-200 bg-purple-50 px-2.5 py-1.5 text-xs font-medium text-purple-700 transition hover:bg-purple-100 hover:shadow-sm"
+                                    >
+                                        <Wand2 size={12} />
+                                        Cover Letter
+                                    </button>
+                                )}
+                                <button
+                                    onClick={(e) => handleDelete(resume.id, e)}
+                                    className="rounded-lg p-2 text-slate-400 opacity-0 transition hover:bg-red-50 hover:text-red-600 group-hover:opacity-100"
+                                    title="Delete resume"
+                                >
+                                    <Trash2 size={18} />
+                                </button>
+                            </div>
                         </div>
                     ))
                 )}
