@@ -164,3 +164,24 @@ export const buildCoverLetterPrompt = (resumeData: ResumeData, jobDescription: s
     9.  **Format**: Return ONLY the plain text of the cover letter. Do not include markdown formatting or explanations.
   `
 }
+
+export const buildAdjustmentPrompt = (
+  resumeData: ResumeData,
+  instructions: string,
+  override?: string
+) => {
+  const systemPrompt = override && override.trim().length > 0
+    ? override.trim()
+    : DEFAULT_ADJUSTMENT_SYSTEM_PROMPT
+
+  const json = JSON.stringify(resumeData, null, 2)
+  return `${systemPrompt}
+
+Resume JSON:
+${json}
+
+Instructions:
+${instructions}
+
+Return ONLY the adjusted JSON.`
+}

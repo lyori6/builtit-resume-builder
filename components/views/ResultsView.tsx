@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Download, Loader2, FileText, ChevronDown, ChevronUp, Wand2, ArrowLeft, History, LayoutTemplate } from 'lucide-react'
+import { Download, Loader2, FileText, Wand2, ArrowLeft, History, LayoutTemplate } from 'lucide-react'
 import { ResumeData } from '@/lib/resume-types'
 import { DiffItem } from '@/src/state/optimizer-context'
 import ResumePreview from '@/components/ResumePreview'
@@ -17,9 +17,6 @@ interface ResultsViewProps {
     resumeData: ResumeData | null
     originalResume: ResumeData | null
     diffItems: DiffItem[]
-    onDownloadPDF: () => void
-    onExportJSON: () => void
-    onTryAnotherJob: () => void
     // Adjustments
     finalAdjustments: string
     onFinalAdjustmentsChange: (value: string) => void
@@ -43,9 +40,6 @@ const ResultsView: React.FC<ResultsViewProps> = ({
     resumeData,
     originalResume,
     diffItems,
-    onDownloadPDF,
-    onExportJSON,
-    onTryAnotherJob,
     finalAdjustments,
     onFinalAdjustmentsChange,
     onApplyAdjustments,
@@ -65,7 +59,6 @@ const ResultsView: React.FC<ResultsViewProps> = ({
     const [showDiffs, setShowDiffs] = useState(false)
     const [showHistory, setShowHistory] = useState(false)
     const [previewMode, setPreviewMode] = useState<'after' | 'before'>('after')
-    const [activeTab, setActiveTab] = useState<'preview' | 'diff' | 'job'>('preview')
 
     const handleDownloadPDF = async () => {
         await downloadResumePDF('resume-preview-panel', 'optimized-resume.pdf')

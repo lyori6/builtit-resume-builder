@@ -125,7 +125,7 @@ export interface ResumeSections {
   interests?: GenericSection
   languages?: GenericSection
   profiles?: GenericSection
-  [key: string]: any
+  [key: string]: unknown
 }
 
 export interface ResumeData {

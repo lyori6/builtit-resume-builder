@@ -5,13 +5,11 @@ import {
     TextRun,
     HeadingLevel,
     AlignmentType,
-    ExternalHyperlink,
     TabStopType,
     Tab,
-    Indent,
     convertInchesToTwip
 } from 'docx'
-import { ResumeData, ExperienceItem, EducationItem, ProjectItem, SkillItem } from './resume-types'
+import { ResumeData } from './resume-types'
 
 const FONTS = {
     HEADING: 'Arial',

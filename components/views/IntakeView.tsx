@@ -1,7 +1,6 @@
 import React, { useRef } from 'react'
 import LandingHero from '@/components/LandingHero'
 import ResumeIntake from '@/components/ResumeIntake'
-import { useOptimizerContext } from '@/src/state/optimizer-context'
 import ProcessingModal from '@/components/ProcessingModal'
 
 interface IntakeViewProps {

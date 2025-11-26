@@ -326,7 +326,7 @@ export const useResumeOptimizer = () => {
         } finally {
             setIsAdjusting(false)
         }
-    }, [resumeForWorkspace, finalAdjustments, state.apiKey.value, originalResume, adjustmentPrompt, dispatch, state.resume.loadedSource.id])
+    }, [resumeForWorkspace, finalAdjustments, state.apiKey.value, originalResume, adjustmentPrompt, dispatch, state.resume.loadedSource.id, state.jobDescription.text])
 
     const applyIntermediateAdjustments = useCallback(async () => {
         const currentResume = resumeForWorkspace

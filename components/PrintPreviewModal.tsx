@@ -1,7 +1,7 @@
 'use client'
 
 import { FC, useEffect, useRef } from 'react'
-import { X, Printer } from 'lucide-react'
+import { Printer } from 'lucide-react'
 import { ResumeData } from '@/lib/resume-types'
 import ResumePreview from './ResumePreview'
 

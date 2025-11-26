@@ -13,10 +13,8 @@ import {
   Settings,
   FileText
 } from 'lucide-react'
-import ResumeDiffTable from '@/components/ResumeDiffTable'
 import { ResumeData } from '@/lib/resume-types'
 import { useOptimizerContext } from '@/src/state/optimizer-context'
-import type { OptimizationMetadata } from '@/src/state/optimizer-context'
 
 interface WorkspaceActionsProps {
   resumeData: ResumeData | null
@@ -44,10 +42,7 @@ const WorkspaceActions: FC<WorkspaceActionsProps> = ({
   adjustmentError,
   adjustmentSuccess,
   originalResume,
-  revertToOriginal,
-  maxDiffItems,
-  renderDiffValue,
-  formatDiffPath
+  revertToOriginal
 }) => {
   const { state, dispatch } = useOptimizerContext()
   const jobDescription = state.jobDescription.text
@@ -56,7 +51,10 @@ const WorkspaceActions: FC<WorkspaceActionsProps> = ({
   const metadata = state.metadata
   const isDemoMode = state.ui.isDemoMode
   const diffItems = optimizationState.diffItems
-  const showDiff = optimizationState.showDiff
+  const keyMissing = !storedGeminiKey || storedGeminiKey.trim() === ''
+  const improvementsCount = metadata?.improvementsCount ?? diffItems.length
+  const keywordCount = metadata?.keywordsMatched?.length ?? 0
+
   const isOptimizing = optimizationState.status === 'running'
   const optimizationError = optimizationState.errorMessage
   const optimizationSuccess = optimizationState.status === 'success'
@@ -68,9 +66,6 @@ const WorkspaceActions: FC<WorkspaceActionsProps> = ({
     [dispatch]
   )
 
-  const handleToggleDiff = useCallback(() => {
-    dispatch({ type: 'SET_SHOW_DIFF', value: !showDiff })
-  }, [dispatch, showDiff])
   const handleViewFullResume = useCallback(() => {
     if (typeof document !== 'undefined') {
       const previewEl = document.getElementById('resume-preview-panel')
@@ -88,57 +83,14 @@ const WorkspaceActions: FC<WorkspaceActionsProps> = ({
   const [showJobOptions, setShowJobOptions] = useState(false)
   const showJobFilterHelpers = false
   const showResumeSnapshot = false
-  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({})
-
-  const keyMissing = !storedGeminiKey || storedGeminiKey.trim() === ''
-  const improvementsCount = metadata?.improvementsCount ?? diffItems.length
-  const keywordCount = metadata?.keywordsMatched?.length ?? 0
-  const processingTime = metadata?.processingTimeSeconds
-  const wordCount = metadata?.wordCount
-
-  const summaryMetrics = useMemo(() => {
-    const metrics: Array<{ id: string; value: string; label: string }> = [
-      {
-        id: 'improvements',
-        value: improvementsCount.toString(),
-        label: 'Improvements'
-      }
-    ]
-
-    metrics.push({
-      id: 'keywords',
-      value: keywordCount.toString(),
-      label: 'Keywords matched'
-    })
-
-    if (typeof wordCount === 'number' && Number.isFinite(wordCount)) {
-      metrics.push({
-        id: 'wordCount',
-        value: wordCount.toLocaleString(),
-        label: 'Words processed'
-      })
-    }
-
-    if (typeof processingTime === 'number' && Number.isFinite(processingTime)) {
-      const formatted =
-        processingTime >= 1
-          ? `${processingTime.toFixed(processingTime >= 10 ? 0 : 1)}s`
-          : `${Math.round(processingTime * 1000)}ms`
-      metrics.push({
-        id: 'processingTime',
-        value: formatted,
-        label: 'Processing time'
-      })
-    }
-
-    return metrics
-  }, [improvementsCount, keywordCount, processingTime, wordCount])
 
   const resumeSnapshot = useMemo(() => {
     if (!resumeData) return []
     const snapshot: string[] = []
-    const basics: any = (resumeData as any).basics ?? {}
-    const sections: any = (resumeData as any).sections ?? {}
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const basics: any = resumeData.basics
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const sections: any = resumeData.sections
 
     const contactParts = [basics.email, basics.location?.text || basics.location]
       .filter(Boolean)
@@ -154,11 +106,10 @@ const WorkspaceActions: FC<WorkspaceActionsProps> = ({
       snapshot.push((basics.summaryText || basics.summary || '').replace(/<[^>]+>/g, ''))
     }
 
-    const experienceItems: any[] = Array.isArray(sections?.experience?.items)
-      ? sections.experience.items
-      : []
+    const experienceItems = sections.experience?.items || []
 
-    experienceItems.slice(0, 2).forEach((item) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    experienceItems.slice(0, 2).forEach((item: any) => {
       snapshot.push(
         `${item.company || 'Company'} — ${item.position || item.name || 'Role'}${item.date ? ` (${item.date})` : ''
         }`
@@ -167,57 +118,6 @@ const WorkspaceActions: FC<WorkspaceActionsProps> = ({
 
     return snapshot.filter(Boolean).slice(0, 5)
   }, [resumeData])
-
-  type ChangeEntry = NonNullable<OptimizationMetadata['changes']>[number]
-
-  const groupedChanges = useMemo(() => {
-    if (!metadata?.changes || metadata.changes.length === 0) {
-      return null
-    }
-
-    return metadata.changes.reduce<Record<string, ChangeEntry[]>>((acc, change) => {
-      const key = change.type || 'modified'
-      if (!acc[key]) {
-        acc[key] = []
-      }
-      acc[key].push(change)
-      return acc
-    }, {})
-  }, [metadata?.changes])
-
-  const changeTypeMeta: Record<string, { icon: string; label: string }> = {
-    modified: { icon: '✏️', label: 'Modified' },
-    added: { icon: '➕', label: 'Added' },
-    removed: { icon: '➖', label: 'Removed' },
-    keywords: { icon: '🎯', label: 'Keyword highlight' }
-  }
-
-  const mapChangeSummary = (change: ChangeEntry) => {
-    const summaryParts: string[] = []
-
-    if (change.description) {
-      summaryParts.push(change.description)
-    } else if (change.before && change.after) {
-      summaryParts.push(`Updated "${change.before}" -> "${change.after}"`)
-    } else if (change.after) {
-      summaryParts.push(`Added "${change.after}"`)
-    } else if (change.before) {
-      summaryParts.push(`Removed "${change.before}"`)
-    }
-
-    if (change.reason) {
-      summaryParts.push(change.reason)
-    }
-
-    return summaryParts.join(' ')
-  }
-
-  const handleToggleGroup = (type: string) => {
-    setExpandedGroups((previous) => ({
-      ...previous,
-      [type]: !previous[type]
-    }))
-  }
 
   if (!resumeData) {
     return null

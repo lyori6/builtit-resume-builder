@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { X, Clock, FileText, Trash2, History, Wand2 } from 'lucide-react'
+import { FileText, Trash2, History, Wand2 } from 'lucide-react'
 import { storage, SavedResume } from '@/lib/local-storage'
 import { useOptimizerContext } from '@/src/state/optimizer-context'
 import ContentModal from '@/components/ContentModal'

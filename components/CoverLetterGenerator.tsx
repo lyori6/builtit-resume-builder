@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { FileText, Loader2, Copy, Check, Download, Wand2, AlertCircle } from 'lucide-react'
+import { FileText, Copy, Check, Download, Wand2, AlertCircle } from 'lucide-react'
 import { ResumeData } from '@/lib/resume-types'
 import { generateCoverLetter } from '@/app/actions'
 import ContentModal from './ContentModal'

@@ -35,6 +35,7 @@ export async function POST(request: NextRequest) {
     })
 
     return NextResponse.json({ ok: true })
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error('Gemini key validation failed:', error)
     console.error('Error details:', {

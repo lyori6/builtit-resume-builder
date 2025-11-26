@@ -1,12 +1,11 @@
 'use client'
 
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Check, AlertCircle } from 'lucide-react'
 import { storage } from '@/lib/local-storage'
 import {
   OptimizerProvider,
-  useOptimizerContext,
-  ApiKeyStatus
+  useOptimizerContext
 } from '@/src/state/optimizer-context'
 import { useResumeOptimizer } from '@/src/hooks/useResumeOptimizer'
 import { useResumeIO } from '@/src/hooks/useResumeIO'
@@ -18,7 +17,6 @@ import JobSetupView from '@/components/views/JobSetupView'
 import ResultsView from '@/components/views/ResultsView'
 import GeminiKeyModal from '@/components/GeminiKeyModal'
 import DemoVideoModal from '@/components/DemoVideoModal'
-import APIKeyStatusBadge from '@/components/APIKeyStatusBadge'
 import PromptSettingsModal from '@/components/PromptSettingsModal'
 import ProcessingModal from '@/components/ProcessingModal'
 
@@ -85,7 +83,7 @@ const ResumeGeneratorContent = () => {
         dispatch({ type: 'SET_API_KEY_STATUS', status: 'error', errorMessage: 'Invalid API key. Please check and try again.' })
         return false
       }
-    } catch (error) {
+    } catch {
       dispatch({ type: 'SET_API_KEY_STATUS', status: 'error', errorMessage: 'Validation failed. Check your connection.' })
       return false
     }
@@ -126,10 +124,6 @@ const ResumeGeneratorContent = () => {
   const handleStartYourOwn = () => {
     dispatch({ type: 'SET_STEP', step: 'resume' })
     dispatch({ type: 'SET_DEMO_MODE', isActive: false })
-  }
-
-  const handleSeeDemo = () => {
-    dispatch({ type: 'SET_ACTIVE_VIDEO', videoId: DEMO_VIDEO_ID })
   }
 
   const handleDemoMode = () => {
@@ -213,13 +207,6 @@ const ResumeGeneratorContent = () => {
           resumeData={optimizer.state.optimizedResumeData || optimizer.state.resumeForWorkspace}
           originalResume={optimizer.state.originalResume}
           diffItems={state.optimization.diffItems}
-          onDownloadPDF={() => window.print()}
-          onExportJSON={() => io.actions.downloadJSONFile(state.resume.optimizedJson || '', 'optimized-resume.json')}
-          onTryAnotherJob={() => {
-            dispatch({ type: 'SET_DEMO_MODE', isActive: false })
-            dispatch({ type: 'RESET_OPTIMIZATION' })
-            dispatch({ type: 'SET_STEP', step: 'landing' })
-          }}
           finalAdjustments={optimizer.state.finalAdjustments}
           onFinalAdjustmentsChange={optimizer.actions.setFinalAdjustments}
           onApplyAdjustments={() => { }} // Disabled in demo
@@ -293,12 +280,6 @@ const ResumeGeneratorContent = () => {
             resumeData={optimizer.state.optimizedResumeData}
             originalResume={optimizer.state.originalResume}
             diffItems={state.optimization.diffItems}
-            onDownloadPDF={() => window.print()}
-            onExportJSON={() => io.actions.downloadJSONFile(state.resume.optimizedJson || '', 'optimized-resume.json')}
-            onTryAnotherJob={() => {
-              dispatch({ type: 'RESET_OPTIMIZATION' })
-              dispatch({ type: 'SET_STEP', step: 'job' })
-            }}
             finalAdjustments={optimizer.state.finalAdjustments}
             onFinalAdjustmentsChange={optimizer.actions.setFinalAdjustments}
             onApplyAdjustments={optimizer.actions.applyFinalAdjustments}

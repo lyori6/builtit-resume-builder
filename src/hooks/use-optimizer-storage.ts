@@ -36,6 +36,7 @@ export const useOptimizerStorageSync = (
           optimizedText: stored.resumeState?.optimizedText ?? '',
           optimizedJson: stored.resumeState?.optimizedJson ?? null,
           workspaceJson: stored.resumeState?.workspaceJson ?? null,
+          coverLetter: null,
           loadedSource: stored.resumeState?.loadedSource ?? { type: 'none', id: null }
         },
         jobDescription: {

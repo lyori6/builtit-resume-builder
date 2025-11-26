@@ -122,7 +122,7 @@ const LandingHero: FC<LandingHeroProps> = ({ onSeeDemo, onStartOwn }) => (
           rel="noreferrer"
           className="underline-offset-4 transition hover:text-white"
         >
-          Need a Gemini API key? Here's how
+          Need a Gemini API key? Here&apos;s how
         </a>
       </div>
     </div>
