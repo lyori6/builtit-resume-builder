@@ -39,7 +39,7 @@ const KeySetupPanel: FC<KeySetupPanelProps> = ({
             <p className="text-xs font-semibold uppercase tracking-wide text-blue-700">Gemini setup</p>
             <h2 className="text-base font-semibold text-slate-900">Use your free Gemini key to tailor resumes to any job post</h2>
             <p className="mt-1 text-sm text-slate-600">
-              BuiltIt maps your resume to specific job descriptions using Gemini. You keep full control—the key lives in your browser and powers
+              GResume by BuiltIt maps your resume to specific job descriptions using Gemini. You keep full control—the key lives in your browser and powers
               conversions privately.
             </p>
           </div>
@@ -134,7 +134,7 @@ const KeySetupPanel: FC<KeySetupPanelProps> = ({
       <div className="flex items-center gap-2 text-slate-600">
         <ShieldCheck size={14} className="text-blue-600" />
         <span>
-          Key stays on this device. Clear it anytime or revoke it from AI Studio—BuiltIt never sees or stores it on a server.
+          Key stays on this device. Clear it anytime or revoke it from AI Studio—GResume by BuiltIt never sees or stores it on a server.
         </span>
       </div>
       <div className="min-h-[20px] text-right md:text-left">

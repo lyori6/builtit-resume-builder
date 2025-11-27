@@ -1,6 +1,6 @@
-# Modern Resume Generator
+# GResume by BuiltIt
 
-A dynamic, modern resume generator built with Next.js that supports multiple resume versions, dynamic loading, and optimized PDF generation.
+AI-powered resume optimization with Gemini. Bring your resume JSON or convert plain text with your own API key. Create professional, ATS-optimized resumes in minutes.
 
 ## Features
 

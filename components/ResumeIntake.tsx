@@ -90,7 +90,7 @@ const JSON_TEMPLATE = `{
   }
 }`
 
-const JSON_PROMPT_SNIPPET = `You are converting my resume into JSON for the BuiltIt resume builder.
+const JSON_PROMPT_SNIPPET = `You are converting my resume into JSON for GResume by BuiltIt.
 
 Use the following template exactly. Remove sections that do not apply instead of leaving placeholder text:
 
