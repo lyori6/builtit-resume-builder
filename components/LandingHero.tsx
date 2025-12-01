@@ -15,9 +15,9 @@ const steps = [
 ]
 
 const indicatorClasses: Record<string, string> = {
-  primary: 'bg-primary text-white',
-  warning: 'bg-warning text-white',
-  success: 'bg-success text-white'
+  primary: 'border-2 border-primary text-primary bg-transparent',
+  warning: 'border-2 border-warning text-warning bg-transparent',
+  success: 'border-2 border-success text-success bg-transparent'
 }
 
 const iconClasses: Record<string, string> = {
@@ -58,7 +58,7 @@ const LandingHero: FC<LandingHeroProps> = ({ onSeeDemo, onStartOwn }) => (
         <div className="flex flex-wrap gap-3">
           <button
             onClick={onStartOwn}
-            className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-10 py-4 text-base font-semibold text-white shadow-xl shadow-primary/40 transition-all hover:bg-primary-hover hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-primary/40"
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-12 py-5 text-lg font-semibold text-white shadow-xl shadow-primary/40 transition-all hover:bg-primary-hover hover:scale-105 hover:shadow-2xl hover:shadow-primary/50 focus:outline-none focus:ring-4 focus:ring-primary/40"
           >
             <UploadCloud size={16} />
             Upload your resume
@@ -66,7 +66,7 @@ const LandingHero: FC<LandingHeroProps> = ({ onSeeDemo, onStartOwn }) => (
           <button
             type="button"
             onClick={onSeeDemo}
-            className="inline-flex items-center justify-center gap-2 rounded-lg border-2 border-white/30 px-8 py-3 text-sm font-semibold text-white/85 shadow-lg shadow-slate-900/30 transition hover:border-white/60 hover:text-white focus:outline-none focus:ring-4 focus:ring-white/20"
+            className="inline-flex items-center justify-center gap-2 rounded-lg border-2 border-white/30 px-10 py-4 text-base font-semibold text-white/85 shadow-lg shadow-slate-900/30 transition-all hover:border-white/60 hover:text-white hover:scale-105 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-white/20"
           >
             <Play size={16} />
             See how it works
@@ -78,7 +78,7 @@ const LandingHero: FC<LandingHeroProps> = ({ onSeeDemo, onStartOwn }) => (
             {steps.map((step, index) => {
               const StepIcon = step.icon
               return (
-                <div key={step.title} className="flex items-start gap-4 rounded-xl border border-white/5 bg-white/[0.02] p-4">
+                <div key={step.title} className="flex items-start gap-4 rounded-xl border border-white/5 p-4">
                   <div className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full text-base font-bold ${indicatorClasses[step.color]}`}>
                     {index + 1}
                   </div>
