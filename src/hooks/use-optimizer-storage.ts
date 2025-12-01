@@ -34,6 +34,7 @@ export const useOptimizerStorageSync = (
         resume: {
           originalText: stored.resumeState?.originalText ?? '',
           optimizedText: stored.resumeState?.optimizedText ?? '',
+          originalJson: stored.resumeState?.originalJson ?? null,
           optimizedJson: stored.resumeState?.optimizedJson ?? null,
           workspaceJson: stored.resumeState?.workspaceJson ?? null,
           coverLetter: null,
@@ -70,6 +71,7 @@ export const useOptimizerStorageSync = (
     storage.saveResumeState({
       originalText: resume.originalText || undefined,
       optimizedText: resume.optimizedText || undefined,
+      originalJson: resume.originalJson || undefined,
       optimizedJson: resume.optimizedJson || undefined,
       workspaceJson: resume.workspaceJson || undefined,
       loadedSource: resume.loadedSource

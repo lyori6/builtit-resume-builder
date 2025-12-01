@@ -26,6 +26,7 @@ export type StoredData = {
   resumeState?: {
     originalText?: string
     optimizedText?: string
+    originalJson?: string
     optimizedJson?: string
     workspaceJson?: string
     loadedSource?: {
