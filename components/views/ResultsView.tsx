@@ -87,23 +87,26 @@ const ResultsView: React.FC<ResultsViewProps> = ({
 
                 {/* Demo Mode Indicator */}
                 {state.ui.isDemoMode && (
-                    <div className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 transform items-center gap-3 rounded-full bg-blue-50 px-4 py-2 ring-1 ring-blue-200">
-                        <div className="flex items-center gap-2">
-                            <span className="relative flex h-2.5 w-2.5">
-                                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-400 opacity-75"></span>
-                                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-blue-500"></span>
+                    <div className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 transform items-center gap-4 rounded-2xl bg-gradient-to-r from-amber-500/90 to-orange-500/90 px-8 py-4 shadow-2xl shadow-orange-500/30 ring-2 ring-white/20 backdrop-blur-sm" style={{ minWidth: '700px', maxWidth: '90%' }}>
+                        <div className="flex items-center gap-3">
+                            <span className="relative flex h-3 w-3">
+                                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75"></span>
+                                <span className="relative inline-flex h-3 w-3 rounded-full bg-white"></span>
                             </span>
-                            <span className="text-sm font-semibold text-blue-700">Demo Mode</span>
+                            <span className="text-lg font-bold text-white">🎬 Demo Mode</span>
                         </div>
-                        <div className="h-4 w-px bg-blue-200"></div>
+                        <div className="h-6 w-px bg-white/30"></div>
+                        <p className="flex-1 text-sm font-medium text-white/90">
+                            Exploring with sample data
+                        </p>
                         <button
                             onClick={() => {
                                 dispatch({ type: 'RESET_STATE' })
                                 dispatch({ type: 'SET_STEP', step: 'landing' })
                             }}
-                            className="text-xs font-medium text-blue-600 hover:text-blue-800 hover:underline"
+                            className="rounded-lg bg-white/20 px-4 py-2 text-sm font-semibold text-white backdrop-blur-sm transition-all hover:bg-white/30 hover:scale-105"
                         >
-                            Start your own resume &rarr;
+                            Start your own →
                         </button>
                     </div>
                 )}
