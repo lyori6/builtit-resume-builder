@@ -125,207 +125,217 @@ const ResumePreview: FC<ResumePreviewProps> = ({ resumeData }) => {
         </div>
       </div>
 
-      {/* Summary */}
-      {sections.summary?.visible && sections.summary.content && (
-        <div className={`mb-4 ${spacing.sectionGap}`}>
-          <h2
-            className={`text-sm font-bold mb-2 pb-1 border-b uppercase tracking-wide ${fonts.headings}`}
-            style={{ color: colors.text, borderColor: colors.primary }}
-          >
-            {sections.summary.name}
-          </h2>
-          <div className="leading-relaxed text-xs">
-            {renderSummary(sections.summary.content, colors.primary)}
-          </div>
-        </div>
-      )}
+      {/* Content Layout */}
+      <div className={currentTheme.layout === 'sidebar' ? 'grid grid-cols-1 md:grid-cols-[2fr_1fr] print-grid-sidebar gap-8' : ''}>
 
-      {/* Experience */}
-      {sections.experience?.visible && Array.isArray(sections.experience.items) && sections.experience.items.length > 0 && (
-        <div className={`mb-4 ${spacing.sectionGap}`}>
-          <h2
-            className={`text-sm font-bold mb-3 pb-1 border-b uppercase tracking-wide ${fonts.headings}`}
-            style={{ color: colors.text, borderColor: colors.primary }}
-          >
-            {sections.experience.name}
-          </h2>
-          <div className={spacing.itemGap + " flex flex-col resume-section-content"}>
-            {sections.experience.items.map((exp, index) => (
-              <div key={exp.id ?? index} className="break-inside-avoid mb-3 last:mb-0">
-                <div className="flex justify-between items-start mb-1">
-                  <div className="flex-1">
-                    <h3 className="text-sm text-gray-900" style={{ color: colors.text }}>
-                      {exp.position?.includes('|') ? (
-                        <>
-                          {exp.position.split('|').reverse().map((part, idx) => (
-                            <span key={idx}>
-                              {idx === 0 ? (
-                                <span className="font-bold">{part.trim()}</span>
-                              ) : (
+        {/* Main Column */}
+        <div className="flex flex-col main-column">
+          {/* Summary */}
+          {sections.summary?.visible && sections.summary.content && (
+            <div className={`mb-4 ${spacing.sectionGap}`}>
+              <h2
+                className={`text-sm font-bold mb-2 pb-1 border-b uppercase tracking-wide ${fonts.headings}`}
+                style={{ color: colors.text, borderColor: colors.primary }}
+              >
+                {sections.summary.name}
+              </h2>
+              <div className="leading-relaxed text-xs">
+                {renderSummary(sections.summary.content, colors.primary)}
+              </div>
+            </div>
+          )}
+
+          {/* Experience */}
+          {sections.experience?.visible && Array.isArray(sections.experience.items) && sections.experience.items.length > 0 && (
+            <div className={`mb-4 ${spacing.sectionGap}`}>
+              <h2
+                className={`text-sm font-bold mb-3 pb-1 border-b uppercase tracking-wide ${fonts.headings}`}
+                style={{ color: colors.text, borderColor: colors.primary }}
+              >
+                {sections.experience.name}
+              </h2>
+              <div className={spacing.itemGap + " flex flex-col resume-section-content"}>
+                {sections.experience.items.map((exp, index) => (
+                  <div key={exp.id ?? index} className="break-inside-avoid mb-3 last:mb-0">
+                    <div className="flex justify-between items-start mb-1">
+                      <div className="flex-1">
+                        <h3 className="text-sm text-gray-900" style={{ color: colors.text }}>
+                          {exp.position?.includes('|') ? (
+                            <>
+                              {exp.position.split('|').reverse().map((part, idx) => (
+                                <span key={idx}>
+                                  {idx === 0 ? (
+                                    <span className="font-bold">{part.trim()}</span>
+                                  ) : (
+                                    <>
+                                      <span className="mx-1.5" style={{ color: colors.muted }}>|</span>
+                                      <span className="font-medium">{part.trim()}</span>
+                                    </>
+                                  )}
+                                </span>
+                              ))}
+                            </>
+                          ) : (
+                            <>
+                              {exp.company && (
                                 <>
+                                  <span className="font-bold">{exp.company}</span>
                                   <span className="mx-1.5" style={{ color: colors.muted }}>|</span>
-                                  <span className="font-medium">{part.trim()}</span>
                                 </>
                               )}
-                            </span>
-                          ))}
-                        </>
-                      ) : (
-                        <>
-                          {exp.company && (
-                            <>
-                              <span className="font-bold">{exp.company}</span>
-                              <span className="mx-1.5" style={{ color: colors.muted }}>|</span>
+                              <span className="font-medium">{exp.position}</span>
                             </>
                           )}
-                          <span className="font-medium">{exp.position}</span>
-                        </>
-                      )}
-                    </h3>
-                  </div>
-                  <div className="text-right text-xs ml-3" style={{ color: colors.secondary }}>
-                    {exp.date && <p className="font-medium">{exp.date}</p>}
-                    {exp.location && <p className="text-xs">{exp.location}</p>}
-                  </div>
-                </div>
-                {exp.summary && (
-                  <div className="text-xs leading-relaxed mt-1" style={{ color: colors.text }}>
-                    {renderSummary(exp.summary, colors.primary)}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Projects */}
-      {sections.projects?.visible && Array.isArray(sections.projects.items) && sections.projects.items.length > 0 && (
-        <div className={`mb-4 ${spacing.sectionGap}`}>
-          <h2
-            className={`text-sm font-bold mb-3 pb-1 border-b uppercase tracking-wide ${fonts.headings}`}
-            style={{ color: colors.text, borderColor: colors.primary }}
-          >
-            {sections.projects.name}
-          </h2>
-          <div className={spacing.itemGap + " flex flex-col resume-section-content"}>
-            {sections.projects.items.map((project, index) => (
-              <div key={project.id ?? index} className="break-inside-avoid mb-3 last:mb-0">
-                <div className="flex justify-between items-start mb-1">
-                  <div className="flex-1">
-                    <h3 className="text-sm font-bold" style={{ color: colors.text }}>
-                      {project.name}
-                    </h3>
-                    {project.description && (
-                      <p className="font-medium text-xs" style={{ color: colors.secondary }}>{project.description}</p>
+                        </h3>
+                      </div>
+                      <div className="text-right text-xs ml-3" style={{ color: colors.secondary }}>
+                        {exp.date && <p className="font-medium">{exp.date}</p>}
+                        {exp.location && <p className="text-xs">{exp.location}</p>}
+                      </div>
+                    </div>
+                    {exp.summary && (
+                      <div className="text-xs leading-relaxed mt-1" style={{ color: colors.text }}>
+                        {renderSummary(exp.summary, colors.primary)}
+                      </div>
                     )}
                   </div>
-                  <div className="text-right text-xs ml-3" style={{ color: colors.secondary }}>
-                    {project.date && <p className="font-medium">{project.date}</p>}
-                  </div>
-                </div>
-                {project.summary && (
-                  <div className="text-xs leading-relaxed mb-1" style={{ color: colors.text }}>
-                    {renderSummary(project.summary, colors.primary)}
-                  </div>
-                )}
-                {Array.isArray(project.keywords) && project.keywords.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mb-1">
-                    {project.keywords.map((keyword, kidx) => (
-                      <span
-                        key={kidx}
-                        className="text-xs px-1.5 py-0.5 rounded"
-                        style={{ backgroundColor: colors.border + '40', color: colors.secondary }}
-                      >
-                        {keyword}
-                      </span>
-                    ))}
-                  </div>
-                )}
-                {project.url?.href && project.url.label && (
-                  <div>
-                    <a href={project.url.href} className="hover:underline text-xs" style={{ color: colors.primary }}>
-                      {project.url.label.toLowerCase()}
-                    </a>
-                  </div>
-                )}
+                ))}
               </div>
-            ))}
-          </div>
-        </div>
-      )}
+            </div>
+          )}
 
-      {/* Skills */}
-      {sections.skills?.visible && Array.isArray(sections.skills.items) && sections.skills.items.length > 0 && (
-        <div className={`mb-4 ${spacing.sectionGap}`}>
-          <h2
-            className={`text-sm font-bold mb-3 pb-1 border-b uppercase tracking-wide ${fonts.headings}`}
-            style={{ color: colors.text, borderColor: colors.primary }}
-          >
-            {sections.skills.name}
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 skills-grid">
-            {sections.skills.items.map((skill, index) => (
-              <div key={skill.id ?? index} className="break-inside-avoid">
-                <h3 className="font-semibold mb-1 text-xs" style={{ color: colors.text }}>{skill.name}</h3>
-                <div className="flex flex-wrap gap-1">
-                  {(skill.keywords ?? []).map((keyword, kidx) => (
-                    <span
-                      key={kidx}
-                      className={`inline-flex items-center text-xs px-1.5 py-0.5 rounded-full ${currentTheme.skillsStyle === 'outline' ? 'border' : ''}`}
-                      style={
-                        currentTheme.skillsStyle === 'outline'
-                          ? { borderColor: colors.border, color: colors.text }
-                          : { backgroundColor: colors.border + '60', color: colors.secondary }
-                      }
-                    >
-                      {keyword}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Education */}
-      {sections.education?.visible && Array.isArray(sections.education.items) && sections.education.items.length > 0 && (
-        <div className={`mb-4 ${spacing.sectionGap}`}>
-          <h2
-            className={`text-sm font-bold mb-3 pb-1 border-b uppercase tracking-wide ${fonts.headings}`}
-            style={{ color: colors.text, borderColor: colors.primary }}
-          >
-            {sections.education.name}
-          </h2>
-          <div className={spacing.itemGap + " flex flex-col resume-section-content"}>
-            {sections.education.items.map((edu, index) => (
-              <div key={edu.id ?? index} className="break-inside-avoid mb-3 last:mb-0">
-                <div className="flex justify-between items-start mb-1">
-                  <div className="flex-1">
-                    <h3 className="text-sm font-bold" style={{ color: colors.text }}>{edu.institution}</h3>
-                    {edu.studyType && (
-                      <p className="font-semibold text-xs" style={{ color: colors.primary }}>{edu.studyType}</p>
+          {/* Projects */}
+          {sections.projects?.visible && Array.isArray(sections.projects.items) && sections.projects.items.length > 0 && (
+            <div className={`mb-4 ${spacing.sectionGap}`}>
+              <h2
+                className={`text-sm font-bold mb-3 pb-1 border-b uppercase tracking-wide ${fonts.headings}`}
+                style={{ color: colors.text, borderColor: colors.primary }}
+              >
+                {sections.projects.name}
+              </h2>
+              <div className={spacing.itemGap + " flex flex-col resume-section-content"}>
+                {sections.projects.items.map((project, index) => (
+                  <div key={project.id ?? index} className="break-inside-avoid mb-3 last:mb-0">
+                    <div className="flex justify-between items-start mb-1">
+                      <div className="flex-1">
+                        <h3 className="text-sm font-bold" style={{ color: colors.text }}>
+                          {project.name}
+                        </h3>
+                        {project.description && (
+                          <p className="font-medium text-xs" style={{ color: colors.secondary }}>{project.description}</p>
+                        )}
+                      </div>
+                      <div className="text-right text-xs ml-3" style={{ color: colors.secondary }}>
+                        {project.date && <p className="font-medium">{project.date}</p>}
+                      </div>
+                    </div>
+                    {project.summary && (
+                      <div className="text-xs leading-relaxed mb-1" style={{ color: colors.text }}>
+                        {renderSummary(project.summary, colors.primary)}
+                      </div>
+                    )}
+                    {Array.isArray(project.keywords) && project.keywords.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mb-1">
+                        {project.keywords.map((keyword, kidx) => (
+                          <span
+                            key={kidx}
+                            className="text-xs px-1.5 py-0.5 rounded"
+                            style={{ backgroundColor: colors.border + '40', color: colors.secondary }}
+                          >
+                            {keyword}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    {project.url?.href && project.url.label && (
+                      <div>
+                        <a href={project.url.href} className="hover:underline text-xs" style={{ color: colors.primary }}>
+                          {project.url.label.toLowerCase()}
+                        </a>
+                      </div>
                     )}
                   </div>
-                  <div className="text-right text-xs ml-3" style={{ color: colors.secondary }}>
-                    {edu.date && <p className="font-medium">{edu.date}</p>}
-                    {edu.location && <p className="text-xs">{edu.location}</p>}
-                  </div>
-                </div>
-                {edu.score && (
-                  <p className="text-xs mb-1" style={{ color: colors.secondary }}>GPA: {edu.score}</p>
-                )}
-                {edu.summary && (
-                  <div className="text-xs leading-relaxed" style={{ color: colors.text }}>
-                    {renderSummary(edu.summary, colors.primary)}
-                  </div>
-                )}
+                ))}
               </div>
-            ))}
-          </div>
+            </div>
+          )}
         </div>
-      )}
+
+        {/* Sidebar / Secondary Column */}
+        <div className="flex flex-col sidebar-column">
+          {/* Skills */}
+          {sections.skills?.visible && Array.isArray(sections.skills.items) && sections.skills.items.length > 0 && (
+            <div className={`mb-4 ${spacing.sectionGap}`}>
+              <h2
+                className={`text-sm font-bold mb-3 pb-1 border-b uppercase tracking-wide ${fonts.headings}`}
+                style={{ color: colors.text, borderColor: colors.primary }}
+              >
+                {sections.skills.name}
+              </h2>
+              <div className={currentTheme.layout === 'sidebar' ? 'flex flex-col gap-4' : 'grid grid-cols-1 md:grid-cols-3 gap-3 skills-grid'}>
+                {sections.skills.items.map((skill, index) => (
+                  <div key={skill.id ?? index} className="break-inside-avoid">
+                    <h3 className="font-semibold mb-1 text-xs" style={{ color: colors.text }}>{skill.name}</h3>
+                    <div className="flex flex-wrap gap-1">
+                      {(skill.keywords ?? []).map((keyword, kidx) => (
+                        <span
+                          key={kidx}
+                          className={`inline-flex items-center text-xs px-1.5 py-0.5 ${currentTheme.id === 'tech' ? 'rounded-md' : 'rounded-full'} ${currentTheme.skillsStyle === 'outline' ? 'border' : ''}`}
+                          style={
+                            currentTheme.skillsStyle === 'outline'
+                              ? { borderColor: colors.border, color: colors.text }
+                              : { backgroundColor: colors.border + '60', color: colors.secondary }
+                          }
+                        >
+                          {keyword}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Education */}
+          {sections.education?.visible && Array.isArray(sections.education.items) && sections.education.items.length > 0 && (
+            <div className={`mb-4 ${spacing.sectionGap}`}>
+              <h2
+                className={`text-sm font-bold mb-3 pb-1 border-b uppercase tracking-wide ${fonts.headings}`}
+                style={{ color: colors.text, borderColor: colors.primary }}
+              >
+                {sections.education.name}
+              </h2>
+              <div className={spacing.itemGap + " flex flex-col resume-section-content"}>
+                {sections.education.items.map((edu, index) => (
+                  <div key={edu.id ?? index} className="break-inside-avoid mb-3 last:mb-0">
+                    <div className="flex justify-between items-start mb-1">
+                      <div className="flex-1">
+                        <h3 className="text-sm font-bold" style={{ color: colors.text }}>{edu.institution}</h3>
+                        {edu.studyType && (
+                          <p className="font-semibold text-xs" style={{ color: colors.primary }}>{edu.studyType}</p>
+                        )}
+                      </div>
+                      <div className="text-right text-xs ml-3" style={{ color: colors.secondary }}>
+                        {edu.date && <p className="font-medium">{edu.date}</p>}
+                        {edu.location && <p className="text-xs">{edu.location}</p>}
+                      </div>
+                    </div>
+                    {edu.score && (
+                      <p className="text-xs mb-1" style={{ color: colors.secondary }}>GPA: {edu.score}</p>
+                    )}
+                    {edu.summary && (
+                      <div className="text-xs leading-relaxed" style={{ color: colors.text }}>
+                        {renderSummary(edu.summary, colors.primary)}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   )
 }

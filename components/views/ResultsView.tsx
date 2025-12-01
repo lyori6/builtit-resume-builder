@@ -54,14 +54,15 @@ const ResultsView: React.FC<ResultsViewProps> = ({
 }) => {
     const { state, dispatch } = useOptimizerContext()
     const { actions: { downloadJSONFile, exportToDocx } } = useResumeIO()
-    const { currentTheme, setTheme, availableThemes } = useTheme()
+    const { currentTheme, setTheme, availableThemes, customColor, setCustomColor } = useTheme()
     const [showJobDetails, setShowJobDetails] = useState(false)
     const [showDiffs, setShowDiffs] = useState(false)
     const [showHistory, setShowHistory] = useState(false)
     const [previewMode, setPreviewMode] = useState<'after' | 'before'>('after')
 
     const handleDownloadPDF = async () => {
-        await downloadResumePDF('resume-preview-panel', 'optimized-resume.pdf')
+        const filename = previewMode === 'before' ? 'original-resume.pdf' : 'optimized-resume.pdf'
+        await downloadResumePDF('resume-preview-panel', filename)
     }
 
     const renderHeader = () => (
@@ -290,12 +291,48 @@ const ResultsView: React.FC<ResultsViewProps> = ({
                                 </button>
                             ))}
                         </div>
+                        <div className="h-4 w-px bg-slate-200 mx-2" />
+                        <span className="text-xs font-medium text-slate-400">Color:</span>
+                        <div className="flex items-center gap-2">
+                            {/* Preset Colors */}
+                            {['#2563eb', '#059669', '#7c3aed', '#db2777', '#dc2626', '#ea580c'].map((color) => (
+                                <button
+                                    key={color}
+                                    onClick={() => setCustomColor(color)}
+                                    className={`h-5 w-5 rounded-full border border-slate-200 transition hover:scale-110 ${customColor === color ? 'ring-2 ring-blue-400 ring-offset-1' : ''}`}
+                                    style={{ backgroundColor: color }}
+                                    title={color}
+                                />
+                            ))}
+                            {/* Custom Picker */}
+                            <div className="relative flex items-center">
+                                <input
+                                    type="color"
+                                    value={customColor || currentTheme.colors.primary}
+                                    onChange={(e) => setCustomColor(e.target.value)}
+                                    className="h-6 w-6 cursor-pointer overflow-hidden rounded-full border-0 p-0 opacity-0 absolute inset-0"
+                                />
+                                <div
+                                    className="h-5 w-5 rounded-full border border-slate-200 bg-gradient-to-br from-red-500 via-green-500 to-blue-500"
+                                    title="Custom Color"
+                                />
+                            </div>
+                            {/* Reset Button */}
+                            {customColor && (
+                                <button
+                                    onClick={() => setCustomColor(null)}
+                                    className="ml-1 text-[10px] font-medium text-slate-500 hover:text-slate-800 hover:underline"
+                                >
+                                    Reset
+                                </button>
+                            )}
+                        </div>
                     </div>
                 </div>
 
                 <div className="min-h-[800px] overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
                     <div className="h-full overflow-auto p-8">
-                        <ResumePreview resumeData={previewData} />
+                        <ResumePreview key={previewMode} resumeData={previewData} />
                     </div>
                 </div>
             </div>

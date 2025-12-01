@@ -10,6 +10,7 @@ AI-powered resume optimization with Gemini. Bring your resume JSON or convert pl
 - **In-Place AI Editing**: Rapidly iterate on your resume content using Gemini 2.5 Flash without page reloads
 - **Demo Mode**: Experience the full power of the app with a pre-loaded example before adding your own key
 - **PDF Generation**: Print-optimized PDF output with proper formatting
+- **Cover Letter Generator**: AI-powered cover letter creation tailored to specific job descriptions
 - **JSON Export**: Export any resume version as JSON
 - **Prompt Overrides**: Customize Gemini system prompts locally to fine-tune AI behavior
 - **Responsive Design**: Clean, professional layout that works on all devices
@@ -38,6 +39,7 @@ AI-powered resume optimization with Gemini. Bring your resume JSON or convert pl
 │   ├── KeySetupPanel.tsx       # Gemini key management UI
 │   ├── PromptSettingsModal.tsx # Prompt override modal
 │   ├── ResumeIntake.tsx        # Intake experience for JSON/text resumes
+│   ├── CoverLetterGenerator.tsx # AI cover letter generator
 │   └── WorkspaceActions.tsx    # Optimization, adjustments, diff summary
 ├── lib/
 │   └── resume-utils.ts       # Resume utility functions

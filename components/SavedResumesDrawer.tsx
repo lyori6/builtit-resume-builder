@@ -23,6 +23,7 @@ const SavedResumesDrawer: React.FC<SavedResumesDrawerProps> = ({ isOpen, onClose
         const resume = storage.getResume(id)
         if (resume) {
             dispatch({ type: 'SET_WORKSPACE_RESUME', json: JSON.stringify(resume.data) })
+            dispatch({ type: 'SET_ORIGINAL_RESUME', json: JSON.stringify(resume.data) })
             dispatch({ type: 'SET_LOADED_SOURCE', source: { type: 'custom', id } })
 
             if (resume.jobDescription) {

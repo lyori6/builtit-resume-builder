@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useState, useMemo } from 'react'
 import { useOptimizerContext, OptimizationMetadata, DiffItem } from '@/src/state/optimizer-context'
 import { ResumeData, validateResumeJSON, cloneResumeData } from '@/lib/resume-types'
 import { useOptimizedResume, useWorkspaceResume } from '@/src/hooks'
@@ -155,16 +155,32 @@ export const useResumeOptimizer = () => {
     const resumeForWorkspace = useWorkspaceResume()
     const optimizedResumeData = useOptimizedResume()
 
+    // Derived original resume from context
+    const originalResume = useMemo(() => {
+        if (!state.resume.originalJson) return null
+        try {
+            return JSON.parse(state.resume.originalJson) as ResumeData
+        } catch (e) {
+            console.error('Failed to parse original resume JSON', e)
+            return null
+        }
+    }, [state.resume.originalJson])
+
     // Local state for adjustments (UI state)
     const [finalAdjustments, setFinalAdjustments] = useState('')
     const [isAdjusting, setIsAdjusting] = useState(false)
     const [adjustmentError, setAdjustmentError] = useState<string | null>(null)
     const [adjustmentSuccess, setAdjustmentSuccess] = useState(false)
-    const [originalResume, setOriginalResume] = useState<ResumeData | null>(null)
 
     // Prompts state (could be moved to context if needed globally, but local is fine for now)
     const [systemPrompt, setSystemPrompt] = useState('')
     const [adjustmentPrompt, setAdjustmentPrompt] = useState('')
+
+    const setOriginalResume = useCallback((resume: ResumeData | null) => {
+        if (resume) {
+            dispatch({ type: 'SET_ORIGINAL_RESUME', json: JSON.stringify(resume) })
+        }
+    }, [dispatch])
 
     const optimizeResume = useCallback(async () => {
         const currentResume = resumeForWorkspace
@@ -249,7 +265,7 @@ export const useResumeOptimizer = () => {
                 errorMessage: error instanceof Error ? error.message : 'Optimization failed'
             })
         }
-    }, [resumeForWorkspace, state.jobDescription.text, state.apiKey.value, dispatch, originalResume, systemPrompt, state.resume.loadedSource.id])
+    }, [resumeForWorkspace, state.jobDescription.text, state.apiKey.value, dispatch, originalResume, systemPrompt, state.resume.loadedSource.id, setOriginalResume])
 
     const applyFinalAdjustments = useCallback(async () => {
         const currentResume = resumeForWorkspace
@@ -326,7 +342,7 @@ export const useResumeOptimizer = () => {
         } finally {
             setIsAdjusting(false)
         }
-    }, [resumeForWorkspace, finalAdjustments, state.apiKey.value, originalResume, adjustmentPrompt, dispatch, state.resume.loadedSource.id, state.jobDescription.text])
+    }, [resumeForWorkspace, finalAdjustments, state.apiKey.value, originalResume, adjustmentPrompt, dispatch, state.resume.loadedSource.id, state.jobDescription.text, setOriginalResume])
 
     const applyIntermediateAdjustments = useCallback(async () => {
         const currentResume = resumeForWorkspace

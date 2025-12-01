@@ -87,10 +87,10 @@ export async function downloadResumePDF(elementId: string, filename: string = 'r
               widows: 2 !important; 
             }
             /* Allow items to break if needed (less strict) */
-            .break-inside-avoid { 
+            /* .break-inside-avoid { 
               page-break-inside: auto !important; 
               break-inside: auto !important;
-            }
+            } */
             /* Allow breaks between items */
             .mb-3, .mb-4 {
               break-before: auto !important;
@@ -107,6 +107,39 @@ export async function downloadResumePDF(elementId: string, filename: string = 'r
             /* Force block layout for sections to avoid flexbox pagination issues */
             .resume-section-content {
                display: block !important;
+            }
+
+            /* Enforce Float Layout for Sidebar (More robust for pagination) */
+            .print-grid-sidebar {
+              display: block !important;
+              overflow: visible !important; /* Ensure floats don't hide content */
+            }
+            
+            .print-grid-sidebar::after {
+              content: "";
+              display: table;
+              clear: both;
+            }
+
+            .print-grid-sidebar .main-column {
+              display: block !important;
+              float: left !important;
+              width: 64% !important;
+              padding-right: 2rem !important;
+              box-sizing: border-box !important;
+            }
+
+            .print-grid-sidebar .sidebar-column {
+              display: block !important;
+              float: right !important;
+              width: 36% !important;
+              box-sizing: border-box !important;
+              margin-top: 0 !important; /* Ensure it starts at the top */
+            }
+            
+            /* Ensure items inside can break */
+            .print-grid-sidebar .main-column > *, .print-grid-sidebar .sidebar-column > * {
+              break-inside: auto !important;
             }
           }
           /* Ensure the resume container takes full width/height if needed */

@@ -19,6 +19,7 @@ export interface ResumeTheme {
         itemGap: string
     }
     skillsStyle: 'filled' | 'outline'
+    layout: 'single-column' | 'sidebar'
 }
 
 export const themes: Record<string, ResumeTheme> = {
@@ -43,6 +44,7 @@ export const themes: Record<string, ResumeTheme> = {
             itemGap: 'gap-3',
         },
         skillsStyle: 'filled',
+        layout: 'single-column',
     },
     classic: {
         id: 'classic',
@@ -65,6 +67,7 @@ export const themes: Record<string, ResumeTheme> = {
             itemGap: 'gap-2',
         },
         skillsStyle: 'filled',
+        layout: 'single-column',
     },
     minimal: {
         id: 'minimal',
@@ -87,6 +90,53 @@ export const themes: Record<string, ResumeTheme> = {
             itemGap: 'gap-4',
         },
         skillsStyle: 'outline',
+        layout: 'single-column',
+    },
+    executive: {
+        id: 'executive',
+        name: 'Executive',
+        description: 'Commanding presence with traditional serif fonts and a sidebar layout.',
+        colors: {
+            primary: '#0f172a', // slate-900
+            secondary: '#334155', // slate-700
+            text: '#0f172a', // slate-900
+            muted: '#64748b', // slate-500
+            background: '#ffffff',
+            border: '#cbd5e1', // slate-300
+        },
+        fonts: {
+            headings: 'font-serif tracking-wide',
+            body: 'font-serif',
+        },
+        spacing: {
+            sectionGap: 'gap-6',
+            itemGap: 'gap-4',
+        },
+        skillsStyle: 'filled',
+        layout: 'sidebar',
+    },
+    tech: {
+        id: 'tech',
+        name: 'Tech',
+        description: 'Modern, monospace-inspired design for technical roles.',
+        colors: {
+            primary: '#10b981', // emerald-500
+            secondary: '#374151', // gray-700
+            text: '#111827', // gray-900
+            muted: '#6b7280', // gray-500
+            background: '#ffffff',
+            border: '#e5e7eb', // gray-200
+        },
+        fonts: {
+            headings: 'font-mono tracking-tight',
+            body: 'font-sans',
+        },
+        spacing: {
+            sectionGap: 'gap-5',
+            itemGap: 'gap-3',
+        },
+        skillsStyle: 'outline',
+        layout: 'sidebar',
     },
 }
 

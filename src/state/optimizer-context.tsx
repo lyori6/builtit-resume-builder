@@ -51,6 +51,7 @@ export interface OptimizerState {
     originalText: string
     optimizedText: string
     optimizedJson: string | null
+    originalJson: string | null
     workspaceJson: string | null
     coverLetter: string | null
     loadedSource: {
@@ -120,6 +121,7 @@ export type OptimizerAction =
   | { type: 'HYDRATE_STATE'; state: Partial<OptimizerState> }
   | { type: 'RESET_STATE' }
   | { type: 'SET_OPTIMIZED_DATA'; json: string }
+  | { type: 'SET_ORIGINAL_RESUME'; json: string }
   | { type: 'SET_COVER_LETTER'; text: string }
 
 const maskApiKey = (key: string) => {
@@ -135,6 +137,7 @@ export const initialOptimizerState: OptimizerState = {
     originalText: '',
     optimizedText: '',
     optimizedJson: null,
+    originalJson: null,
     workspaceJson: null,
     coverLetter: null,
     loadedSource: {
@@ -413,6 +416,15 @@ const reducer = (state: OptimizerState, action: OptimizerAction): OptimizerState
           // We don't have diffs/metadata when restoring from simple history unless we store them too
           // For now, we just show the result
           showDiff: false
+        }
+      }
+
+    case 'SET_ORIGINAL_RESUME':
+      return {
+        ...state,
+        resume: {
+          ...state.resume,
+          originalJson: action.json
         }
       }
     case 'SET_COVER_LETTER':

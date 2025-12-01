@@ -118,10 +118,11 @@ Users often struggle to write cover letters that effectively highlight their rel
 | **P0** | **Refactor `page.tsx`** | High | High (Maintenance) | **Done** |
 | **P1** | **Print Perfection** | Low | High (Core Value) | **Done** |
 | **P2** | **Session History** | Medium | Medium (Retention) | **Done** |
-| **P3** | **Cover Letter Generator** | High | High (Value) | **Next** |
-| **P4** | **Resume Themes** | Medium | Medium (Delighter) | **Backlog** |
+| **P3** | **Cover Letter Generator** | High | High (Value) | **Done** |
+| **P4** | **Resume Themes** | Medium | Medium (Delighter) | **Next** |
 
 ## Completed Improvements
 - **API Reliability**: Updated all Gemini API integrations to use `gemini-2.5-flash` (validation/adjustments) and `gemini-2.5-pro` (optimization), resolving authentication and model availability issues.
 - **Architecture**: Successfully decomposed `page.tsx` into `IntakeView`, `JobSetupView`, and `ResultsView`, with logic extracted to `useResumeOptimizer` and `useResumeIO`.
 - **Print**: Simplified printing by reverting to native browser dialog with optimized CSS.
+- **Features**: Implemented "Cover Letter Generator" with AI-powered tailoring and PDF export.
