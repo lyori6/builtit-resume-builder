@@ -72,13 +72,13 @@ const LandingHero: FC<LandingHeroProps> = ({ onSeeDemo, onStartOwn }) => (
             See how it works
           </button>
         </div>
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.32em] text-white/60">3 quick moves</p>
+        <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.32em] text-white/40">3 quick moves</p>
           <div className="mt-4 space-y-4 sm:space-y-0 sm:grid sm:grid-cols-3 sm:gap-5">
             {steps.map((step, index) => {
               const StepIcon = step.icon
               return (
-                <div key={step.title} className="flex items-start gap-4 rounded-xl border border-white/10 bg-white/5 p-4">
+                <div key={step.title} className="flex items-start gap-4 rounded-xl border border-white/5 bg-white/[0.02] p-4">
                   <div className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full text-base font-bold ${indicatorClasses[step.color]}`}>
                     {index + 1}
                   </div>
